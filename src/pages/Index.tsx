@@ -16,9 +16,7 @@ const Index = () => {
 
       {/* Título Principal */}
       <div className="text-center mb-12 max-w-lg">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-6">
-          Bem-vindo!
-        </h1>
+        
         <p className="text-lg sm:text-xl text-gray-700 leading-relaxed font-medium">
           Escolha como você deseja usar nossa plataforma
         </p>
