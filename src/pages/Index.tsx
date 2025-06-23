@@ -11,7 +11,7 @@ const Index = () => {
   return <div className="min-h-screen bg-white px-4 py-8 flex flex-col items-center">
       {/* Logo */}
       <div className="w-full max-w-md mb-12 flex justify-center">
-        <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Logo" className="h-16 w-auto sm:h-10 md:h-14" />
+        <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Logo" className="h-10 w-auto sm:h-10 md:h-14" />
       </div>
 
       {/* Título Principal */}
