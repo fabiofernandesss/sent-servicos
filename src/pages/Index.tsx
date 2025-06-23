@@ -59,7 +59,7 @@ const Index = () => {
           <CardContent className="p-4 sm:p-6">
             <div className="text-center space-y-4">
               <div className="relative overflow-hidden rounded-xl shadow-lg">
-                <img alt="Cliente" className="w-full h-28 sm:h-32 md:h-40 object-cover" src="/lovable-uploads/0ebe5226-0d8b-4884-9fcc-45c9e114b72f.png" />
+                <img alt="Cliente" className="w-full h-28 sm:h-32 md:h-40 object-cover" src="/lovable-uploads/8a0f17a6-7fe4-45b1-918f-1d0c670cac7c.png" />
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-black mb-3">
