@@ -1,13 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useHookFormMask } from 'react-hook-form-mask';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Hammer, Zap, Users, Building, Droplets, Wrench, ArrowLeft } from 'lucide-react';
+import { Loader2, Hammer, Zap, Users, Building, Droplets, Wrench, ArrowLeft, Home, Scissors, Car, Truck, Baby, Palette, Sparkles, Heart, Camera, MapPin, Shield, Leaf, Snowflake, Broom, User, Briefcase, Ruler } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 
@@ -15,6 +16,36 @@ const supabase = createClient(
   'https://ryvcwjajgspbzxzncpfi.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8'
 );
+
+const estadosBrasil = [
+  { sigla: 'AC', nome: 'Acre' },
+  { sigla: 'AL', nome: 'Alagoas' },
+  { sigla: 'AP', nome: 'Amapá' },
+  { sigla: 'AM', nome: 'Amazonas' },
+  { sigla: 'BA', nome: 'Bahia' },
+  { sigla: 'CE', nome: 'Ceará' },
+  { sigla: 'DF', nome: 'Distrito Federal' },
+  { sigla: 'ES', nome: 'Espírito Santo' },
+  { sigla: 'GO', nome: 'Goiás' },
+  { sigla: 'MA', nome: 'Maranhão' },
+  { sigla: 'MT', nome: 'Mato Grosso' },
+  { sigla: 'MS', nome: 'Mato Grosso do Sul' },
+  { sigla: 'MG', nome: 'Minas Gerais' },
+  { sigla: 'PA', nome: 'Pará' },
+  { sigla: 'PB', nome: 'Paraíba' },
+  { sigla: 'PR', nome: 'Paraná' },
+  { sigla: 'PE', nome: 'Pernambuco' },
+  { sigla: 'PI', nome: 'Piauí' },
+  { sigla: 'RJ', nome: 'Rio de Janeiro' },
+  { sigla: 'RN', nome: 'Rio Grande do Norte' },
+  { sigla: 'RS', nome: 'Rio Grande do Sul' },
+  { sigla: 'RO', nome: 'Rondônia' },
+  { sigla: 'RR', nome: 'Roraima' },
+  { sigla: 'SC', nome: 'Santa Catarina' },
+  { sigla: 'SP', nome: 'São Paulo' },
+  { sigla: 'SE', nome: 'Sergipe' },
+  { sigla: 'TO', nome: 'Tocantins' }
+];
 
 interface Categoria {
   id: string;
@@ -25,6 +56,11 @@ interface Subcategoria {
   id: string;
   nome: string;
   categoria_id: string;
+}
+
+interface Cidade {
+  id: number;
+  nome: string;
 }
 
 interface FormData {
@@ -40,27 +76,46 @@ interface FormData {
 }
 
 const getCategoryIcon = (categoryName: string) => {
-  const iconMap: { [key: string]: any } = {
-    'Construção': Building,
-    'Eletricista': Zap,
-    'Encanador': Droplets,
-    'Pedreiro': Hammer,
-    'Eventos': Users,
-    'default': Wrench
+  const iconMap: { [key: string]: { icon: any; color: string } } = {
+    'Construção': { icon: Building, color: 'text-orange-600' },
+    'Eletricista': { icon: Zap, color: 'text-yellow-500' },
+    'Encanador': { icon: Droplets, color: 'text-blue-500' },
+    'Pedreiro': { icon: Hammer, color: 'text-gray-600' },
+    'Eventos': { icon: Users, color: 'text-purple-600' },
+    'Arquitetura': { icon: Home, color: 'text-indigo-600' },
+    'Limpeza': { icon: Broom, color: 'text-green-500' },
+    'Refrigeração': { icon: Snowflake, color: 'text-cyan-500' },
+    'Jardinagem': { icon: Leaf, color: 'text-green-600' },
+    'Segurança e Internet': { icon: Shield, color: 'text-red-600' },
+    'Engenharia': { icon: Ruler, color: 'text-slate-600' },
+    'Corretor': { icon: MapPin, color: 'text-emerald-600' },
+    'Frete': { icon: Truck, color: 'text-amber-600' },
+    'Babá': { icon: Baby, color: 'text-pink-500' },
+    'Borracharia': { icon: Car, color: 'text-gray-700' },
+    'Design gráfico': { icon: Palette, color: 'text-rose-500' },
+    'Beleza': { icon: Sparkles, color: 'text-pink-400' },
+    'Pet': { icon: Heart, color: 'text-red-400' },
+    'Pintor': { icon: Palette, color: 'text-blue-400' },
+    'Assentador de Piso': { icon: Wrench, color: 'text-brown-600' },
+    'Todas': { icon: Briefcase, color: 'text-gray-500' }
   };
   
-  return iconMap[categoryName] || iconMap.default;
+  return iconMap[categoryName] || { icon: Wrench, color: 'text-gray-500' };
 };
 
 const ClienteDemanda = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
   const [filteredSubcategorias, setFilteredSubcategorias] = useState<Subcategoria[]>([]);
+  const [cidades, setCidades] = useState<Cidade[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingCidades, setLoadingCidades] = useState(false);
 
   const form = useForm<FormData>();
+  const register = useHookFormMask(form.register);
   const selectedCategoryId = form.watch('categoria_id');
+  const selectedEstado = form.watch('estado');
 
   useEffect(() => {
     loadData();
@@ -74,6 +129,12 @@ const ClienteDemanda = () => {
       form.setValue('subcategoria_id', '');
     }
   }, [selectedCategoryId, subcategorias, form]);
+
+  useEffect(() => {
+    if (selectedEstado) {
+      loadCidades(selectedEstado);
+    }
+  }, [selectedEstado]);
 
   const loadData = async () => {
     try {
@@ -101,6 +162,21 @@ const ClienteDemanda = () => {
       console.error('Erro ao carregar dados:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCidades = async (uf: string) => {
+    setLoadingCidades(true);
+    try {
+      const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
+      const data = await response.json();
+      setCidades(data);
+      // Reset cidade quando estado muda
+      form.setValue('cidade', '');
+    } catch (error) {
+      console.error('Erro ao carregar cidades:', error);
+    } finally {
+      setLoadingCidades(false);
     }
   };
 
@@ -196,22 +272,12 @@ const ClienteDemanda = () => {
                       <FormItem>
                         <FormLabel>WhatsApp</FormLabel>
                         <FormControl>
-                          <Input placeholder="(00) 00000-0000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="cidade"
-                    rules={{ required: 'Cidade é obrigatória' }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Cidade</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Digite sua cidade" {...field} />
+                          <Input 
+                            placeholder="(00) 00000-0000" 
+                            {...register('whatsapp', ['(99) 99999-9999'], {
+                              required: 'WhatsApp é obrigatório'
+                            })}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -225,9 +291,46 @@ const ClienteDemanda = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Estado</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Digite seu estado" {...field} />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o estado" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-white max-h-60 overflow-y-auto">
+                            {estadosBrasil.map((estado) => (
+                              <SelectItem key={estado.sigla} value={estado.sigla}>
+                                {estado.nome} - {estado.sigla}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cidade"
+                    rules={{ required: 'Cidade é obrigatória' }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cidade</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedEstado}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={loadingCidades ? "Carregando..." : "Selecione a cidade"} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-white max-h-60 overflow-y-auto">
+                            {cidades.map((cidade) => (
+                              <SelectItem key={cidade.id} value={cidade.nome}>
+                                {cidade.nome}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -251,11 +354,11 @@ const ClienteDemanda = () => {
                           </FormControl>
                           <SelectContent className="bg-white max-h-60 overflow-y-auto">
                             {categorias.map((categoria) => {
-                              const Icon = getCategoryIcon(categoria.nome);
+                              const { icon: Icon, color } = getCategoryIcon(categoria.nome);
                               return (
                                 <SelectItem key={categoria.id} value={categoria.id}>
                                   <div className="flex items-center gap-2">
-                                    <Icon className="h-4 w-4" />
+                                    <Icon className={`h-4 w-4 ${color}`} />
                                     {categoria.nome}
                                   </div>
                                 </SelectItem>
