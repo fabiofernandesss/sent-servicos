@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -232,7 +230,7 @@ const ClienteDemanda = () => {
     try {
       console.log('Dados do formulário:', data);
       
-      // Inserir demanda no Supabase
+      // Inserir demanda no Supabase - removendo data_criacao que não existe na tabela
       const { error } = await supabase
         .from('demandas')
         .insert([
@@ -246,8 +244,7 @@ const ClienteDemanda = () => {
             subcategoria_id: data.subcategoria_id,
             urgencia: data.urgencia,
             observacao: data.observacao,
-            status: 'pendente',
-            data_criacao: new Date().toISOString()
+            status: 'pendente'
           }
         ]);
 
