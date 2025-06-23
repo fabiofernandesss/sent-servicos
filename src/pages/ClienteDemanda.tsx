@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHookFormMask } from 'react-hook-form-mask';
@@ -8,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Hammer, Zap, Users, Building, Droplets, Wrench, ArrowLeft, Home, Scissors, Car, Truck, Baby, Palette, Sparkles, Heart, Camera, MapPin, Shield, Leaf, Snowflake, Broom, User, Briefcase, Ruler } from 'lucide-react';
+import { Loader2, Hammer, Zap, Users, Building, Droplets, Wrench, ArrowLeft, Home, Car, Truck, Baby, Palette, Sparkles, Heart, MapPin, Shield, Leaf, Snowflake, Briefcase, Ruler } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 
@@ -83,7 +82,7 @@ const getCategoryIcon = (categoryName: string) => {
     'Pedreiro': { icon: Hammer, color: 'text-gray-600' },
     'Eventos': { icon: Users, color: 'text-purple-600' },
     'Arquitetura': { icon: Home, color: 'text-indigo-600' },
-    'Limpeza': { icon: Broom, color: 'text-green-500' },
+    'Limpeza': { icon: Wrench, color: 'text-green-500' },
     'Refrigeração': { icon: Snowflake, color: 'text-cyan-500' },
     'Jardinagem': { icon: Leaf, color: 'text-green-600' },
     'Segurança e Internet': { icon: Shield, color: 'text-red-600' },
