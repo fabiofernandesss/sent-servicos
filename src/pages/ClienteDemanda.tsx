@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -6,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Hammer, Zap, Users, Building, Droplets, Wrench, ArrowLeft, Home, Car, Truck, Baby, Palette, Sparkles, Heart, MapPin, Shield, Leaf, Snowflake, Briefcase, Ruler } from 'lucide-react';
+import { Loader2, Hammer, Zap, Users, Building, Droplets, Wrench, ArrowLeft, Home, Car, Truck, Baby, Palette, Sparkles, Heart, MapPin, Shield, Leaf, Snowflake, Broom, Briefcase, Ruler } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
+import { useToast } from '@/hooks/use-toast';
 
 const supabase = createClient(
   'https://ryvcwjajgspbzxzncpfi.supabase.co',
@@ -89,6 +91,36 @@ const formatPhoneNumber = (value: string) => {
   }
 };
 
+const sendWhatsAppMessage = async (whatsapp: string, nome: string) => {
+  try {
+    // Extract only numbers from WhatsApp
+    const phoneNumber = whatsapp.replace(/\D/g, '');
+    const jid = `55${phoneNumber}@s.whatsapp.net`;
+    
+    const message = `Olá ${nome}! 🎉\n\nParabéns! Sua demanda foi enviada com sucesso!\n\nEm breve um profissional qualificado entrará em contato com você para atender sua solicitação.\n\nObrigado por confiar em nossos serviços! 😊`;
+
+    const response = await fetch('https://9045.bubblewhats.com/send-message', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'YzFkMGVkNzUwYzBjMjlhYzg0ZmJjYmU3',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jid: jid,
+        message: message
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Erro ao enviar mensagem no WhatsApp:', response.status);
+    } else {
+      console.log('Mensagem enviada com sucesso no WhatsApp');
+    }
+  } catch (error) {
+    console.error('Erro ao enviar mensagem no WhatsApp:', error);
+  }
+};
+
 const getCategoryIcon = (categoryName: string) => {
   const iconMap: { [key: string]: { icon: any; color: string } } = {
     'Construção': { icon: Building, color: 'text-orange-600' },
@@ -125,6 +157,7 @@ const ClienteDemanda = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [loadingCidades, setLoadingCidades] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<FormData>();
   const selectedCategoryId = form.watch('categoria_id');
@@ -197,11 +230,49 @@ const ClienteDemanda = () => {
     setSubmitting(true);
     try {
       console.log('Dados do formulário:', data);
-      // Aqui você pode implementar o envio para o Supabase
-      alert('Demanda cadastrada com sucesso!');
+      
+      // Inserir demanda no Supabase
+      const { error } = await supabase
+        .from('demandas')
+        .insert([
+          {
+            nome: data.nome,
+            email: data.email,
+            whatsapp: data.whatsapp,
+            cidade: data.cidade,
+            estado: data.estado,
+            categoria_id: data.categoria_id,
+            subcategoria_id: data.subcategoria_id,
+            urgencia: data.urgencia,
+            observacao: data.observacao,
+            status: 'pendente',
+            data_criacao: new Date().toISOString()
+          }
+        ]);
+
+      if (error) {
+        throw error;
+      }
+
+      // Mostrar toast de sucesso
+      toast({
+        title: "Parabéns! 🎉",
+        description: "Sua demanda foi enviada com sucesso! Em breve um profissional entrará em contato.",
+        duration: 5000,
+      });
+
+      // Enviar mensagem no WhatsApp
+      await sendWhatsAppMessage(data.whatsapp, data.nome);
+
+      // Resetar formulário
+      form.reset();
     } catch (error) {
       console.error('Erro ao cadastrar demanda:', error);
-      alert('Erro ao cadastrar demanda. Tente novamente.');
+      toast({
+        title: "Erro",
+        description: "Erro ao cadastrar demanda. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
