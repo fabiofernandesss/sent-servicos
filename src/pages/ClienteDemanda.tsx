@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHookFormMask } from 'react-hook-form-mask';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +14,8 @@ const supabase = createClient(
   'https://ryvcwjajgspbzxzncpfi.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8'
 );
+
+// ... keep existing code (estadosBrasil array)
 
 const estadosBrasil = [
   { sigla: 'AC', nome: 'Acre' },
@@ -74,6 +75,20 @@ interface FormData {
   observacao: string;
 }
 
+const formatPhoneNumber = (value: string) => {
+  // Remove all non-digit characters
+  const digits = value.replace(/\D/g, '');
+  
+  // Apply phone mask (00) 00000-0000
+  if (digits.length <= 2) {
+    return `(${digits}`;
+  } else if (digits.length <= 7) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  } else {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+  }
+};
+
 const getCategoryIcon = (categoryName: string) => {
   const iconMap: { [key: string]: { icon: any; color: string } } = {
     'Construção': { icon: Building, color: 'text-orange-600' },
@@ -112,7 +127,6 @@ const ClienteDemanda = () => {
   const [loadingCidades, setLoadingCidades] = useState(false);
 
   const form = useForm<FormData>();
-  const register = useHookFormMask(form.register);
   const selectedCategoryId = form.watch('categoria_id');
   const selectedEstado = form.watch('estado');
 
@@ -272,10 +286,12 @@ const ClienteDemanda = () => {
                         <FormLabel>WhatsApp</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="(00) 00000-0000" 
-                            {...register('whatsapp', ['(99) 99999-9999'], {
-                              required: 'WhatsApp é obrigatório'
-                            })}
+                            placeholder="(00) 00000-0000"
+                            value={field.value}
+                            onChange={(e) => {
+                              const formatted = formatPhoneNumber(e.target.value);
+                              field.onChange(formatted);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
