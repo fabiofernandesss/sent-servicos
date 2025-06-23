@@ -30,7 +30,7 @@ const Index = () => {
           <CardContent className="p-8">
             <div className="text-center space-y-6">
               <div className="relative overflow-hidden rounded-xl shadow-lg">
-                <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=384,h=216,f=auto,dpr=1.25,fit=contain/f1723060289465x326811261910033600/Sem%20nome%20%28800%20x%20450%20px%29%20%28800%20x%20450%20px%29%20%283%29.gif" alt="Profissional" className="w-full h-40 sm:h-48 md:h-56 object-cover" />
+                <img alt="Profissional" className="w-full h-40 sm:h-48 md:h-56 object-cover" src="/lovable-uploads/a2cf266b-6942-464c-a669-56b46e88a36c.png" />
               </div>
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-black mb-4">
@@ -60,7 +60,7 @@ const Index = () => {
           <CardContent className="p-8">
             <div className="text-center space-y-6">
               <div className="relative overflow-hidden rounded-xl shadow-lg">
-                <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=384,h=216,f=auto,dpr=1.25,fit=contain/f1723061404023x261344246053864860/Sem%20nome%20%28800%20x%20450%20px%29%20%28800%20x%20450%20px%29%20%284%29.gif" alt="Cliente" className="w-full h-40 sm:h-48 md:h-56 object-cover" />
+                <img alt="Cliente" className="w-full h-40 sm:h-48 md:h-56 object-cover" src="/lovable-uploads/0ebe5226-0d8b-4884-9fcc-45c9e114b72f.png" />
               </div>
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-black mb-4">
