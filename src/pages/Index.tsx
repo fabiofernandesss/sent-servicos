@@ -54,9 +54,7 @@ const Index = () => {
                 <h2 className="text-xl sm:text-2xl font-bold text-black mb-3">
                   Sou Profissional
                 </h2>
-                <p className="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed font-medium">
-                  Ofereço meus serviços e quero conectar com novos clientes
-                </p>
+                <p className="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed font-medium">Ofereço meus serviços e quero conectar com novos clientes todos os dias</p>
                 <Button className="w-full font-bold text-white transition-all duration-200 shadow-lg hover:shadow-xl" style={{
                 backgroundColor: '#CB0533',
                 height: '54px',
