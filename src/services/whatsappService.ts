@@ -1,17 +1,18 @@
 
 export const sendWhatsAppMessage = async (whatsapp: string, nome: string) => {
   try {
-    // Extrair apenas números do WhatsApp e formatar o JID corretamente
+    // Extrair apenas números do WhatsApp
     const phoneNumber = whatsapp.replace(/\D/g, '');
-    const jid = `55${phoneNumber}@s.whatsapp.net`;
+    // Formatação correta do JID conforme a API
+    const jid = `55${phoneNumber}`;
     
     console.log('Enviando mensagem WhatsApp para:', jid);
     
-    const message = `Olá ${nome}! 🎉\n\nParabéns! Sua demanda foi enviada com sucesso!\n\nEm breve um profissional qualificado entrará em contato com você para atender sua solicitação.\n\nObrigado por confiar em nossos serviços! 😊`;
+    const message = `🚀 Olá ${nome}! 🎉\n\nParabéns! Sua demanda foi enviada com sucesso!\n\nEm breve um profissional qualificado entrará em contato com você para atender sua solicitação.\n\nObrigado por confiar em nossos serviços! 😊`;
 
-    // Criar um AbortController para timeout mais rápido
+    // Criar um AbortController para timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
 
     const response = await fetch('https://9045.bubblewhats.com/send-message', {
       method: 'POST',
@@ -29,15 +30,27 @@ export const sendWhatsAppMessage = async (whatsapp: string, nome: string) => {
     clearTimeout(timeoutId);
 
     console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
     
     if (!response.ok) {
       const responseText = await response.text();
-      console.log('Response text:', responseText);
+      console.log('Response error text:', responseText);
       throw new Error(`Erro HTTP: ${response.status} - ${responseText}`);
     }
 
-    const responseData = await response.json();
-    console.log('Mensagem enviada com sucesso no WhatsApp:', responseData);
+    const responseData = await response.text(); // Mudar para text() primeiro para ver o que retorna
+    console.log('Resposta da API WhatsApp:', responseData);
+    
+    // Tentar fazer parse do JSON se possível
+    let parsedData;
+    try {
+      parsedData = JSON.parse(responseData);
+    } catch (e) {
+      console.log('Resposta não é JSON válido, mas foi sucesso');
+      parsedData = { raw: responseData };
+    }
+    
+    console.log('Mensagem enviada com sucesso no WhatsApp:', parsedData);
     return { success: true };
 
   } catch (error) {
@@ -49,6 +62,6 @@ export const sendWhatsAppMessage = async (whatsapp: string, nome: string) => {
       return { success: false, error: 'Timeout' };
     }
     
-    return { success: false, error: error };
+    return { success: false, error: error.message || error };
   }
 };
