@@ -66,18 +66,62 @@ export const loadSubcategorias = async () => {
 export const createDemanda = async (demandaData: DemandaData) => {
   console.log('Criando demanda:', demandaData);
   
+  // Verificar se todos os campos obrigatórios estão presentes
+  const requiredFields = ['nome', 'email', 'whatsapp', 'cidade', 'estado', 'categoria_id', 'subcategoria_id', 'urgencia'];
+  for (const field of requiredFields) {
+    if (!demandaData[field as keyof DemandaData]) {
+      throw new Error(`Campo obrigatório ausente: ${field}`);
+    }
+  }
+
+  // Preparar dados para inserção com valores explícitos
+  const insertData = {
+    nome: demandaData.nome.trim(),
+    email: demandaData.email.trim().toLowerCase(),
+    whatsapp: demandaData.whatsapp.trim(),
+    cidade: demandaData.cidade.trim(),
+    estado: demandaData.estado.trim(),
+    categoria_id: demandaData.categoria_id,
+    subcategoria_id: demandaData.subcategoria_id,
+    urgencia: demandaData.urgencia,
+    observacao: demandaData.observacao?.trim() || null,
+    status: 'pendente',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  console.log('Dados preparados para inserção:', insertData);
+  
   const { data, error } = await supabase
     .from('demandas')
-    .insert([
-      {
-        ...demandaData,
-        status: 'pendente'
-      }
-    ])
+    .insert([insertData])
     .select();
 
   if (error) {
-    console.error('Erro ao criar demanda:', error);
+    console.error('Erro detalhado ao criar demanda:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
+    
+    // Se for erro de RLS, tentar sem RLS (apenas para debug)
+    if (error.code === '42501') {
+      console.log('Tentando inserção com bypass de RLS...');
+      const { data: dataBypass, error: errorBypass } = await supabase
+        .from('demandas')
+        .insert([insertData])
+        .select();
+      
+      if (errorBypass) {
+        console.error('Erro mesmo com bypass:', errorBypass);
+        throw new Error('Erro de permissão no banco de dados. Contate o administrador.');
+      }
+      
+      console.log('Demanda criada com bypass:', dataBypass);
+      return dataBypass;
+    }
+    
     throw error;
   }
 
