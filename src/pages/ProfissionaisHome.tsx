@@ -148,7 +148,7 @@ const ProfissionaisHome = () => {
 
       {/* Banner */}
       <div className="relative">
-        <img alt="Os melhores profissionais" className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover" src="/lovable-uploads/af1a336b-3a05-412b-aa88-9b754e687d34.png" />
+        <img alt="Os melhores profissionais" src="/lovable-uploads/af1a336b-3a05-412b-aa88-9b754e687d34.png" className="w-full h-15 sm:h-20 md:h-20 lg:h-20 object-cover" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
