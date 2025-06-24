@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,7 +138,22 @@ const FormularioDemanda = ({
   }, [selectedEstado, onEstadoChange, form]);
 
   const handleSubmit = (data: FormData) => {
-    onSubmit(data, () => form.reset());
+    onSubmit(data, () => {
+      // Reset completo do formulário
+      form.reset({
+        nome: '',
+        email: '',
+        whatsapp: '',
+        cidade: '',
+        estado: '',
+        categoria_id: '',
+        subcategoria_id: '',
+        urgencia: '',
+        observacao: ''
+      });
+      // Limpar o estado anterior para evitar problemas
+      previousEstado.current = undefined;
+    });
   };
 
   return (

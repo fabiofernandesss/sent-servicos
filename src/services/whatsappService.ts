@@ -18,31 +18,44 @@ export const sendWhatsAppMessage = async (whatsapp: string, nome: string, demand
       'so_orcamento': 'Só orçamento'
     }[demandaData.urgencia] || demandaData.urgencia;
 
-    const message = `🚀 Olá ${nome}! 🎉
+    const message = `🚀 Olá *${nome}*! 🎉
 
-*Parabéns! Sua demanda foi enviada com sucesso!*
+*PARABÉNS! SUA SOLICITAÇÃO FOI ENVIADA COM SUCESSO!*
 
-📋 *DADOS DA SOLICITAÇÃO:*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-👤 *Dados Pessoais:*
-• Nome: ${demandaData.nome}
-• Email: ${demandaData.email}
-• WhatsApp: ${demandaData.whatsapp}
+📋 *RESUMO DA SUA SOLICITAÇÃO:*
 
-📍 *Localização:*
-• Cidade: ${demandaData.cidade}
-• Estado: ${demandaData.estado}
+👤 *DADOS PESSOAIS:*
+• *Nome:* ${demandaData.nome}
+• *Email:* ${demandaData.email}
+• *WhatsApp:* ${demandaData.whatsapp}
 
-🔧 *Serviço Solicitado:*
-• Categoria: ${demandaData.categoria_id}
-• Subcategoria: ${demandaData.subcategoria_id}
+📍 *LOCALIZAÇÃO:*
+• *Estado:* ${demandaData.estado}
+• *Cidade:* ${demandaData.cidade}
 
-⏰ *Urgência:*
+🔧 *SERVIÇO SOLICITADO:*
+• *Categoria:* ${demandaData.categoria_id}
+• *Subcategoria:* ${demandaData.subcategoria_id}
+
+⏰ *URGÊNCIA:*
 • ${urgenciaTexto}
 
-${demandaData.observacao ? `📝 *Observações:*\n• ${demandaData.observacao}\n\n` : ''}*Em breve um profissional qualificado entrará em contato com você para atender sua solicitação.*
+${demandaData.observacao ? `📝 *OBSERVAÇÕES ADICIONAIS:*\n• ${demandaData.observacao}\n\n` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ Obrigado por confiar em nossos serviços! 😊`;
+✅ *PRÓXIMOS PASSOS:*
+• Em breve um profissional qualificado da sua região entrará em contato
+• Você receberá propostas personalizadas para sua necessidade
+• Poderá avaliar e escolher o melhor profissional
+
+🎯 *Sua solicitação está sendo direcionada para profissionais especializados em ${demandaData.categoria_id} na região de ${demandaData.cidade}/${demandaData.estado}*
+
+💬 *Obrigado por confiar em nossos serviços!*
+*Nossa equipe está trabalhando para conectar você ao profissional ideal!* 🤝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+*📞 Em caso de dúvidas, responda esta mensagem*`;
 
     // Criar um AbortController para timeout
     const controller = new AbortController();
