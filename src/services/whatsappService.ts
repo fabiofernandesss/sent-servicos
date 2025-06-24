@@ -1,5 +1,7 @@
 
-export const sendWhatsAppMessage = async (whatsapp: string, nome: string) => {
+import { DemandaData } from './supabaseService';
+
+export const sendWhatsAppMessage = async (whatsapp: string, nome: string, demandaData: DemandaData) => {
   try {
     // Extrair apenas números do WhatsApp
     const phoneNumber = whatsapp.replace(/\D/g, '');
@@ -8,7 +10,39 @@ export const sendWhatsAppMessage = async (whatsapp: string, nome: string) => {
     
     console.log('Enviando mensagem WhatsApp para:', jid);
     
-    const message = `🚀 Olá ${nome}! 🎉\n\nParabéns! Sua demanda foi enviada com sucesso!\n\nEm breve um profissional qualificado entrará em contato com você para atender sua solicitação.\n\nObrigado por confiar em nossos serviços! 😊`;
+    // Formatar urgência de forma legível
+    const urgenciaTexto = {
+      'preciso_com_urgencia': 'Preciso com urgência',
+      'quero_para_esses_dias': 'Quero para esses dias',
+      'nao_tenho_tanta_pressa': 'Não tenho tanta pressa',
+      'so_orcamento': 'Só orçamento'
+    }[demandaData.urgencia] || demandaData.urgencia;
+
+    const message = `🚀 Olá ${nome}! 🎉
+
+*Parabéns! Sua demanda foi enviada com sucesso!*
+
+📋 *DADOS DA SOLICITAÇÃO:*
+
+👤 *Dados Pessoais:*
+• Nome: ${demandaData.nome}
+• Email: ${demandaData.email}
+• WhatsApp: ${demandaData.whatsapp}
+
+📍 *Localização:*
+• Cidade: ${demandaData.cidade}
+• Estado: ${demandaData.estado}
+
+🔧 *Serviço Solicitado:*
+• Categoria: ${demandaData.categoria_id}
+• Subcategoria: ${demandaData.subcategoria_id}
+
+⏰ *Urgência:*
+• ${urgenciaTexto}
+
+${demandaData.observacao ? `📝 *Observações:*\n• ${demandaData.observacao}\n\n` : ''}*Em breve um profissional qualificado entrará em contato com você para atender sua solicitação.*
+
+✅ Obrigado por confiar em nossos serviços! 😊`;
 
     // Criar um AbortController para timeout
     const controller = new AbortController();

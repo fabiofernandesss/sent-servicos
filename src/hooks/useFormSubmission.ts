@@ -8,7 +8,7 @@ export const useFormSubmission = () => {
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const onSubmit = async (data: DemandaData) => {
+  const onSubmit = async (data: DemandaData, resetForm: () => void) => {
     setSubmitting(true);
     console.log('Iniciando envio de demanda:', data);
     
@@ -25,8 +25,11 @@ export const useFormSubmission = () => {
         duration: 5000,
       });
 
+      // Resetar o formulário após sucesso
+      resetForm();
+
       // Enviar mensagem no WhatsApp em segundo plano (não bloquear o fluxo)
-      sendWhatsAppMessage(data.whatsapp, data.nome).then((whatsappResult) => {
+      sendWhatsAppMessage(data.whatsapp, data.nome, data).then((whatsappResult) => {
         if (whatsappResult.success) {
           console.log('WhatsApp enviado com sucesso');
         } else {

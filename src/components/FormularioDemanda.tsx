@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,7 +99,20 @@ const FormularioDemanda = ({
   onEstadoChange,
   getCategoryIcon 
 }: FormularioDemandaProps) => {
-  const form = useForm<FormData>();
+  const form = useForm<FormData>({
+    defaultValues: {
+      nome: '',
+      email: '',
+      whatsapp: '',
+      cidade: '',
+      estado: '',
+      categoria_id: '',
+      subcategoria_id: '',
+      urgencia: '',
+      observacao: ''
+    }
+  });
+  
   const selectedCategoryId = form.watch('categoria_id');
   const selectedEstado = form.watch('estado');
   const previousEstado = useRef<string>();
@@ -124,9 +138,13 @@ const FormularioDemanda = ({
     }
   }, [selectedEstado, onEstadoChange, form]);
 
+  const handleSubmit = (data: FormData) => {
+    onSubmit(data, () => form.reset());
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         
         {/* Dados Pessoais */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
