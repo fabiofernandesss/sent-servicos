@@ -1,5 +1,10 @@
-
 import { DemandaData } from './supabaseService';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://ryvcwjajgspbzxzncpfi.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8'
+);
 
 export const sendWhatsAppMessage = async (whatsapp: string, nome: string, demandaData: DemandaData) => {
   try {
@@ -9,6 +14,15 @@ export const sendWhatsAppMessage = async (whatsapp: string, nome: string, demand
     const jid = `55${phoneNumber}`;
     
     console.log('Enviando mensagem WhatsApp para:', jid);
+    
+    // Buscar nomes da categoria e subcategoria
+    const [categoriaResult, subcategoriaResult] = await Promise.all([
+      supabase.from('categorias').select('nome').eq('id', demandaData.categoria_id).single(),
+      supabase.from('subcategorias').select('nome').eq('id', demandaData.subcategoria_id).single()
+    ]);
+
+    const categoriaNome = categoriaResult.data?.nome || 'Categoria não encontrada';
+    const subcategoriaNome = subcategoriaResult.data?.nome || 'Subcategoria não encontrada';
     
     // Formatar urgência de forma legível
     const urgenciaTexto = {
@@ -36,8 +50,8 @@ export const sendWhatsAppMessage = async (whatsapp: string, nome: string, demand
 • *Cidade:* ${demandaData.cidade}
 
 🔧 *SERVIÇO SOLICITADO:*
-• *Categoria:* ${demandaData.categoria_id}
-• *Subcategoria:* ${demandaData.subcategoria_id}
+• *Categoria:* ${categoriaNome}
+• *Subcategoria:* ${subcategoriaNome}
 
 ⏰ *URGÊNCIA:*
 • ${urgenciaTexto}
@@ -49,7 +63,7 @@ ${demandaData.observacao ? `📝 *OBSERVAÇÕES ADICIONAIS:*\n• ${demandaData.
 • Você receberá propostas personalizadas para sua necessidade
 • Poderá avaliar e escolher o melhor profissional
 
-🎯 *Sua solicitação está sendo direcionada para profissionais especializados em ${demandaData.categoria_id} na região de ${demandaData.cidade}/${demandaData.estado}*
+🎯 *Sua solicitação está sendo direcionada para profissionais especializados em ${categoriaNome} na região de ${demandaData.cidade}/${demandaData.estado}*
 
 💬 *Obrigado por confiar em nossos serviços!*
 *Nossa equipe está trabalhando para conectar você ao profissional ideal!* 🤝
