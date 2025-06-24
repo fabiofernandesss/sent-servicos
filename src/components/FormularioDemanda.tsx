@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface FormData {
   nome: string;
@@ -102,6 +101,7 @@ const FormularioDemanda = ({
   const form = useForm<FormData>();
   const selectedCategoryId = form.watch('categoria_id');
   const selectedEstado = form.watch('estado');
+  const previousEstado = useRef<string>();
 
   const filteredSubcategorias = subcategorias.filter(sub => sub.categoria_id === selectedCategoryId);
 
@@ -113,10 +113,11 @@ const FormularioDemanda = ({
     }
   }, [selectedCategoryId, filteredSubcategorias, form]);
 
-  // Chamar onEstadoChange quando estado muda
+  // Chamar onEstadoChange quando estado muda - com verificação para evitar loop
   useEffect(() => {
-    if (selectedEstado) {
+    if (selectedEstado && selectedEstado !== previousEstado.current) {
       console.log('Estado selecionado mudou para:', selectedEstado);
+      previousEstado.current = selectedEstado;
       onEstadoChange(selectedEstado);
       // Reset cidade quando estado muda
       form.setValue('cidade', '');
