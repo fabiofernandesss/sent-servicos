@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +42,7 @@ interface FormularioDemandaProps {
   cidades: Cidade[];
   loadingCidades: boolean;
   submitting: boolean;
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: FormData, resetForm: () => void) => void;
   onEstadoChange: (uf: string) => void;
   getCategoryIcon: (categoryName: string) => { icon: any; color: string };
 }
@@ -138,7 +139,7 @@ const FormularioDemanda = ({
   }, [selectedEstado, onEstadoChange, form]);
 
   const handleSubmit = (data: FormData) => {
-    onSubmit(data, () => {
+    const resetForm = () => {
       // Reset completo do formulário
       form.reset({
         nome: '',
@@ -153,7 +154,9 @@ const FormularioDemanda = ({
       });
       // Limpar o estado anterior para evitar problemas
       previousEstado.current = undefined;
-    });
+    };
+    
+    onSubmit(data, resetForm);
   };
 
   return (
