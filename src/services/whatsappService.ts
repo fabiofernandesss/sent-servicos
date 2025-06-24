@@ -9,6 +9,10 @@ export const sendWhatsAppMessage = async (whatsapp: string, nome: string) => {
     
     const message = `Olá ${nome}! 🎉\n\nParabéns! Sua demanda foi enviada com sucesso!\n\nEm breve um profissional qualificado entrará em contato com você para atender sua solicitação.\n\nObrigado por confiar em nossos serviços! 😊`;
 
+    // Criar um AbortController para timeout mais rápido
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+
     const response = await fetch('https://9045.bubblewhats.com/send-message', {
       method: 'POST',
       headers: {
@@ -18,21 +22,33 @@ export const sendWhatsAppMessage = async (whatsapp: string, nome: string) => {
       body: JSON.stringify({
         jid: jid,
         message: message
-      })
+      }),
+      signal: controller.signal
     });
 
-    console.log('Response status:', response.status);
-    const responseText = await response.text();
-    console.log('Response text:', responseText);
+    clearTimeout(timeoutId);
 
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
       throw new Error(`Erro HTTP: ${response.status} - ${responseText}`);
     }
 
-    console.log('Mensagem enviada com sucesso no WhatsApp');
+    const responseData = await response.json();
+    console.log('Mensagem enviada com sucesso no WhatsApp:', responseData);
     return { success: true };
+
   } catch (error) {
     console.error('Erro ao enviar mensagem no WhatsApp:', error);
+    
+    // Se for timeout ou erro de rede, não impedir o fluxo
+    if (error.name === 'AbortError') {
+      console.warn('Timeout no WhatsApp - continuando sem bloquear o fluxo');
+      return { success: false, error: 'Timeout' };
+    }
+    
     return { success: false, error: error };
   }
 };

@@ -18,24 +18,28 @@ export const useFormSubmission = () => {
       
       console.log('Demanda criada com sucesso, enviando WhatsApp...');
       
-      // Enviar mensagem no WhatsApp
-      const whatsappResult = await sendWhatsAppMessage(data.whatsapp, data.nome);
-      
-      if (whatsappResult.success) {
-        console.log('WhatsApp enviado com sucesso');
-      } else {
-        console.warn('Erro no WhatsApp, mas demanda foi criada:', whatsappResult.error);
-      }
-
-      // Mostrar toast de sucesso
+      // Mostrar toast de sucesso imediatamente após salvar no banco
       toast({
         title: "Parabéns! 🎉",
         description: "Sua demanda foi enviada com sucesso! Em breve um profissional entrará em contato.",
         duration: 5000,
       });
 
+      // Enviar mensagem no WhatsApp em segundo plano (não bloquear o fluxo)
+      sendWhatsAppMessage(data.whatsapp, data.nome).then((whatsappResult) => {
+        if (whatsappResult.success) {
+          console.log('WhatsApp enviado com sucesso');
+        } else {
+          console.warn('Erro no WhatsApp, mas demanda foi criada:', whatsappResult.error);
+        }
+      }).catch((error) => {
+        console.warn('Erro no WhatsApp (não crítico):', error);
+      });
+
       // Resetar para página inicial após sucesso
-      window.location.href = '/';
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000); // Aguardar 2 segundos para o usuário ver o toast
       
     } catch (error) {
       console.error('Erro ao cadastrar demanda:', error);
