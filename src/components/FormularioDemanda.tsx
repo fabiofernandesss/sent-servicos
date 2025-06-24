@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface FormData {
   nome: string;
@@ -105,15 +106,22 @@ const FormularioDemanda = ({
   const filteredSubcategorias = subcategorias.filter(sub => sub.categoria_id === selectedCategoryId);
 
   // Reset subcategoria quando categoria muda
-  if (selectedCategoryId && form.getValues('subcategoria_id') && 
-      !filteredSubcategorias.find(sub => sub.id === form.getValues('subcategoria_id'))) {
-    form.setValue('subcategoria_id', '');
-  }
+  useEffect(() => {
+    if (selectedCategoryId && form.getValues('subcategoria_id') && 
+        !filteredSubcategorias.find(sub => sub.id === form.getValues('subcategoria_id'))) {
+      form.setValue('subcategoria_id', '');
+    }
+  }, [selectedCategoryId, filteredSubcategorias, form]);
 
   // Chamar onEstadoChange quando estado muda
-  if (selectedEstado && selectedEstado !== form.getValues('estado')) {
-    onEstadoChange(selectedEstado);
-  }
+  useEffect(() => {
+    if (selectedEstado) {
+      console.log('Estado selecionado mudou para:', selectedEstado);
+      onEstadoChange(selectedEstado);
+      // Reset cidade quando estado muda
+      form.setValue('cidade', '');
+    }
+  }, [selectedEstado, onEstadoChange, form]);
 
   return (
     <Form {...form}>
@@ -214,7 +222,7 @@ const FormularioDemanda = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Cidade</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedEstado}>
+                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedEstado || loadingCidades}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={loadingCidades ? "Carregando..." : "Selecione a cidade"} />
