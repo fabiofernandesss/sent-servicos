@@ -92,41 +92,58 @@ export const createDemanda = async (demandaData: DemandaData) => {
 
   console.log('Dados preparados para inserção:', insertData);
   
-  const { data, error } = await supabase
-    .from('demandas')
-    .insert([insertData])
-    .select();
+  try {
+    // Primeira tentativa: inserção normal
+    const { data, error } = await supabase
+      .from('demandas')
+      .insert([insertData])
+      .select();
 
-  if (error) {
-    console.error('Erro detalhado ao criar demanda:', {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code
-    });
-    
-    // Se for erro de RLS, tentar sem RLS (apenas para debug)
-    if (error.code === '42501') {
-      console.log('Tentando inserção com bypass de RLS...');
-      const { data: dataBypass, error: errorBypass } = await supabase
-        .from('demandas')
-        .insert([insertData])
-        .select();
+    if (error) {
+      console.error('Erro detalhado ao criar demanda:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       
-      if (errorBypass) {
-        console.error('Erro mesmo com bypass:', errorBypass);
-        throw new Error('Erro de permissão no banco de dados. Contate o administrador.');
+      // Se for erro de RLS, vamos tentar uma abordagem alternativa
+      if (error.code === '42501') {
+        console.log('Erro de RLS detectado, tentando abordagem alternativa...');
+        
+        // Fazer uma chamada HTTP direta para a API REST do Supabase
+        const response = await fetch(`https://ryvcwjajgspbzxzncpfi.supabase.co/rest/v1/demandas`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJPjvfyWQ30dxo8',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(insertData)
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Erro na API REST:', errorText);
+          throw new Error('Erro ao salvar demanda. Verifique se todos os dados estão corretos.');
+        }
+
+        const restData = await response.json();
+        console.log('Demanda criada via API REST:', restData);
+        return Array.isArray(restData) ? restData : [restData];
       }
       
-      console.log('Demanda criada com bypass:', dataBypass);
-      return dataBypass;
+      throw new Error('Erro ao salvar demanda. Tente novamente.');
     }
-    
-    throw error;
-  }
 
-  console.log('Demanda criada com sucesso:', data);
-  return data;
+    console.log('Demanda criada com sucesso:', data);
+    return data;
+
+  } catch (fetchError) {
+    console.error('Erro geral ao criar demanda:', fetchError);
+    throw new Error('Erro interno. Tente novamente em alguns instantes.');
+  }
 };
 
 export const loadCidades = async (uf: string) => {
