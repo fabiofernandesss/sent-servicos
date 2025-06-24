@@ -74,17 +74,19 @@ const Index = () => {
                   Sou Profissional
                 </h2>
                 <p className="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed font-medium">Ofereço meus serviços e quero conectar com novos clientes todos os dias</p>
-                <Button className="w-full font-bold text-white transition-all duration-200 shadow-lg hover:shadow-xl" style={{
-                backgroundColor: '#CB0533',
-                height: '54px',
-                borderRadius: '27px'
-              }} onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = '#a50429';
-              }} onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = '#CB0533';
-              }}>
-                  Continuar como Profissional
-                </Button>
+                <Link to="/profissionais">
+                  <Button className="w-full font-bold text-white transition-all duration-200 shadow-lg hover:shadow-xl" style={{
+                  backgroundColor: '#CB0533',
+                  height: '54px',
+                  borderRadius: '27px'
+                }} onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#a50429';
+                }} onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = '#CB0533';
+                }}>
+                    Continuar como Profissional
+                  </Button>
+                </Link>
               </div>
             </div>
           </CardContent>
