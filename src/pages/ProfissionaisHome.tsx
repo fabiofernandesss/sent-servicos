@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -160,27 +159,12 @@ const ProfissionaisHome = () => {
       </header>
 
       {/* Banner */}
-      <div className="bg-gradient-to-r from-[#CB0533] to-[#a50429] text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-          <div className="text-center">
-            <h1 className="text-2xl md:text-3xl font-bold mb-3">
-              Encontre Trabalhos na Sua Área
-            </h1>
-            <p className="text-lg md:text-xl opacity-90 mb-4">
-              Conecte-se com clientes que precisam dos seus serviços
-            </p>
-            <div className="flex justify-center items-center gap-4 text-sm">
-              <div className="flex items-center gap-1">
-                <Search className="h-4 w-4" />
-                <span>{demandasFiltradas.length} oportunidades</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>Atualizadas hoje</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="relative">
+        <img 
+          src="/banner-profissionais.png" 
+          alt="Os melhores profissionais" 
+          className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover"
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -192,23 +176,26 @@ const ProfissionaisHome = () => {
               <Button
                 variant={categoriaFiltro === '' ? 'default' : 'outline'}
                 onClick={() => setCategoriaFiltro('')}
-                className={`flex-shrink-0 ${categoriaFiltro === '' ? 'bg-[#CB0533] hover:bg-[#a50429]' : ''}`}
+                className={`flex-shrink-0 ${categoriaFiltro === '' ? 'bg-[#CB0533] hover:bg-[#a50429] text-white' : ''}`}
                 size="sm"
               >
                 Todas ({demandas.length})
               </Button>
               {categorias.map((categoria) => {
-                const { icon: Icon, color } = getCategoryIcon(categoria.nome);
+                const { icon: Icon, color, bgColor } = getCategoryIcon(categoria.nome);
                 const count = demandas.filter(d => d.categoria_nome === categoria.nome).length;
+                const isSelected = categoriaFiltro === categoria.nome;
                 return (
                   <Button
                     key={categoria.id}
-                    variant={categoriaFiltro === categoria.nome ? 'default' : 'outline'}
+                    variant="outline"
                     onClick={() => setCategoriaFiltro(categoria.nome)}
-                    className={`flex-shrink-0 flex items-center gap-2 ${categoriaFiltro === categoria.nome ? 'bg-[#CB0533] hover:bg-[#a50429]' : ''}`}
+                    className={`flex-shrink-0 flex items-center gap-2 border-0 text-white font-medium ${
+                      isSelected ? 'ring-2 ring-white ring-offset-2' : ''
+                    } ${bgColor} hover:opacity-90`}
                     size="sm"
                   >
-                    <Icon className={`h-4 w-4 ${categoriaFiltro === categoria.nome ? 'text-white' : color}`} />
+                    <Icon className="h-4 w-4 text-white" />
                     {categoria.nome} ({count})
                   </Button>
                 );
