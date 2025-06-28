@@ -39,6 +39,10 @@ const ProfissionaisFilters = ({
   totalFiltered,
   totalAll
 }: ProfissionaisFiltersProps) => {
+  // Filtrar valores válidos (não vazios e não nulos)
+  const validEstados = uniqueEstados.filter(estado => estado && estado.trim() !== '');
+  const validCidades = uniqueCidades.filter(cidade => cidade && cidade.trim() !== '');
+
   return (
     <div className="mb-6 space-y-4">
       <div className="flex items-center gap-2 mb-4">
@@ -68,7 +72,7 @@ const ProfissionaisFilters = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">Todos os Estados</SelectItem>
-            {uniqueEstados.map(estado => (
+            {validEstados.map(estado => (
               <SelectItem key={estado} value={estado}>{estado}</SelectItem>
             ))}
           </SelectContent>
@@ -80,7 +84,7 @@ const ProfissionaisFilters = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">Todas as Cidades</SelectItem>
-            {uniqueCidades.map(cidade => (
+            {validCidades.map(cidade => (
               <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>
             ))}
           </SelectContent>

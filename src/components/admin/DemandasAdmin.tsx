@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -84,19 +85,19 @@ const DemandasAdmin = () => {
     }
   };
 
-  // Dados únicos para os filtros
+  // Dados únicos para os filtros - filtrar valores válidos
   const uniqueEstados = useMemo(() => {
-    const estados = [...new Set(demandas.map(d => d.estado).filter(Boolean))];
+    const estados = [...new Set(demandas.map(d => d.estado).filter(estado => estado && estado.trim() !== ''))];
     return estados.sort();
   }, [demandas]);
 
   const uniqueCidades = useMemo(() => {
-    let cidades = demandas.map(d => d.cidade).filter(Boolean);
+    let cidades = demandas.map(d => d.cidade).filter(cidade => cidade && cidade.trim() !== '');
     if (filterEstado) {
       cidades = demandas
         .filter(d => d.estado === filterEstado)
         .map(d => d.cidade)
-        .filter(Boolean);
+        .filter(cidade => cidade && cidade.trim() !== '');
     }
     return [...new Set(cidades)].sort();
   }, [demandas, filterEstado]);
