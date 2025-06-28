@@ -203,7 +203,7 @@ const DemandaDetalhes = () => {
             {/* Descrição da Demanda */}
             {demanda.observacao && <div className="relative">
                 <h3 className="font-semibold text-lg text-gray-900 mb-3">Descrição da Demanda</h3>
-                <div className="absolute left-0 top-8 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+                <div className="absolute left-0 top-8 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full bg-slate-200"></div>
                 <div className="pl-6 py-3 bg-indigo-50 rounded-lg border border-indigo-100">
                   <p className="text-gray-700 leading-relaxed text-base">
                     "{demanda.observacao}"
