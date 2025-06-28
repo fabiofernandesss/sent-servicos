@@ -366,31 +366,44 @@ export const createProfissional = async (profissionalData: Profissional, categor
 };
 
 export const updateProfissional = async (id: number, profissionalData: Partial<Profissional>, categoriaIds?: string[]) => {
-  console.log('Atualizando profissional:', id, profissionalData);
+  console.log('=== INÍCIO UPDATE PROFISSIONAL ===');
+  console.log('ID:', id);
+  console.log('Dados recebidos:', profissionalData);
   console.log('Campo cidade recebido:', profissionalData.cidade);
+  console.log('Tipo da cidade:', typeof profissionalData.cidade);
   
-  // Garantir que todos os campos estão sendo enviados corretamente, incluindo cidade
-  const cleanData = {
-    ...(profissionalData.cpf_cnpj && { cpf_cnpj: profissionalData.cpf_cnpj.trim() }),
-    ...(profissionalData.nome && { nome: profissionalData.nome.trim() }),
-    ...(profissionalData.whatsapp && { whatsapp: profissionalData.whatsapp.trim() }),
-    ...(profissionalData.email && { email: profissionalData.email.trim() }),
-    ...(profissionalData.estado && { estado: profissionalData.estado.trim() }),
-    ...(profissionalData.cidade !== undefined && { cidade: profissionalData.cidade?.trim() || null }), // Explicitamente incluir cidade
-    ...(profissionalData.bairro !== undefined && { bairro: profissionalData.bairro?.trim() || null }),
-    ...(profissionalData.rua !== undefined && { rua: profissionalData.rua?.trim() || null }),
-    ...(profissionalData.numero !== undefined && { numero: profissionalData.numero?.trim() || null }),
-    ...(profissionalData.cep !== undefined && { cep: profissionalData.cep?.trim() || null }),
-    ...(profissionalData.aceita_diaria !== undefined && { aceita_diaria: profissionalData.aceita_diaria }),
-    ...(profissionalData.valor_diaria !== undefined && { valor_diaria: profissionalData.valor_diaria }),
-    ...(profissionalData.crea !== undefined && { crea: profissionalData.crea?.trim() || null }),
-    ...(profissionalData.creci !== undefined && { creci: profissionalData.creci?.trim() || null }),
-    ...(profissionalData.nacionalidade !== undefined && { nacionalidade: profissionalData.nacionalidade?.trim() || 'Brasileira' }),
-    ...(profissionalData.receber_msm !== undefined && { receber_msm: profissionalData.receber_msm })
-  };
+  // Criar objeto de dados limpo com todas as verificações explícitas
+  const cleanData: any = {};
+  
+  // Campos obrigatórios
+  if (profissionalData.cpf_cnpj !== undefined) cleanData.cpf_cnpj = profissionalData.cpf_cnpj.trim();
+  if (profissionalData.nome !== undefined) cleanData.nome = profissionalData.nome.trim();
+  if (profissionalData.whatsapp !== undefined) cleanData.whatsapp = profissionalData.whatsapp.trim();
+  if (profissionalData.email !== undefined) cleanData.email = profissionalData.email.trim();
+  if (profissionalData.estado !== undefined) cleanData.estado = profissionalData.estado.trim();
+  
+  // CIDADE - tratamento especial
+  if (profissionalData.cidade !== undefined) {
+    cleanData.cidade = profissionalData.cidade?.trim() || null;
+    console.log('CIDADE processada para o banco:', cleanData.cidade);
+  }
+  
+  // Outros campos opcionais
+  if (profissionalData.bairro !== undefined) cleanData.bairro = profissionalData.bairro?.trim() || null;
+  if (profissionalData.rua !== undefined) cleanData.rua = profissionalData.rua?.trim() || null;
+  if (profissionalData.numero !== undefined) cleanData.numero = profissionalData.numero?.trim() || null;
+  if (profissionalData.cep !== undefined) cleanData.cep = profissionalData.cep?.trim() || null;
+  if (profissionalData.aceita_diaria !== undefined) cleanData.aceita_diaria = profissionalData.aceita_diaria;
+  if (profissionalData.valor_diaria !== undefined) cleanData.valor_diaria = profissionalData.valor_diaria;
+  if (profissionalData.crea !== undefined) cleanData.crea = profissionalData.crea?.trim() || null;
+  if (profissionalData.creci !== undefined) cleanData.creci = profissionalData.creci?.trim() || null;
+  if (profissionalData.nacionalidade !== undefined) cleanData.nacionalidade = profissionalData.nacionalidade?.trim() || 'Brasileira';
+  if (profissionalData.receber_msm !== undefined) cleanData.receber_msm = profissionalData.receber_msm;
 
-  console.log('Dados limpos para atualizar profissional (incluindo cidade):', cleanData);
-  console.log('Valor específico da cidade nos dados limpos:', cleanData.cidade);
+  console.log('=== DADOS FINAIS PARA O BANCO ===');
+  console.log('cleanData completo:', cleanData);
+  console.log('Cidade nos dados limpos:', cleanData.cidade);
+  console.log('================================');
   
   const { data, error } = await supabase
     .from('profissionais')
@@ -400,12 +413,19 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
     .single();
 
   if (error) {
-    console.error('Erro ao atualizar profissional:', error);
+    console.error('=== ERRO NO BANCO ===');
+    console.error('Erro completo:', error);
+    console.error('Código:', error.code);
+    console.error('Mensagem:', error.message);
+    console.error('Detalhes:', error.details);
+    console.error('==================');
     throw error;
   }
 
-  console.log('Profissional atualizado (verificar se cidade foi salva):', data);
-  console.log('Cidade no resultado da atualização:', data.cidade);
+  console.log('=== RESULTADO DO BANCO ===');
+  console.log('Profissional atualizado:', data);
+  console.log('Cidade salva no banco:', data.cidade);
+  console.log('=========================');
   
   // Atualizar categorias se fornecidas
   if (categoriaIds && data.id) {

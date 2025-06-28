@@ -57,13 +57,15 @@ const FormularioProfissional = ({
   useEffect(() => {
     if (profissional) {
       console.log('Atualizando formData com dados do profissional:', profissional);
-      setFormData({
+      console.log('Cidade do profissional:', profissional.cidade);
+      
+      const newFormData = {
         cpf_cnpj: profissional.cpf_cnpj || '',
         nome: profissional.nome || '',
         whatsapp: profissional.whatsapp || whatsapp,
         email: profissional.email || '',
         estado: profissional.estado || '',
-        cidade: profissional.cidade || '', // Manter a cidade original
+        cidade: profissional.cidade || '', // Preservar cidade original
         bairro: profissional.bairro || '',
         rua: profissional.rua || '',
         numero: profissional.numero || '',
@@ -74,7 +76,10 @@ const FormularioProfissional = ({
         creci: profissional.creci || '',
         nacionalidade: profissional.nacionalidade || 'Brasileira',
         receber_msm: profissional.receber_msm ?? true
-      });
+      };
+      
+      console.log('Novo formData sendo setado (com cidade):', newFormData);
+      setFormData(newFormData);
 
       // Se o profissional tem estado, carregar as cidades
       if (profissional.estado) {
@@ -100,7 +105,8 @@ const FormularioProfissional = ({
         .then(cidadesData => {
           console.log('Cidades carregadas:', cidadesData.length);
           setCidades(cidadesData);
-          // NÃO limpar a cidade automaticamente - apenas se o usuário mudar manualmente
+          // IMPORTANTE: NÃO limpar a cidade aqui - ela deve ser preservada
+          console.log('Cidade atual no formData após carregar cidades:', formData.cidade);
         })
         .catch(error => {
           console.error('Erro ao carregar cidades:', error);
@@ -108,7 +114,10 @@ const FormularioProfissional = ({
         });
     } else {
       setCidades([]);
-      setFormData(prev => ({ ...prev, cidade: '' }));
+      // Só limpar cidade se o estado for removido
+      if (!formData.estado) {
+        setFormData(prev => ({ ...prev, cidade: '' }));
+      }
     }
   }, [formData.estado]);
 
@@ -139,10 +148,23 @@ const FormularioProfissional = ({
 
   const handleInputChange = (field: keyof Profissional, value: any) => {
     console.log('Alterando campo:', field, 'para:', value);
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    
+    if (field === 'cidade') {
+      console.log('CIDADE SENDO ALTERADA PARA:', value);
+    }
+    
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      if (field === 'cidade') {
+        console.log('FormData após alterar cidade:', newData);
+      }
+      
+      return newData;
+    });
   };
 
   const handleCategoriesChange = (categories: string[]) => {
@@ -173,8 +195,11 @@ const FormularioProfissional = ({
       return;
     }
     
-    console.log('Dados do formulário antes de enviar:', formData);
+    console.log('=== DADOS ANTES DE ENVIAR ===');
+    console.log('FormData completo:', formData);
     console.log('Campo cidade especificamente:', formData.cidade);
+    console.log('Tipo da cidade:', typeof formData.cidade);
+    console.log('==============================');
     
     setLoading(true);
     try {
@@ -221,6 +246,7 @@ const FormularioProfissional = ({
 
   const isEditing = !!profissional?.id;
 
+  console.log('=== ESTADO ATUAL DO FORMULÁRIO ===');
   console.log('Renderizando formulário com dados:', {
     profissional,
     formData,
@@ -229,6 +255,8 @@ const FormularioProfissional = ({
     isEditing,
     cidadesCount: cidades.length
   });
+  console.log('Cidade atual no formData:', formData.cidade);
+  console.log('===================================');
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -316,12 +344,15 @@ const FormularioProfissional = ({
                 </Select>
               </div>
               <div>
-                <Label htmlFor="cidade">Cidade *</Label>
+                <Label htmlFor="cidade">Cidade * (Atual: {formData.cidade || 'Nenhuma'})</Label>
                 <Select 
                   value={formData.cidade || ''} 
                   onValueChange={(value) => {
-                    console.log('Cidade selecionada:', value);
+                    console.log('=== SELECT CIDADE ACIONADO ===');
+                    console.log('Valor selecionado:', value);
+                    console.log('Valor atual no formData:', formData.cidade);
                     handleInputChange('cidade', value);
+                    console.log('==============================');
                   }}
                   disabled={!formData.estado}
                 >
