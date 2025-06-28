@@ -20,7 +20,6 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
   console.log('formData.cidade atual:', formData.cidade);
   console.log('Cidades disponíveis:', cidades.length);
   console.log('Estado atual:', formData.estado);
-  console.log('Cidades array:', cidades);
 
   const handleCidadeChange = (cidade: string) => {
     console.log('=== MUDANÇA DE CIDADE NO ENDERECO FORM ===');
@@ -41,21 +40,14 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
     
     onInputChange('estado', estado);
     
-    console.log('Estado alterado para:', estado);
+    // Não limpar mais a cidade automaticamente - manter o valor do banco
+    console.log('Estado alterado, mas mantendo cidade do banco');
   };
 
   const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCEP(e.target.value);
     onInputChange('cep', formatted);
   };
-
-  // Verificar se a cidade atual está na lista de cidades disponíveis
-  const cidadeAtualExiste = cidades.some(cidade => 
-    cidade.nome && cidade.nome.toLowerCase() === formData.cidade?.toLowerCase()
-  );
-
-  console.log('Cidade atual existe na lista?', cidadeAtualExiste);
-  console.log('Cidade atual:', formData.cidade);
 
   return (
     <div className="space-y-4">
@@ -67,7 +59,7 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
             <SelectTrigger className="h-[54px]">
               <SelectValue placeholder="Selecione o estado" />
             </SelectTrigger>
-            <SelectContent className="bg-white border shadow-lg z-50">
+            <SelectContent>
               {estados.map((estado) => (
                 <SelectItem key={estado} value={estado}>{estado}</SelectItem>
               ))}
@@ -75,21 +67,20 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
           </Select>
         </div>
         
-        <div>
-          <Label htmlFor="cidade">Cidade</Label>
-          <div className="space-y-2">
-            {/* Mostrar cidade atual se existir */}
-            {formData.cidade && (
-              <Input
-                id="cidade-atual"
-                value={formData.cidade}
-                readOnly
-                className="bg-gray-100 cursor-not-allowed h-[54px] text-sm"
-                placeholder="Cidade atual"
-              />
-            )}
-            
-            {/* Select para trocar de cidade */}
+        {/* Dois inputs de cidade lado a lado */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label htmlFor="cidade-atual">Cidade Atual</Label>
+            <Input
+              id="cidade-atual"
+              value={formData.cidade || ''}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed h-[54px]"
+              placeholder="Cidade no banco"
+            />
+          </div>
+          <div>
+            <Label htmlFor="cidade-nova">Nova Cidade</Label>
             <Select 
               value="" 
               onValueChange={handleCidadeChange}
@@ -98,26 +89,16 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
               <SelectTrigger className="h-[54px]">
                 <SelectValue placeholder={
                   !formData.estado 
-                    ? "Selecione estado primeiro" 
+                    ? "Selecione estado" 
                     : cidades.length === 0 
-                    ? "Carregando cidades..." 
-                    : formData.cidade 
-                    ? "Alterar cidade" 
+                    ? "Carregando..." 
                     : "Selecionar cidade"
                 } />
               </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg z-50 max-h-[300px] overflow-y-auto">
-                {cidades.length > 0 ? (
-                  cidades.map((cidade) => (
-                    <SelectItem key={cidade.id} value={cidade.nome}>
-                      {cidade.nome}
-                    </SelectItem>
-                  ))
-                ) : formData.estado ? (
-                  <SelectItem value="" disabled>
-                    Nenhuma cidade encontrada
-                  </SelectItem>
-                ) : null}
+              <SelectContent>
+                {cidades.map((cidade) => (
+                  <SelectItem key={cidade.id} value={cidade.nome}>{cidade.nome}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -130,7 +111,6 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
             value={formData.bairro || ''}
             onChange={(e) => onInputChange('bairro', e.target.value)}
             placeholder="Seu bairro"
-            className="h-[54px]"
           />
         </div>
         <div>
@@ -140,7 +120,6 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
             value={formData.rua || ''}
             onChange={(e) => onInputChange('rua', e.target.value)}
             placeholder="Nome da rua"
-            className="h-[54px]"
           />
         </div>
         <div>
@@ -150,7 +129,6 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
             value={formData.numero || ''}
             onChange={(e) => onInputChange('numero', e.target.value)}
             placeholder="Número"
-            className="h-[54px]"
           />
         </div>
         <div>
@@ -161,7 +139,6 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
             onChange={handleCEPChange}
             placeholder="00000-000"
             maxLength={9}
-            className="h-[54px]"
           />
         </div>
       </div>
