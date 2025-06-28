@@ -10,7 +10,11 @@ import { createClient } from '@supabase/supabase-js';
 import MobileNavbar from '@/components/MobileNavbar';
 import MobileMenu from '@/components/MobileMenu';
 import BannerCarousel from '@/components/BannerCarousel';
+import ProfessionalLogoutMenu from '@/components/ProfessionalLogoutMenu';
+import { useProfissionalSession } from '@/hooks/useProfissionalSession';
+
 const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
+
 interface Demanda {
   id: string;
   nome: string;
@@ -28,12 +32,15 @@ interface Categoria {
   id: string;
   nome: string;
 }
+
 const ProfissionaisHome = () => {
   const navigate = useNavigate();
+  const { profissionalLogado } = useProfissionalSession();
   const [demandas, setDemandas] = useState<Demanda[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>('');
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -187,6 +194,7 @@ const ProfissionaisHome = () => {
               >
                 Perfil
               </Button>
+              {profissionalLogado && <ProfessionalLogoutMenu />}
             </nav>
             <MobileMenu />
           </div>
@@ -351,4 +359,5 @@ const ProfissionaisHome = () => {
       <MobileNavbar />
     </div>;
 };
+
 export default ProfissionaisHome;
