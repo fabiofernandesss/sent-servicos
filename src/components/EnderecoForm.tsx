@@ -40,11 +40,8 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
     
     onInputChange('estado', estado);
     
-    // Limpar cidade quando mudar o estado
-    if (formData.cidade) {
-      console.log('Limpando cidade devido à mudança de estado');
-      onInputChange('cidade', '');
-    }
+    // Não limpar mais a cidade automaticamente - manter o valor do banco
+    console.log('Estado alterado, mas mantendo cidade do banco');
   };
 
   const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,29 +66,44 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <Label htmlFor="cidade">Cidade *</Label>
-          <Select 
-            value={formData.cidade || ''} 
-            onValueChange={handleCidadeChange}
-            disabled={!formData.estado}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={
-                !formData.estado 
-                  ? "Selecione o estado primeiro" 
-                  : cidades.length === 0 
-                  ? "Carregando cidades..." 
-                  : "Selecione a cidade"
-              } />
-            </SelectTrigger>
-            <SelectContent>
-              {cidades.map((cidade) => (
-                <SelectItem key={cidade.id} value={cidade.nome}>{cidade.nome}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        
+        {/* Dois inputs de cidade lado a lado */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label htmlFor="cidade-atual">Cidade Atual</Label>
+            <Input
+              id="cidade-atual"
+              value={formData.cidade || ''}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+              placeholder="Cidade no banco"
+            />
+          </div>
+          <div>
+            <Label htmlFor="cidade-nova">Nova Cidade</Label>
+            <Select 
+              value="" 
+              onValueChange={handleCidadeChange}
+              disabled={!formData.estado}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={
+                  !formData.estado 
+                    ? "Selecione estado" 
+                    : cidades.length === 0 
+                    ? "Carregando..." 
+                    : "Selecionar cidade"
+                } />
+              </SelectTrigger>
+              <SelectContent>
+                {cidades.map((cidade) => (
+                  <SelectItem key={cidade.id} value={cidade.nome}>{cidade.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        
         <div>
           <Label htmlFor="bairro">Bairro</Label>
           <Input
