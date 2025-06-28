@@ -57,7 +57,7 @@ const ProfissionaisAdmin = () => {
         .select(`
           id, nome, cpf_cnpj, whatsapp, email, cidade, estado, saldo, 
           desativado, aceita_diaria, valor_diaria, nacionalidade, bairro, 
-          rua, numero, cep, crea, creci, receber_msm, sobre
+          rua, numero, cep, crea, creci, receber_msm
         `)
         .order('nome');
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -46,10 +45,10 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
 
-      // Carregar dados dos profissionais
+      // Carregar dados dos profissionais - removendo created_at que não existe
       const { data: profissionais, error: profissionaisError } = await supabase
         .from('profissionais')
-        .select('id, desativado, estado, cidade, saldo, valor_diaria, created_at');
+        .select('id, desativado, estado, cidade, saldo, valor_diaria');
       
       if (profissionaisError) throw profissionaisError;
 
@@ -122,16 +121,13 @@ const AdminDashboard = () => {
         return acc;
       }, []).slice(-6) || [];
 
-      // Evolução mensal (profissionais e demandas)
+      // Evolução mensal (apenas demandas já que profissionais não tem created_at)
       const evolucaoMensal = Array.from({ length: 6 }, (_, i) => {
         const date = new Date();
         date.setMonth(date.getMonth() - (5 - i));
         const mes = date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
         
-        const profissionaisMes = profissionais?.filter(p => {
-          const profDate = new Date(p.created_at);
-          return profDate.getMonth() === date.getMonth() && profDate.getFullYear() === date.getFullYear();
-        }).length || 0;
+        const profissionaisMes = 0; // Sem created_at, não podemos calcular por mês
         
         const demandasMes = demandas?.filter(d => {
           const demandaDate = new Date(d.created_at);

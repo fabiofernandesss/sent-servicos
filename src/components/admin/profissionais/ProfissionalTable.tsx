@@ -16,6 +16,15 @@ interface Profissional {
   desativado: boolean | null;
   aceita_diaria: boolean | null;
   valor_diaria: number | null;
+  nacionalidade?: string | null;
+  bairro?: string | null;
+  rua?: string | null;
+  numero?: string | null;
+  cep?: string | null;
+  crea?: string | null;
+  creci?: string | null;
+  receber_msm?: boolean | null;
+  sobre?: string | null;
 }
 
 interface ProfissionalTableProps {
