@@ -189,10 +189,10 @@ const ProfissionaisHome = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filtro por Categorias - Corrigido com ScrollArea igual aos Equipamentos */}
         <div className="mb-6 my-[-15px]">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Filtrar por Categoria</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-800 my-[-10px]">Filtrar por Categoria</h3>
           <div className="w-full">
             <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex gap-2 pb-4">
+              <div className="flex gap-2 pb-4 my-0">
                 <Button variant="outline" onClick={() => setCategoriaFiltro('')} className={`shrink-0 ${categoriaFiltro === '' ? 'border-[#CB0533] text-[#CB0533] bg-[#CB0533]/10' : 'border-gray-300'}`} size="sm">
                   Todas ({demandas.length})
                 </Button>
