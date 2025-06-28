@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, User, Phone, Mail, Bell, Search } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Mail, Bell, Search, Menu } from 'lucide-react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { createClient } from '@supabase/supabase-js';
 import MobileNavbar from '@/components/MobileNavbar';
@@ -27,6 +28,7 @@ interface Categoria {
   nome: string;
 }
 const ProfissionaisHome = () => {
+  const navigate = useNavigate();
   const [demandas, setDemandas] = useState<Demanda[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>('');
@@ -90,24 +92,24 @@ const ProfissionaisHome = () => {
     const urgenciaMap = {
       'preciso_com_urgencia': {
         text: 'Urgente',
-        color: 'bg-red-500'
+        color: 'bg-gradient-to-r from-red-500 to-red-600'
       },
       'quero_para_esses_dias': {
         text: 'Breve',
-        color: 'bg-orange-500'
+        color: 'bg-gradient-to-r from-orange-500 to-orange-600'
       },
       'nao_tenho_tanta_pressa': {
         text: 'Flexível',
-        color: 'bg-green-500'
+        color: 'bg-gradient-to-r from-green-500 to-green-600'
       },
       'so_orcamento': {
         text: 'Orçamento',
-        color: 'bg-blue-500'
+        color: 'bg-gradient-to-r from-blue-500 to-blue-600'
       }
     };
     return urgenciaMap[urgencia as keyof typeof urgenciaMap] || {
       text: urgencia,
-      color: 'bg-gray-500'
+      color: 'bg-gradient-to-r from-gray-500 to-gray-600'
     };
   };
   const formatTempo = (created_at: string) => {
@@ -119,6 +121,14 @@ const ProfissionaisHome = () => {
     if (diffHoras < 24) return `${diffHoras}h atrás`;
     const diffDias = Math.floor(diffHoras / 24);
     return `${diffDias}d atrás`;
+  };
+  const maskContact = (contact: string, type: 'phone' | 'email') => {
+    if (type === 'phone') {
+      return contact.substring(0, 5) + '*'.repeat(contact.length - 5);
+    } else {
+      const [user, domain] = contact.split('@');
+      return user.substring(0, 3) + '*'.repeat(user.length - 3) + '@' + domain;
+    }
   };
   const demandasFiltradas = categoriaFiltro ? demandas.filter(d => d.categoria_nome === categoriaFiltro) : demandas;
   if (loading) {
@@ -144,7 +154,15 @@ const ProfissionaisHome = () => {
               <Button variant="ghost" size="sm" className="text-gray-600">Perfil</Button>
               <Button variant="outline" size="sm">Sair</Button>
             </nav>
-            <Button variant="outline" size="sm" className="md:hidden">Menu</Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="md:hidden"
+              onClick={() => navigate('/')}
+            >
+              <Menu className="h-4 w-4 mr-1" />
+              Menu
+            </Button>
           </div>
         </div>
       </header>
@@ -192,7 +210,7 @@ const ProfissionaisHome = () => {
 
         {/* Lista de Demandas */}
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
             <h3 className="text-xl font-semibold text-gray-800">
               Oportunidades Disponíveis
             </h3>
@@ -216,81 +234,96 @@ const ProfissionaisHome = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
               {demandasFiltradas.map(demanda => {
                 const { icon: Icon, color } = getCategoryIcon(demanda.categoria_nome);
                 const urgenciaInfo = formatUrgencia(demanda.urgencia);
                 
                 return (
-                  <Card key={demanda.id} className="hover:shadow-lg transition-all duration-200 border border-gray-200">
-                    <CardContent className="p-4 sm:p-6">
-                      {/* Header do Card */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="flex-shrink-0 p-2 bg-gray-50 rounded-lg">
-                            <Icon className={`h-5 w-5 ${color}`} />
+                  <Card key={demanda.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden">
+                    <div className="relative">
+                      {/* Header com gradiente */}
+                      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-black/10"></div>
+                        <div className="relative flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
+                              <Icon className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-lg">
+                                {demanda.categoria_nome}
+                              </h3>
+                              <p className="text-white/90 text-sm">
+                                {demanda.subcategoria_nome}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight">
-                              {demanda.categoria_nome}
-                            </h3>
-                            <p className="text-sm text-gray-600 mt-1">
-                              {demanda.subcategoria_nome}
-                            </p>
-                          </div>
+                          <Badge className={`${urgenciaInfo.color} text-white border-0 shadow-lg px-3 py-1`}>
+                            {urgenciaInfo.text}
+                          </Badge>
                         </div>
-                        <Badge className={`${urgenciaInfo.color} text-white text-xs flex-shrink-0 ml-2`}>
-                          {urgenciaInfo.text}
-                        </Badge>
                       </div>
 
-                      {/* Informações do Cliente */}
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                          <span className="font-medium text-gray-900 text-sm">{demanda.nome}</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3 flex-shrink-0" />
-                            <span>{demanda.cidade}, {demanda.estado}</span>
+                      <CardContent className="p-6 space-y-4">
+                        {/* Info do Cliente */}
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                          <div className="p-2 bg-white rounded-full shadow-sm">
+                            <User className="h-4 w-4 text-gray-600" />
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3 flex-shrink-0" />
-                            <span>{formatTempo(demanda.created_at)}</span>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900">{demanda.nome}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                <span>{demanda.cidade}, {demanda.estado}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                <span>{formatTempo(demanda.created_at)}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* Observação */}
-                      {demanda.observacao && (
-                        <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                          <p className="text-sm text-gray-700 leading-relaxed">
-                            {demanda.observacao}
+                        
+                        {/* Observação com destaque */}
+                        {demanda.observacao && (
+                          <div className="relative">
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+                            <div className="pl-4 py-2">
+                              <p className="text-sm text-gray-700 leading-relaxed italic">
+                                "{demanda.observacao}"
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Contatos mascarados */}
+                        <div className="space-y-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-4 w-4 text-amber-600" />
+                            <span className="text-gray-600">WhatsApp:</span>
+                            <span className="font-mono text-gray-800">{maskContact(demanda.whatsapp, 'phone')}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="h-4 w-4 text-amber-600" />
+                            <span className="text-gray-600">Email:</span>
+                            <span className="font-mono text-gray-800">{maskContact(demanda.email, 'email')}</span>
+                          </div>
+                          <p className="text-xs text-amber-700 font-medium">
+                            🔒 Dados completos liberados após envio da proposta
                           </p>
                         </div>
-                      )}
 
-                      {/* Footer do Card */}
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-3 border-t border-gray-100">
-                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs text-gray-500 w-full sm:w-auto">
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3 flex-shrink-0" />
-                            <span className="break-all">{demanda.whatsapp}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Mail className="h-3 w-3 flex-shrink-0" />
-                            <span className="break-all">{demanda.email}</span>
-                          </div>
-                        </div>
+                        {/* Botão de ação destacado */}
                         <Button 
-                          className="bg-[#1B4970] hover:bg-[#153a5b] text-white w-full sm:w-auto flex-shrink-0" 
-                          size="sm"
+                          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
+                          size="lg"
                         >
-                          Enviar Proposta
+                          💼 Enviar Proposta
                         </Button>
-                      </div>
-                    </CardContent>
+                      </CardContent>
+                    </div>
                   </Card>
                 );
               })}
