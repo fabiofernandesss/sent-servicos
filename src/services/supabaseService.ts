@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Categoria {
@@ -58,6 +57,20 @@ export interface ProfissionalCategoria {
   whatsapp?: string;
   created_at?: string;
 }
+
+// Função para limpar formatação do WhatsApp
+const cleanWhatsApp = (whatsapp: string): string => {
+  // Remove todos os caracteres que não são dígitos
+  const cleaned = whatsapp.replace(/\D/g, '');
+  
+  // Se começar com 55 (código do Brasil), mantém
+  // Se não começar com 55, adiciona
+  if (cleaned.startsWith('55')) {
+    return cleaned;
+  } else {
+    return '55' + cleaned;
+  }
+};
 
 export const loadCategorias = async () => {
   console.log('Carregando categorias...');
@@ -170,9 +183,12 @@ export const loadCidades = async (uf: string) => {
 export const loadProfissionalByWhatsapp = async (whatsapp: string) => {
   console.log('Buscando profissional por WhatsApp:', whatsapp);
   
-  // Tentar buscar com o número original e com variações de formatação
+  // Limpar o WhatsApp de entrada para busca
+  const cleanedWhatsapp = cleanWhatsApp(whatsapp);
+  
+  // Tentar buscar com o número limpo e com variações de formatação
   const whatsappVariations = [
-    whatsapp,
+    cleanedWhatsapp,
     whatsapp.replace(/\D/g, ''), // Remove todos os não-dígitos
     '55' + whatsapp.replace(/\D/g, ''), // Adiciona 55
     whatsapp.replace(/\D/g, '').replace(/^55/, ''), // Remove 55 se existir
@@ -246,17 +262,16 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
 
   // Depois, inserir as novas categorias se fornecidas
   if (categoriaIds.length > 0) {
-    // Formatar WhatsApp com prefixo 55 se fornecido
-    let formattedWhatsapp = '';
+    // Limpar WhatsApp antes de salvar
+    let cleanedWhatsapp = '';
     if (whatsapp) {
-      const cleanWhatsapp = whatsapp.replace(/\D/g, '');
-      formattedWhatsapp = cleanWhatsapp.startsWith('55') ? cleanWhatsapp : '55' + cleanWhatsapp;
+      cleanedWhatsapp = cleanWhatsApp(whatsapp);
     }
 
     const insertData = categoriaIds.map(categoria_id => ({
       profissional_id: profissionalId,
       categoria_id,
-      whatsapp: formattedWhatsapp || null,
+      whatsapp: cleanedWhatsapp || null,
       estado: estado || null,
       cidade: cidade || null
     }));
@@ -283,16 +298,20 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
 export const createProfissional = async (profissionalData: Profissional, categoriaIds: string[] = []) => {
   console.log('=== CRIAR PROFISSIONAL ===');
   console.log('Dados recebidos:', profissionalData);
-  console.log('Cidade recebida:', profissionalData.cidade);
+  console.log('WhatsApp original:', profissionalData.whatsapp);
+  
+  // Limpar WhatsApp antes de salvar
+  const cleanedWhatsapp = cleanWhatsApp(profissionalData.whatsapp);
+  console.log('WhatsApp limpo:', cleanedWhatsapp);
   
   // Garantir que todos os campos estão sendo enviados corretamente
   const cleanData = {
     cpf_cnpj: profissionalData.cpf_cnpj?.trim(),
     nome: profissionalData.nome?.trim(),
-    whatsapp: profissionalData.whatsapp?.trim(),
+    whatsapp: cleanedWhatsapp, // Usar WhatsApp limpo
     email: profissionalData.email?.trim(),
     estado: profissionalData.estado?.trim(),
-    cidade: profissionalData.cidade?.trim() || null, // FORÇAR NULL SE VAZIO
+    cidade: profissionalData.cidade?.trim() || null,
     bairro: profissionalData.bairro?.trim() || null,
     rua: profissionalData.rua?.trim() || null,
     numero: profissionalData.numero?.trim() || null,
@@ -307,7 +326,7 @@ export const createProfissional = async (profissionalData: Profissional, categor
 
   console.log('=== DADOS PROCESSADOS PARA CRIAR ===');
   console.log('cleanData:', cleanData);
-  console.log('Cidade processada:', cleanData.cidade);
+  console.log('WhatsApp processado:', cleanData.whatsapp);
   
   const { data, error } = await supabase
     .from('profissionais')
@@ -323,7 +342,7 @@ export const createProfissional = async (profissionalData: Profissional, categor
 
   console.log('=== PROFISSIONAL CRIADO ===');
   console.log('Resultado:', data);
-  console.log('Cidade salva:', data.cidade);
+  console.log('WhatsApp salvo:', data.whatsapp);
   
   // Salvar categorias se fornecidas
   if (categoriaIds.length > 0 && data.id) {
@@ -331,7 +350,7 @@ export const createProfissional = async (profissionalData: Profissional, categor
     await saveProfissionalCategorias(
       data.id, 
       categoriaIds, 
-      profissionalData.whatsapp,
+      data.whatsapp, // Usar WhatsApp já limpo do resultado
       profissionalData.estado,
       profissionalData.cidade
     );
@@ -365,7 +384,8 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   }
   
   if (profissionalData.whatsapp !== undefined) {
-    updateData.whatsapp = profissionalData.whatsapp.trim();
+    // Limpar WhatsApp no update também
+    updateData.whatsapp = cleanWhatsApp(profissionalData.whatsapp);
     console.log('WhatsApp processado:', updateData.whatsapp);
   }
   
