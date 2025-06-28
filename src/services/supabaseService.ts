@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -56,7 +57,7 @@ export interface Profissional {
 export interface ProfissionalCategoria {
   id?: number;
   profissional_id: number;
-  categoria_id: string;
+  categoria_id: string; // UUID como string
   created_at?: string;
 }
 
