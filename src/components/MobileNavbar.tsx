@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Menu, X, LogOut } from 'lucide-react';
+import { Menu, X, LogOut, Home, Wrench, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
@@ -40,25 +40,28 @@ const MobileNavbar = () => {
         </button>
       </div>
 
-      {/* Mobile navbar fixo na parte inferior */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+      {/* Mobile navbar fixo na parte inferior com fundo azul */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#1E486F] border-t border-[#1E486F] shadow-lg z-40">
         <div className="grid grid-cols-3 h-16">
           <button
             onClick={() => handleNavigation('/')}
-            className="flex flex-col items-center justify-center text-gray-600 hover:text-[#1E486F] transition-colors"
+            className="flex flex-col items-center justify-center text-white hover:text-gray-200 transition-colors"
           >
+            <Home size={20} className="mb-1" />
             <span className="text-xs font-medium">Início</span>
           </button>
           <button
             onClick={() => handleNavigation('/equipamentos')}
-            className="flex flex-col items-center justify-center text-gray-600 hover:text-[#1E486F] transition-colors"
+            className="flex flex-col items-center justify-center text-white hover:text-gray-200 transition-colors"
           >
+            <Wrench size={20} className="mb-1" />
             <span className="text-xs font-medium">Equipamentos</span>
           </button>
           <button
             onClick={() => handleNavigation('/perfil')}
-            className="flex flex-col items-center justify-center text-gray-600 hover:text-[#1E486F] transition-colors"
+            className="flex flex-col items-center justify-center text-white hover:text-gray-200 transition-colors"
           >
+            <User size={20} className="mb-1" />
             <span className="text-xs font-medium">Perfil</span>
           </button>
         </div>
