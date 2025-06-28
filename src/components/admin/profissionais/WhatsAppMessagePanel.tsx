@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -141,15 +141,16 @@ const WhatsAppMessagePanel = ({ filteredProfissionais, onSendComplete }: WhatsAp
       </Button>
 
       {whatsappButtonState === 'ready' && (
-        <div className="p-4 border rounded-lg bg-green-50">
-          <label className="block text-sm font-medium mb-2">
+        <div className="p-4 border rounded-lg bg-green-50 space-y-3">
+          <label className="block text-sm font-medium">
             Mensagem para {filteredProfissionais.length} profissionais:
           </label>
-          <Input
+          <Textarea
             placeholder="Digite sua mensagem..."
             value={whatsappMessage}
             onChange={(e) => setWhatsappMessage(e.target.value)}
-            className="mb-2"
+            className="min-h-[100px] resize-y"
+            rows={4}
           />
           <div className="flex gap-2">
             <Button
