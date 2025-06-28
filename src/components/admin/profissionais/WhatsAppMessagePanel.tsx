@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -127,7 +126,7 @@ const WhatsAppMessagePanel = ({ filteredProfissionais, onSendComplete }: WhatsAp
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full h-full">
       <Button
         variant={whatsappButtonState === 'draft' ? 'outline' : whatsappButtonState === 'ready' ? 'default' : 'secondary'}
         onClick={handleWhatsappButtonClick}
