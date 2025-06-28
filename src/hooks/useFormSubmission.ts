@@ -15,8 +15,10 @@ export const useFormSubmission = () => {
     
     try {
       // Criar demanda no Supabase
-      const demandaId = await createDemanda(data);
+      const demandaResult = await createDemanda(data);
       
+      // Extrair o ID correto da demanda criada
+      const demandaId = demandaResult[0]?.id;
       console.log('Demanda criada com sucesso, ID:', demandaId);
       
       // Mostrar toast de sucesso imediatamente após salvar no banco
