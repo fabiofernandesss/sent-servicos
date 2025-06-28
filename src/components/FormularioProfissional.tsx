@@ -54,58 +54,15 @@ const FormularioProfissional = ({
 
   const estados = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
 
-  // Função para carregar cidades e encontrar a cidade correspondente
-  const loadCidadesAndSetCidade = async (estado: string, cidadeNome?: string) => {
-    try {
-      console.log('=== CARREGANDO CIDADES E DEFININDO CIDADE ===');
-      console.log('Estado:', estado);
-      console.log('Cidade do banco:', cidadeNome);
-      
-      const cidadesData = await loadCidades(estado);
-      console.log('Cidades carregadas da API:', cidadesData.length);
-      
-      setCidades(cidadesData);
-      
-      // Se temos uma cidade do banco, procurar pela correspondente na API
-      if (cidadeNome && cidadesData.length > 0) {
-        console.log('Procurando cidade correspondente na API...');
-        
-        // Procurar cidade que corresponde exatamente
-        const cidadeEncontrada = cidadesData.find(cidade => 
-          cidade.nome.toLowerCase() === cidadeNome.toLowerCase()
-        );
-        
-        if (cidadeEncontrada) {
-          console.log('Cidade encontrada na API:', cidadeEncontrada.nome);
-          setFormData(prev => ({
-            ...prev,
-            cidade: cidadeEncontrada.nome
-          }));
-        } else {
-          console.log('Cidade não encontrada na API, mantendo valor do banco:', cidadeNome);
-          // Se não encontrou na API, manter o valor do banco mesmo assim
-          setFormData(prev => ({
-            ...prev,
-            cidade: cidadeNome
-          }));
-        }
-      }
-      
-      console.log('===============================================');
-    } catch (error) {
-      console.error('Erro ao carregar cidades:', error);
-      setCidades([]);
-    }
-  };
-
-  // Atualizar formData quando profissional mudar
+  // Carregar dados do profissional existente
   useEffect(() => {
     if (profissional) {
-      console.log('=== CARREGANDO DADOS DO PROFISSIONAL ===');
-      console.log('Profissional recebido:', profissional);
-      console.log('Cidade do profissional no banco:', profissional.cidade);
+      console.log('=== CARREGANDO PROFISSIONAL EXISTENTE ===');
+      console.log('Profissional:', profissional);
+      console.log('Cidade no banco:', profissional.cidade);
+      console.log('Estado no banco:', profissional.estado);
       
-      const newFormData = {
+      setFormData({
         cpf_cnpj: profissional.cpf_cnpj || '',
         nome: profissional.nome || '',
         whatsapp: profissional.whatsapp || whatsapp,
@@ -122,41 +79,53 @@ const FormularioProfissional = ({
         creci: profissional.creci || '',
         nacionalidade: profissional.nacionalidade || 'Brasileira',
         receber_msm: profissional.receber_msm ?? true
-      };
-      
-      console.log('FormData sendo definido:', newFormData);
-      setFormData(newFormData);
+      });
 
-      // Se tiver estado, carregar cidades e definir a cidade correta
+      // Se tiver estado, carregar as cidades
       if (profissional.estado) {
-        console.log('Carregando cidades para profissional existente...');
-        loadCidadesAndSetCidade(profissional.estado, profissional.cidade);
-      }
-    }
-  }, [profissional, whatsapp]);
-
-  // Effect para carregar cidades quando estado muda (apenas mudanças pelo usuário)
-  useEffect(() => {
-    // Este effect só deve executar quando o usuário muda o estado manualmente
-    // Não quando carregamos um profissional existente
-    if (formData.estado && profissional) {
-      // Se o estado mudou em relação ao profissional original
-      if (formData.estado !== profissional.estado) {
-        console.log('Estado mudou, carregando novas cidades e limpando cidade');
-        loadCidades(formData.estado)
+        console.log('Carregando cidades para estado:', profissional.estado);
+        loadCidades(profissional.estado)
           .then(cidadesData => {
+            console.log('Cidades carregadas:', cidadesData.length);
             setCidades(cidadesData);
-            // Limpar cidade quando muda o estado
-            setFormData(prev => ({ ...prev, cidade: '' }));
+            
+            // Se tiver cidade no banco, verificar se existe na lista de cidades
+            if (profissional.cidade && cidadesData.length > 0) {
+              console.log('Procurando cidade:', profissional.cidade);
+              const cidadeEncontrada = cidadesData.find(cidade => 
+                cidade.nome.toLowerCase() === profissional.cidade!.toLowerCase()
+              );
+              
+              if (cidadeEncontrada) {
+                console.log('Cidade encontrada na API:', cidadeEncontrada.nome);
+                // Atualizar formData com a cidade encontrada
+                setFormData(prev => ({
+                  ...prev,
+                  cidade: cidadeEncontrada.nome
+                }));
+              } else {
+                console.log('Cidade não encontrada na API, mantendo valor do banco');
+                // Manter valor do banco mesmo se não encontrar na API
+                setFormData(prev => ({
+                  ...prev,
+                  cidade: profissional.cidade || ''
+                }));
+              }
+            }
           })
           .catch(error => {
             console.error('Erro ao carregar cidades:', error);
             setCidades([]);
           });
       }
-    } else if (formData.estado && !profissional) {
-      // Para novo cadastro, carregar cidades normalmente
-      console.log('Novo cadastro - carregando cidades para estado:', formData.estado);
+    }
+  }, [profissional, whatsapp]);
+
+  // Carregar cidades quando estado muda (apenas para mudanças manuais)
+  useEffect(() => {
+    // Só executar se não for o carregamento inicial de um profissional existente
+    if (formData.estado && !profissional) {
+      console.log('Carregando cidades para novo cadastro, estado:', formData.estado);
       loadCidades(formData.estado)
         .then(cidadesData => {
           setCidades(cidadesData);
@@ -166,7 +135,7 @@ const FormularioProfissional = ({
           setCidades([]);
         });
     }
-  }, [formData.estado, profissional?.estado]);
+  }, [formData.estado, profissional]);
 
   useEffect(() => {
     // Carregar categorias apenas uma vez
@@ -202,6 +171,22 @@ const FormularioProfissional = ({
       };
       
       console.log('Valor definido no formData para', field, ':', newData[field]);
+      
+      // Se mudou o estado manualmente, limpar cidade
+      if (field === 'estado' && profissional && value !== profissional.estado) {
+        console.log('Estado mudou manualmente, limpando cidade');
+        newData.cidade = '';
+        
+        // Carregar novas cidades
+        loadCidades(value)
+          .then(cidadesData => {
+            setCidades(cidadesData);
+          })
+          .catch(error => {
+            console.error('Erro ao carregar cidades:', error);
+            setCidades([]);
+          });
+      }
       
       return newData;
     });
