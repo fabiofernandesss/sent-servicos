@@ -2,16 +2,24 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Home, Package, User } from 'lucide-react';
+import { Menu, Home, Package, User, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 
 const MobileMenu = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const { isLoggedIn, logout } = useProfissionalSession();
 
   const handleNavigation = (path: string) => {
     navigate(path);
     setOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setOpen(false);
+    navigate('/');
   };
 
   return (
@@ -51,6 +59,17 @@ const MobileMenu = () => {
             <User className="h-5 w-5 mr-3" />
             Perfil
           </Button>
+          
+          {isLoggedIn && (
+            <Button
+              variant="ghost"
+              className="justify-start h-12 text-lg text-red-600 hover:text-red-700 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-5 w-5 mr-3" />
+              Sair
+            </Button>
+          )}
         </div>
       </SheetContent>
     </Sheet>

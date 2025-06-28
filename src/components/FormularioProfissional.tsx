@@ -4,22 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Profissional, createProfissional, updateProfissional, loadCidades } from '@/services/supabaseService';
+import { Profissional, createProfissional, updateProfissional, loadCidades, loadProfissionalCategorias } from '@/services/supabaseService';
+import CategoriasSelector from './CategoriasSelector';
 
 interface FormularioProfissionalProps {
   profissional: Profissional | null;
   whatsapp: string;
-  onSuccess: () => void;
+  onSuccess: (profissional: Profissional) => void;
 }
 
 const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: FormularioProfissionalProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [cidades, setCidades] = useState<any[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState<Profissional>({
     cpf_cnpj: profissional?.cpf_cnpj || '',
     nome: profissional?.nome || '',
@@ -51,6 +52,18 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
     }
   }, [formData.estado]);
 
+  useEffect(() => {
+    // Carregar categorias do profissional se estiver editando
+    if (profissional?.id) {
+      loadProfissionalCategorias(profissional.id)
+        .then(categorias => {
+          const categoryIds = categorias.map(cat => cat.categoria_id);
+          setSelectedCategories(categoryIds);
+        })
+        .catch(console.error);
+    }
+  }, [profissional]);
+
   const handleInputChange = (field: keyof Profissional, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -67,24 +80,34 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
       return;
     }
 
+    if (selectedCategories.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione pelo menos uma categoria de serviço",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      let result;
       if (profissional?.id) {
         // Atualizar profissional existente
-        await updateProfissional(profissional.id, formData);
+        result = await updateProfissional(profissional.id, formData, selectedCategories);
         toast({
           title: "Sucesso",
           description: "Perfil atualizado com sucesso!"
         });
       } else {
         // Criar novo profissional
-        await createProfissional(formData);
+        result = await createProfissional(formData, selectedCategories);
         toast({
           title: "Sucesso",
           description: "Cadastro realizado com sucesso!"
         });
       }
-      onSuccess();
+      onSuccess(result);
     } catch (error) {
       toast({
         title: "Erro",
@@ -224,6 +247,15 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                 />
               </div>
             </div>
+          </div>
+
+          {/* Categorias de Serviço */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-[#1E486F]">Categorias de Serviço *</h3>
+            <CategoriasSelector 
+              selectedCategories={selectedCategories}
+              onCategoriesChange={setSelectedCategories}
+            />
           </div>
 
           {/* Dados Profissionais */}

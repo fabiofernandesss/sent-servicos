@@ -5,22 +5,90 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { ArrowLeft, Phone, User, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Phone, User, CheckCircle, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import MobileNavbar from '@/components/MobileNavbar';
 import MobileMenu from '@/components/MobileMenu';
 import FormularioProfissional from '@/components/FormularioProfissional';
 import { Profissional, loadProfissionalByWhatsapp } from '@/services/supabaseService';
+import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 
 const ProfissionalPerfil = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profissionalLogado, loading: sessionLoading, login, logout } = useProfissionalSession();
   const [step, setStep] = useState<'login' | 'otp' | 'form'>('login');
   const [whatsapp, setWhatsapp] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [profissional, setProfissional] = useState<Profissional | null>(null);
+
+  // Se já estiver logado, mostrar diretamente o formulário
+  if (!sessionLoading && profissionalLogado) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/')}
+                  className="text-gray-600"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Voltar
+                </Button>
+                <img 
+                  src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" 
+                  alt="Sent Serviços" 
+                  className="h-5 w-auto" 
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <nav className="hidden md:flex space-x-2">
+                  <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/')}>Início</Button>
+                  <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/equipamentos')}>Equipamentos</Button>
+                  <Button variant="ghost" size="sm" className="text-[#1c4970]">Perfil</Button>
+                </nav>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={logout}
+                  className="text-red-600 border-red-600 hover:bg-red-50"
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Sair
+                </Button>
+                <MobileMenu />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Conteúdo Principal */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <FormularioProfissional 
+            profissional={profissionalLogado}
+            whatsapp={profissionalLogado.whatsapp}
+            onSuccess={(updatedProfissional) => {
+              login(updatedProfissional);
+              toast({
+                title: "Sucesso!",
+                description: "Perfil atualizado com sucesso!"
+              });
+            }}
+          />
+        </div>
+
+        {/* Mobile Navbar */}
+        <MobileNavbar />
+      </div>
+    );
+  }
 
   const sendOTP = async () => {
     if (!whatsapp || whatsapp.length < 10) {
@@ -45,14 +113,7 @@ const ProfissionalPerfil = () => {
       const phoneNumber = whatsapp.replace(/\D/g, '');
       const jid = `55${phoneNumber}`;
       
-      const message = `🔐 *Código de Verificação - Perfil Profissional*
-
-Seu código de acesso é: *${code}*
-
-⚠️ Este código expira em 5 minutos.
-⚠️ Não compartilhe este código com ninguém.
-
-Se você não solicitou este código, ignore esta mensagem.`;
+      const message = `🔒 ${code} Código Sent`;
 
       const response = await fetch('https://9045.bubblewhats.com/send-message', {
         method: 'POST',
@@ -103,6 +164,7 @@ Se você não solicitou este código, ignore esta mensagem.`;
         
         if (profissionalExistente) {
           setProfissional(profissionalExistente);
+          login(profissionalExistente);
           toast({
             title: "Bem-vindo de volta!",
             description: "Você pode editar suas informações abaixo"
@@ -135,15 +197,12 @@ Se você não solicitou este código, ignore esta mensagem.`;
     }
   };
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = (savedProfissional: Profissional) => {
+    login(savedProfissional);
     toast({
       title: "Sucesso!",
       description: profissional ? "Perfil atualizado com sucesso" : "Cadastro realizado com sucesso"
     });
-    // Recarregar dados do profissional após salvar
-    if (profissional) {
-      loadProfissionalByWhatsapp(whatsapp).then(setProfissional).catch(console.error);
-    }
   };
 
   const renderLogin = () => (
@@ -216,6 +275,10 @@ Se você não solicitou este código, ignore esta mensagem.`;
       </CardContent>
     </Card>
   );
+
+  if (sessionLoading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Carregando...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">

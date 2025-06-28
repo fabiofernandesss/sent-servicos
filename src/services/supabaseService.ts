@@ -53,6 +53,13 @@ export interface Profissional {
   valor_diaria?: number;
 }
 
+export interface ProfissionalCategoria {
+  id?: number;
+  profissional_id: number;
+  categoria_id: string;
+  created_at?: string;
+}
+
 export const loadCategorias = async () => {
   console.log('Carregando categorias...');
   const { data, error } = await supabase
@@ -207,7 +214,68 @@ export const loadProfissionalByWhatsapp = async (whatsapp: string) => {
   return data;
 };
 
-export const createProfissional = async (profissionalData: Profissional) => {
+export const loadProfissionalCategorias = async (profissionalId: number) => {
+  console.log('Carregando categorias do profissional:', profissionalId);
+  
+  const { data, error } = await supabase
+    .from('profissional_categorias')
+    .select(`
+      *,
+      categorias:categoria_id (
+        id,
+        nome
+      )
+    `)
+    .eq('profissional_id', profissionalId);
+
+  if (error) {
+    console.error('Erro ao carregar categorias do profissional:', error);
+    throw error;
+  }
+
+  console.log('Categorias do profissional carregadas:', data?.length);
+  return data || [];
+};
+
+export const saveProfissionalCategorias = async (profissionalId: number, categoriaIds: string[]) => {
+  console.log('Salvando categorias do profissional:', profissionalId, categoriaIds);
+  
+  // Primeiro, remover todas as categorias existentes
+  const { error: deleteError } = await supabase
+    .from('profissional_categorias')
+    .delete()
+    .eq('profissional_id', profissionalId);
+
+  if (deleteError) {
+    console.error('Erro ao remover categorias existentes:', deleteError);
+    throw deleteError;
+  }
+
+  // Depois, inserir as novas categorias
+  if (categoriaIds.length > 0) {
+    const insertData = categoriaIds.map(categoria_id => ({
+      profissional_id: profissionalId,
+      categoria_id
+    }));
+
+    const { data, error } = await supabase
+      .from('profissional_categorias')
+      .insert(insertData)
+      .select();
+
+    if (error) {
+      console.error('Erro ao salvar categorias do profissional:', error);
+      throw error;
+    }
+
+    console.log('Categorias do profissional salvas:', data);
+    return data;
+  }
+
+  return [];
+};
+
+export const createProfissional = async (profissionalData: Profissional, categoriaIds: string[] = []) => {
   console.log('Criando profissional:', profissionalData);
   
   const { data, error } = await supabase
@@ -222,10 +290,16 @@ export const createProfissional = async (profissionalData: Profissional) => {
   }
 
   console.log('Profissional criado:', data);
+  
+  // Salvar categorias se fornecidas
+  if (categoriaIds.length > 0) {
+    await saveProfissionalCategorias(data.id, categoriaIds);
+  }
+  
   return data;
 };
 
-export const updateProfissional = async (id: number, profissionalData: Partial<Profissional>) => {
+export const updateProfissional = async (id: number, profissionalData: Partial<Profissional>, categoriaIds?: string[]) => {
   console.log('Atualizando profissional:', id, profissionalData);
   
   const { data, error } = await supabase
@@ -241,5 +315,11 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   }
 
   console.log('Profissional atualizado:', data);
+  
+  // Atualizar categorias se fornecidas
+  if (categoriaIds) {
+    await saveProfissionalCategorias(id, categoriaIds);
+  }
+  
   return data;
 };
