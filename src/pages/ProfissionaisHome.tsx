@@ -243,8 +243,8 @@ const ProfissionaisHome = () => {
                   <Card key={demanda.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden">
                     <div className="relative">
                       {/* Header com gradiente */}
-                      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-black/10"></div>
+                      <div className="bg-gradient-to-r from-[#1E486F] to-blue-700 p-4 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#1E486F]/90 to-blue-800/70"></div>
                         <div className="relative flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
@@ -317,7 +317,7 @@ const ProfissionaisHome = () => {
 
                         {/* Botão de ação destacado */}
                         <Button 
-                          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
+                          className="w-full bg-gradient-to-r from-[#1E486F] to-blue-700 hover:from-[#1E486F]/90 hover:to-blue-800 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
                           size="lg"
                         >
                           💼 Enviar Proposta
