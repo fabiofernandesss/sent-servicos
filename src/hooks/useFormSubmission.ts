@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createDemanda, type DemandaData } from '@/services/supabaseService';
-import { sendWhatsAppMessage, sendWhatsAppToProfessionals } from '@/services/whatsappService';
+import { sendWhatsAppMessage } from '@/services/whatsappService';
 import { sendRecursiveWhatsappMessage } from '@/services/recursiveWhatsappService';
 
 export const useFormSubmission = () => {
