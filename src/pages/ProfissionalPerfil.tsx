@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,11 +12,17 @@ import MobileMenu from '@/components/MobileMenu';
 import FormularioProfissional from '@/components/FormularioProfissional';
 import { Profissional, loadProfissionalByWhatsapp } from '@/services/supabaseService';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
-
 const ProfissionalPerfil = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { profissionalLogado, loading: sessionLoading, login, logout } = useProfissionalSession();
+  const {
+    toast
+  } = useToast();
+  const {
+    profissionalLogado,
+    loading: sessionLoading,
+    login,
+    logout
+  } = useProfissionalSession();
   const [step, setStep] = useState<'login' | 'otp' | 'form'>('login');
   const [whatsapp, setWhatsapp] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -26,27 +31,17 @@ const ProfissionalPerfil = () => {
 
   // Se já estiver logado, mostrar diretamente o formulário
   if (!sessionLoading && profissionalLogado) {
-    return (
-      <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+    return <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
         {/* Header */}
         <header className="bg-white shadow-sm border-b sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/')}
-                  className="text-gray-600"
-                >
+                <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-gray-600">
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   Voltar
                 </Button>
-                <img 
-                  src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" 
-                  alt="Sent Serviços" 
-                  className="h-5 w-auto" 
-                />
+                <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
               </div>
               <div className="flex items-center gap-2">
                 <nav className="hidden md:flex space-x-2">
@@ -54,15 +49,7 @@ const ProfissionalPerfil = () => {
                   <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/equipamentos')}>Equipamentos</Button>
                   <Button variant="ghost" size="sm" className="text-[#1c4970]">Perfil</Button>
                 </nav>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                  className="text-red-600 border-red-600 hover:bg-red-50"
-                >
-                  <LogOut className="h-4 w-4 mr-1" />
-                  Sair
-                </Button>
+                
                 <MobileMenu />
               </div>
             </div>
@@ -71,25 +58,19 @@ const ProfissionalPerfil = () => {
 
         {/* Conteúdo Principal */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <FormularioProfissional 
-            profissional={profissionalLogado}
-            whatsapp={profissionalLogado.whatsapp}
-            onSuccess={(updatedProfissional) => {
-              login(updatedProfissional);
-              toast({
-                title: "Sucesso!",
-                description: "Perfil atualizado com sucesso!"
-              });
-            }}
-          />
+          <FormularioProfissional profissional={profissionalLogado} whatsapp={profissionalLogado.whatsapp} onSuccess={updatedProfissional => {
+          login(updatedProfissional);
+          toast({
+            title: "Sucesso!",
+            description: "Perfil atualizado com sucesso!"
+          });
+        }} />
         </div>
 
         {/* Mobile Navbar */}
         <MobileNavbar />
-      </div>
-    );
+      </div>;
   }
-
   const sendOTP = async () => {
     if (!whatsapp || whatsapp.length < 10) {
       toast({
@@ -99,34 +80,30 @@ const ProfissionalPerfil = () => {
       });
       return;
     }
-
     setLoading(true);
     try {
       // Gerar código OTP de 4 dígitos
       const code = Math.floor(1000 + Math.random() * 9000).toString();
-      
+
       // Salvar código temporariamente (em produção, salvar no backend)
       localStorage.setItem('otp_code', code);
       localStorage.setItem('otp_whatsapp', whatsapp);
-      
+
       // Enviar mensagem WhatsApp
       const phoneNumber = whatsapp.replace(/\D/g, '');
       const jid = `55${phoneNumber}`;
-      
       const message = `🔒 ${code} Código Sent`;
-
       const response = await fetch('https://9045.bubblewhats.com/send-message', {
         method: 'POST',
         headers: {
           'Authorization': 'YzFkMGVkNzUwYzBjMjlhYzg0ZmJjYmU3',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           jid: jid,
           message: message
         })
       });
-
       if (response.ok) {
         toast({
           title: "Código Enviado",
@@ -147,21 +124,17 @@ const ProfissionalPerfil = () => {
       setLoading(false);
     }
   };
-
   const verifyOTP = async () => {
     const savedCode = localStorage.getItem('otp_code');
     const savedWhatsapp = localStorage.getItem('otp_whatsapp');
-    
     if (otpCode === savedCode && whatsapp === savedWhatsapp) {
       // Limpar código usado
       localStorage.removeItem('otp_code');
       localStorage.removeItem('otp_whatsapp');
-      
       setLoading(true);
       try {
         // Verificar se profissional existe no Supabase
         const profissionalExistente = await loadProfissionalByWhatsapp(whatsapp);
-        
         if (profissionalExistente) {
           setProfissional(profissionalExistente);
           login(profissionalExistente);
@@ -176,7 +149,6 @@ const ProfissionalPerfil = () => {
             description: "Complete seu cadastro para começar a receber demandas"
           });
         }
-        
         setStep('form');
       } catch (error) {
         console.error('Erro ao verificar profissional:', error);
@@ -196,7 +168,6 @@ const ProfissionalPerfil = () => {
       });
     }
   };
-
   const handleFormSuccess = (savedProfissional: Profissional) => {
     login(savedProfissional);
     toast({
@@ -204,9 +175,7 @@ const ProfissionalPerfil = () => {
       description: profissional ? "Perfil atualizado com sucesso" : "Cadastro realizado com sucesso"
     });
   };
-
-  const renderLogin = () => (
-    <Card className="w-full max-w-md mx-auto">
+  const renderLogin = () => <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full w-fit">
           <User className="h-8 w-8 text-[#1E486F]" />
@@ -217,29 +186,15 @@ const ProfissionalPerfil = () => {
       <CardContent className="space-y-4">
         <div>
           <Label htmlFor="whatsapp">WhatsApp</Label>
-          <Input
-            id="whatsapp"
-            type="tel"
-            placeholder="(11) 99999-9999"
-            value={whatsapp}
-            onChange={(e) => setWhatsapp(e.target.value)}
-            className="mt-1"
-          />
+          <Input id="whatsapp" type="tel" placeholder="(11) 99999-9999" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} className="mt-1" />
         </div>
-        <Button 
-          onClick={sendOTP} 
-          disabled={loading}
-          className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90"
-        >
+        <Button onClick={sendOTP} disabled={loading} className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90">
           <Phone className="h-4 w-4 mr-2" />
           {loading ? 'Enviando...' : 'Enviar Código'}
         </Button>
       </CardContent>
-    </Card>
-  );
-
-  const renderOTP = () => (
-    <Card className="w-full max-w-md mx-auto">
+    </Card>;
+  const renderOTP = () => <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 p-3 bg-green-100 rounded-full w-fit">
           <CheckCircle className="h-8 w-8 text-green-600" />
@@ -258,49 +213,28 @@ const ProfissionalPerfil = () => {
             </InputOTPGroup>
           </InputOTP>
         </div>
-        <Button 
-          onClick={verifyOTP}
-          disabled={otpCode.length !== 4 || loading}
-          className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90"
-        >
+        <Button onClick={verifyOTP} disabled={otpCode.length !== 4 || loading} className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90">
           {loading ? 'Verificando...' : 'Verificar Código'}
         </Button>
-        <Button 
-          variant="ghost" 
-          onClick={() => setStep('login')}
-          className="w-full"
-        >
+        <Button variant="ghost" onClick={() => setStep('login')} className="w-full">
           Voltar
         </Button>
       </CardContent>
-    </Card>
-  );
-
+    </Card>;
   if (sessionLoading) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Carregando...</div>;
   }
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+  return <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/')}
-                className="text-gray-600"
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-gray-600">
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Voltar
               </Button>
-              <img 
-                src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" 
-                alt="Sent Serviços" 
-                className="h-5 w-auto" 
-              />
+              <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
             </div>
             <nav className="hidden md:flex space-x-2">
               <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/')}>Início</Button>
@@ -316,19 +250,11 @@ const ProfissionalPerfil = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {step === 'login' && renderLogin()}
         {step === 'otp' && renderOTP()}
-        {step === 'form' && (
-          <FormularioProfissional 
-            profissional={profissional}
-            whatsapp={whatsapp}
-            onSuccess={handleFormSuccess}
-          />
-        )}
+        {step === 'form' && <FormularioProfissional profissional={profissional} whatsapp={whatsapp} onSuccess={handleFormSuccess} />}
       </div>
 
       {/* Mobile Navbar */}
       <MobileNavbar />
-    </div>
-  );
+    </div>;
 };
-
 export default ProfissionalPerfil;
