@@ -315,9 +315,31 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
 export const createProfissional = async (profissionalData: Profissional, categoriaIds: string[] = []) => {
   console.log('Criando profissional:', profissionalData);
   
+  // Garantir que todos os campos estão sendo enviados corretamente
+  const cleanData = {
+    cpf_cnpj: profissionalData.cpf_cnpj?.trim(),
+    nome: profissionalData.nome?.trim(),
+    whatsapp: profissionalData.whatsapp?.trim(),
+    email: profissionalData.email?.trim(),
+    estado: profissionalData.estado?.trim(),
+    cidade: profissionalData.cidade?.trim(), // Garantir que cidade está sendo enviada
+    bairro: profissionalData.bairro?.trim() || null,
+    rua: profissionalData.rua?.trim() || null,
+    numero: profissionalData.numero?.trim() || null,
+    cep: profissionalData.cep?.trim() || null,
+    aceita_diaria: profissionalData.aceita_diaria || false,
+    valor_diaria: profissionalData.valor_diaria || null,
+    crea: profissionalData.crea?.trim() || null,
+    creci: profissionalData.creci?.trim() || null,
+    nacionalidade: profissionalData.nacionalidade?.trim() || 'Brasileira',
+    receber_msm: profissionalData.receber_msm ?? true
+  };
+
+  console.log('Dados limpos para criar profissional:', cleanData);
+  
   const { data, error } = await supabase
     .from('profissionais')
-    .insert([profissionalData])
+    .insert([cleanData])
     .select()
     .single();
 
@@ -346,9 +368,31 @@ export const createProfissional = async (profissionalData: Profissional, categor
 export const updateProfissional = async (id: number, profissionalData: Partial<Profissional>, categoriaIds?: string[]) => {
   console.log('Atualizando profissional:', id, profissionalData);
   
+  // Garantir que todos os campos estão sendo enviados corretamente, incluindo cidade
+  const cleanData = {
+    ...(profissionalData.cpf_cnpj && { cpf_cnpj: profissionalData.cpf_cnpj.trim() }),
+    ...(profissionalData.nome && { nome: profissionalData.nome.trim() }),
+    ...(profissionalData.whatsapp && { whatsapp: profissionalData.whatsapp.trim() }),
+    ...(profissionalData.email && { email: profissionalData.email.trim() }),
+    ...(profissionalData.estado && { estado: profissionalData.estado.trim() }),
+    ...(profissionalData.cidade !== undefined && { cidade: profissionalData.cidade?.trim() || null }), // Explicitamente incluir cidade
+    ...(profissionalData.bairro !== undefined && { bairro: profissionalData.bairro?.trim() || null }),
+    ...(profissionalData.rua !== undefined && { rua: profissionalData.rua?.trim() || null }),
+    ...(profissionalData.numero !== undefined && { numero: profissionalData.numero?.trim() || null }),
+    ...(profissionalData.cep !== undefined && { cep: profissionalData.cep?.trim() || null }),
+    ...(profissionalData.aceita_diaria !== undefined && { aceita_diaria: profissionalData.aceita_diaria }),
+    ...(profissionalData.valor_diaria !== undefined && { valor_diaria: profissionalData.valor_diaria }),
+    ...(profissionalData.crea !== undefined && { crea: profissionalData.crea?.trim() || null }),
+    ...(profissionalData.creci !== undefined && { creci: profissionalData.creci?.trim() || null }),
+    ...(profissionalData.nacionalidade !== undefined && { nacionalidade: profissionalData.nacionalidade?.trim() || 'Brasileira' }),
+    ...(profissionalData.receber_msm !== undefined && { receber_msm: profissionalData.receber_msm })
+  };
+
+  console.log('Dados limpos para atualizar profissional (incluindo cidade):', cleanData);
+  
   const { data, error } = await supabase
     .from('profissionais')
-    .update(profissionalData)
+    .update(cleanData)
     .eq('id', id)
     .select()
     .single();
@@ -358,7 +402,7 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
     throw error;
   }
 
-  console.log('Profissional atualizado:', data);
+  console.log('Profissional atualizado (verificar se cidade foi salva):', data);
   
   // Atualizar categorias se fornecidas
   if (categoriaIds && data.id) {
@@ -368,7 +412,7 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
       categoriaIds, 
       data.whatsapp,
       data.estado,
-      data.cidade
+      data.cidade // Usar a cidade atualizada
     );
   }
   
