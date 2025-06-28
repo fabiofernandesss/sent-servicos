@@ -24,5 +24,17 @@
   "categories": ["business", "productivity"],
   "lang": "pt-BR",
   "dir": "ltr",
-  "orientation": "portrait-primary"
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "id": "app.lovable.fd06a8d7b9ae4bf28c3d4f2aa1b18978",
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/lovable-uploads/ebf403bf-9595-4ccf-8cda-362bf4dc222c.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
 }
