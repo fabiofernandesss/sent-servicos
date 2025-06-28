@@ -1,11 +1,12 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus } from 'lucide-react';
+import { Plus, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { sendRecursiveWhatsappMessage } from '@/services/recursiveWhatsappService';
 import ProfissionaisFilters from './profissionais/ProfissionaisFilters';
 import ProfissionalForm, { ProfissionalFormData } from './profissionais/ProfissionalForm';
 import ProfissionalTable, { Profissional } from './profissionais/ProfissionalTable';
@@ -25,6 +26,11 @@ const ProfissionaisAdmin = () => {
   const [filterCidade, setFilterCidade] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDiaria, setFilterDiaria] = useState('');
+  
+  // Estados para WhatsApp
+  const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [whatsappButtonState, setWhatsappButtonState] = useState<'draft' | 'ready' | 'sending'>('draft');
+  const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
   
   const [formData, setFormData] = useState<ProfissionalFormData>({
     nome: '',
@@ -118,6 +124,96 @@ const ProfissionaisAdmin = () => {
       return matchesSearch && matchesEstado && matchesCidade && matchesStatus && matchesDiaria;
     });
   }, [profissionais, searchTerm, filterEstado, filterCidade, filterStatus, filterDiaria]);
+
+  const handleWhatsappButtonClick = async () => {
+    if (whatsappButtonState === 'draft') {
+      setWhatsappButtonState('ready');
+      return;
+    }
+
+    if (whatsappButtonState === 'ready' && whatsappMessage.trim()) {
+      await sendWhatsappToFiltered();
+    }
+  };
+
+  const sendWhatsappToFiltered = async () => {
+    if (!whatsappMessage.trim()) {
+      toast({
+        title: "Erro",
+        description: "Digite uma mensagem antes de enviar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (filteredProfissionais.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Nenhum profissional encontrado para enviar a mensagem.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setWhatsappButtonState('sending');
+    setSendingWhatsapp(true);
+
+    try {
+      // Extrair telefones dos profissionais filtrados
+      const telefones = filteredProfissionais
+        .map(p => p.whatsapp)
+        .filter(whatsapp => whatsapp && whatsapp.trim() !== '')
+        .map(whatsapp => whatsapp.replace(/\D/g, ''));
+
+      if (telefones.length === 0) {
+        toast({
+          title: "Erro",
+          description: "Nenhum telefone válido encontrado nos profissionais filtrados.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Enviar mensagem usando a API recursiva
+      const response = await fetch('https://9045.bubblewhats.com/recursive-send-message', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'YzFkMGVkNzUwYzBjMjlhYzg0ZmJjYmU3',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          recipients: telefones.join(','),
+          message: whatsappMessage,
+          interval: '5-10'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na API: ${response.status}`);
+      }
+
+      toast({
+        title: "Sucesso! 🎉",
+        description: `Mensagem enviada para ${telefones.length} profissionais filtrados.`,
+        duration: 5000,
+      });
+
+      // Reset do estado
+      setWhatsappMessage('');
+      setWhatsappButtonState('draft');
+
+    } catch (error) {
+      console.error('Erro ao enviar WhatsApp:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao enviar mensagens via WhatsApp.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingWhatsapp(false);
+      setWhatsappButtonState('draft');
+    }
+  };
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -240,31 +336,45 @@ const ProfissionaisAdmin = () => {
         <div>
           <CardTitle>Gerenciar Profissionais</CardTitle>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingProfissional(null);
-              resetForm();
-            }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Profissional
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>
-                {editingProfissional ? 'Editar Profissional' : 'Novo Profissional'}
-              </DialogTitle>
-            </DialogHeader>
-            <ProfissionalForm
-              formData={formData}
-              setFormData={setFormData}
-              onSubmit={handleSubmit}
-              onCancel={() => setDialogOpen(false)}
-              isEditing={!!editingProfissional}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Button
+            variant={whatsappButtonState === 'draft' ? 'outline' : whatsappButtonState === 'ready' ? 'default' : 'secondary'}
+            onClick={handleWhatsappButtonClick}
+            disabled={sendingWhatsapp || filteredProfissionais.length === 0}
+            className={whatsappButtonState === 'ready' ? 'bg-green-600 hover:bg-green-700' : ''}
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            {whatsappButtonState === 'draft' && 'Enviar WhatsApp'}
+            {whatsappButtonState === 'ready' && `Enviar para ${filteredProfissionais.length}`}
+            {whatsappButtonState === 'sending' && 'Enviando...'}
+          </Button>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => {
+                setEditingProfissional(null);
+                resetForm();
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Profissional
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingProfissional ? 'Editar Profissional' : 'Novo Profissional'}
+                </DialogTitle>
+              </DialogHeader>
+              <ProfissionalForm
+                formData={formData}
+                setFormData={setFormData}
+                onSubmit={handleSubmit}
+                onCancel={() => setDialogOpen(false)}
+                isEditing={!!editingProfissional}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         <ProfissionaisFilters
@@ -284,6 +394,33 @@ const ProfissionaisAdmin = () => {
           totalFiltered={filteredProfissionais.length}
           totalAll={profissionais.length}
         />
+
+        {/* Input de mensagem WhatsApp */}
+        {whatsappButtonState === 'ready' && (
+          <div className="mb-4 p-4 border rounded-lg bg-green-50">
+            <label className="block text-sm font-medium mb-2">
+              Mensagem para {filteredProfissionais.length} profissionais:
+            </label>
+            <Input
+              placeholder="Digite sua mensagem..."
+              value={whatsappMessage}
+              onChange={(e) => setWhatsappMessage(e.target.value)}
+              className="mb-2"
+            />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setWhatsappButtonState('draft');
+                  setWhatsappMessage('');
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
 
         <ProfissionalTable
           profissionais={filteredProfissionais}
