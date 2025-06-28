@@ -1,9 +1,12 @@
+
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Profissional } from '@/services/supabaseService';
 import { useInputMasks } from '@/hooks/useInputMasks';
 import { useCidades } from '@/hooks/useCidades';
+import { RefreshCw } from 'lucide-react';
 
 interface EnderecoFormProps {
   formData: Profissional;
@@ -32,6 +35,16 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
     onInputChange('cep', formatted);
   };
 
+  const handleRefreshCidades = () => {
+    // Force re-render do hook
+    if (formData.estado) {
+      onInputChange('estado', '');
+      setTimeout(() => {
+        onInputChange('estado', formData.estado!);
+      }, 100);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-[#1E486F]">Endereço</h3>
@@ -42,7 +55,7 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
             <SelectTrigger className="h-[54px]">
               <SelectValue placeholder="Selecione o estado" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white z-50 max-h-64 overflow-y-auto">
               {estados.map((estado) => (
                 <SelectItem key={estado} value={estado}>{estado}</SelectItem>
               ))}
@@ -63,26 +76,38 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
             />
           </div>
           <div>
-            <Label htmlFor="cidade-nova">Alterar Cidade</Label>
+            <Label htmlFor="cidade-nova" className="flex items-center justify-between">
+              Alterar Cidade
+              {formData.estado && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefreshCidades}
+                  className="h-auto p-1 text-xs"
+                  disabled={cidadesLoading}
+                >
+                  <RefreshCw className={`h-3 w-3 ${cidadesLoading ? 'animate-spin' : ''}`} />
+                </Button>
+              )}
+            </Label>
             <Select 
               value="" 
               onValueChange={handleCidadeChange}
-              disabled={!formData.estado}
+              disabled={!formData.estado || cidadesLoading}
             >
               <SelectTrigger className="h-[54px]">
                 <SelectValue placeholder={
                   !formData.estado 
                     ? "Selecione estado primeiro" 
                     : cidadesLoading 
-                    ? "Carregando cidades..." 
-                    : cidadesError
-                    ? "Erro ao carregar"
+                    ? "Carregando..." 
                     : cidades.length === 0 
-                    ? "Nenhuma cidade encontrada" 
+                    ? "Tentar novamente"
                     : "Selecionar nova cidade"
                 } />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white z-50 max-h-64 overflow-y-auto">
                 {cidades.length > 0 ? (
                   cidades.map((cidade) => (
                     <SelectItem key={cidade.id} value={cidade.nome}>
@@ -90,9 +115,21 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
                     </SelectItem>
                   ))
                 ) : (
-                  !cidadesLoading && !cidadesError && formData.estado && (
-                    <div className="p-2 text-sm text-gray-500">
-                      Nenhuma cidade encontrada
+                  !cidadesLoading && formData.estado && (
+                    <div className="p-4 text-center">
+                      <p className="text-sm text-gray-500 mb-2">
+                        Erro ao carregar cidades
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRefreshCidades}
+                        className="text-xs"
+                      >
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                        Tentar Novamente
+                      </Button>
                     </div>
                   )
                 )}
@@ -100,7 +137,6 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
             </Select>
           </div>
         </div>
-        
         
         <div>
           <Label htmlFor="bairro">Bairro</Label>
@@ -146,8 +182,13 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
       </div>
       
       {cidadesError && (
-        <div className="text-sm text-red-600 mt-2">
-          {cidadesError} - Tente novamente em alguns segundos
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-sm">
+          <p className="text-yellow-800 mb-2">
+            ⚠️ Usando lista simplificada de cidades
+          </p>
+          <p className="text-yellow-600 text-xs">
+            A conexão com o servidor de cidades está instável. Você ainda pode selecionar as principais cidades do estado.
+          </p>
         </div>
       )}
     </div>
