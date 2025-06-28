@@ -186,7 +186,7 @@ const ProfissionaisHome = () => {
               <Button 
                 variant="ghost" 
                 className="text-gray-600 font-bold" 
-                onClick={() => navigate('/profissionais')}
+                onClick={() => navigate('/perfil')}
                 style={{
                   height: '54px',
                   borderRadius: '27px'
@@ -196,7 +196,7 @@ const ProfissionaisHome = () => {
               </Button>
               {profissionalLogado && <ProfessionalLogoutMenu />}
             </nav>
-            <MobileNavbar />
+            <MobileMenu />
           </div>
         </div>
       </header>

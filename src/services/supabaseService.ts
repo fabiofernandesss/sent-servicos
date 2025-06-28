@@ -71,12 +71,6 @@ const cleanWhatsApp = (whatsapp: string): string => {
   return cleaned;
 };
 
-// Função para adicionar código 55 ao WhatsApp para categorias
-const addCountryCodeForCategories = (whatsapp: string): string => {
-  const cleaned = cleanWhatsApp(whatsapp);
-  return `55${cleaned}`;
-};
-
 export const loadCategorias = async () => {
   console.log('Carregando categorias...');
   const { data, error } = await supabase
@@ -266,17 +260,16 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
 
   // Depois, inserir as novas categorias se fornecidas
   if (categoriaIds.length > 0) {
-    // Usar função específica para adicionar código 55 nas categorias
-    let whatsappWithCountryCode = '';
+    // Limpar WhatsApp antes de salvar
+    let cleanedWhatsapp = '';
     if (whatsapp) {
-      whatsappWithCountryCode = addCountryCodeForCategories(whatsapp);
-      console.log('WhatsApp com código 55 para categorias:', whatsappWithCountryCode);
+      cleanedWhatsapp = cleanWhatsApp(whatsapp);
     }
 
     const insertData = categoriaIds.map(categoria_id => ({
       profissional_id: profissionalId,
       categoria_id,
-      whatsapp: whatsappWithCountryCode || null,
+      whatsapp: cleanedWhatsapp || null,
       estado: estado || null,
       cidade: cidade || null
     }));

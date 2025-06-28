@@ -56,7 +56,7 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
         <div>
           <Label htmlFor="estado">Estado *</Label>
           <Select value={formData.estado || ''} onValueChange={handleEstadoChange}>
-            <SelectTrigger className="h-[54px]">
+            <SelectTrigger>
               <SelectValue placeholder="Selecione o estado" />
             </SelectTrigger>
             <SelectContent>
@@ -75,7 +75,7 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
               id="cidade-atual"
               value={formData.cidade || ''}
               readOnly
-              className="bg-gray-100 cursor-not-allowed h-[54px]"
+              className="bg-gray-100 cursor-not-allowed"
               placeholder="Cidade no banco"
             />
           </div>
@@ -86,7 +86,7 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
               onValueChange={handleCidadeChange}
               disabled={!formData.estado}
             >
-              <SelectTrigger className="h-[54px]">
+              <SelectTrigger>
                 <SelectValue placeholder={
                   !formData.estado 
                     ? "Selecione estado" 
