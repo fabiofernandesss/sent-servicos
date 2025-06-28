@@ -10,19 +10,14 @@ import { useToast } from '@/hooks/use-toast';
 import MobileNavbar from '@/components/MobileNavbar';
 import MobileMenu from '@/components/MobileMenu';
 import FormularioProfissional from '@/components/FormularioProfissional';
+import CarteiraCard from '@/components/CarteiraCard';
 import { Profissional, loadProfissionalByWhatsapp } from '@/services/supabaseService';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
+
 const ProfissionalPerfil = () => {
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const {
-    profissionalLogado,
-    loading: sessionLoading,
-    login,
-    logout
-  } = useProfissionalSession();
+  const { toast } = useToast();
+  const { profissionalLogado, loading: sessionLoading, login, logout } = useProfissionalSession();
   const [step, setStep] = useState<'login' | 'otp' | 'form'>('login');
   const [whatsapp, setWhatsapp] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -31,7 +26,8 @@ const ProfissionalPerfil = () => {
 
   // Se já estiver logado, mostrar diretamente o formulário
   if (!sessionLoading && profissionalLogado) {
-    return <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+    return (
+      <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
         {/* Header */}
         <header className="bg-white shadow-sm border-b sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,19 +54,28 @@ const ProfissionalPerfil = () => {
 
         {/* Conteúdo Principal */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <FormularioProfissional profissional={profissionalLogado} whatsapp={profissionalLogado.whatsapp} onSuccess={updatedProfissional => {
-          login(updatedProfissional);
-          toast({
-            title: "Sucesso!",
-            description: "Perfil atualizado com sucesso!"
-          });
-        }} />
+          {/* Carteira Card */}
+          <CarteiraCard saldo={profissionalLogado.saldo || 0} />
+          
+          <FormularioProfissional 
+            profissional={profissionalLogado} 
+            whatsapp={profissionalLogado.whatsapp} 
+            onSuccess={(updatedProfissional) => {
+              login(updatedProfissional);
+              toast({
+                title: "Sucesso!",
+                description: "Perfil atualizado com sucesso!"
+              });
+            }} 
+          />
         </div>
 
         {/* Mobile Navbar */}
         <MobileNavbar />
-      </div>;
+      </div>
+    );
   }
+
   const sendOTP = async () => {
     if (!whatsapp || whatsapp.length < 10) {
       toast({
@@ -80,6 +85,7 @@ const ProfissionalPerfil = () => {
       });
       return;
     }
+
     setLoading(true);
     try {
       // Gerar código OTP de 4 dígitos
@@ -93,6 +99,7 @@ const ProfissionalPerfil = () => {
       const phoneNumber = whatsapp.replace(/\D/g, '');
       const jid = `55${phoneNumber}`;
       const message = `🔒 ${code} Código Sent`;
+
       const response = await fetch('https://9045.bubblewhats.com/send-message', {
         method: 'POST',
         headers: {
@@ -104,6 +111,7 @@ const ProfissionalPerfil = () => {
           message: message
         })
       });
+
       if (response.ok) {
         toast({
           title: "Código Enviado",
@@ -124,17 +132,21 @@ const ProfissionalPerfil = () => {
       setLoading(false);
     }
   };
+
   const verifyOTP = async () => {
     const savedCode = localStorage.getItem('otp_code');
     const savedWhatsapp = localStorage.getItem('otp_whatsapp');
+
     if (otpCode === savedCode && whatsapp === savedWhatsapp) {
       // Limpar código usado
       localStorage.removeItem('otp_code');
       localStorage.removeItem('otp_whatsapp');
+
       setLoading(true);
       try {
         // Verificar se profissional existe no Supabase
         const profissionalExistente = await loadProfissionalByWhatsapp(whatsapp);
+        
         if (profissionalExistente) {
           setProfissional(profissionalExistente);
           login(profissionalExistente);
@@ -168,6 +180,7 @@ const ProfissionalPerfil = () => {
       });
     }
   };
+
   const handleFormSuccess = (savedProfissional: Profissional) => {
     login(savedProfissional);
     toast({
@@ -175,7 +188,9 @@ const ProfissionalPerfil = () => {
       description: profissional ? "Perfil atualizado com sucesso" : "Cadastro realizado com sucesso"
     });
   };
-  const renderLogin = () => <Card className="w-full max-w-md mx-auto">
+
+  const renderLogin = () => (
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full w-fit">
           <User className="h-8 w-8 text-[#1E486F]" />
@@ -186,15 +201,29 @@ const ProfissionalPerfil = () => {
       <CardContent className="space-y-4">
         <div>
           <Label htmlFor="whatsapp">WhatsApp</Label>
-          <Input id="whatsapp" type="tel" placeholder="(11) 99999-9999" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} className="mt-1" />
+          <Input
+            id="whatsapp"
+            type="tel"
+            placeholder="(11) 99999-9999"
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(e.target.value)}
+            className="mt-1"
+          />
         </div>
-        <Button onClick={sendOTP} disabled={loading} className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90">
+        <Button 
+          onClick={sendOTP} 
+          disabled={loading} 
+          className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90"
+        >
           <Phone className="h-4 w-4 mr-2" />
           {loading ? 'Enviando...' : 'Enviar Código'}
         </Button>
       </CardContent>
-    </Card>;
-  const renderOTP = () => <Card className="w-full max-w-md mx-auto">
+    </Card>
+  );
+
+  const renderOTP = () => (
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 p-3 bg-green-100 rounded-full w-fit">
           <CheckCircle className="h-8 w-8 text-green-600" />
@@ -213,18 +242,30 @@ const ProfissionalPerfil = () => {
             </InputOTPGroup>
           </InputOTP>
         </div>
-        <Button onClick={verifyOTP} disabled={otpCode.length !== 4 || loading} className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90">
+        <Button 
+          onClick={verifyOTP} 
+          disabled={otpCode.length !== 4 || loading} 
+          className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90"
+        >
           {loading ? 'Verificando...' : 'Verificar Código'}
         </Button>
         <Button variant="ghost" onClick={() => setStep('login')} className="w-full">
           Voltar
         </Button>
       </CardContent>
-    </Card>;
+    </Card>
+  );
+
   if (sessionLoading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Carregando...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        Carregando...
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -250,11 +291,19 @@ const ProfissionalPerfil = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {step === 'login' && renderLogin()}
         {step === 'otp' && renderOTP()}
-        {step === 'form' && <FormularioProfissional profissional={profissional} whatsapp={whatsapp} onSuccess={handleFormSuccess} />}
+        {step === 'form' && (
+          <FormularioProfissional 
+            profissional={profissional} 
+            whatsapp={whatsapp} 
+            onSuccess={handleFormSuccess} 
+          />
+        )}
       </div>
 
       {/* Mobile Navbar */}
       <MobileNavbar />
-    </div>;
+    </div>
+  );
 };
+
 export default ProfissionalPerfil;

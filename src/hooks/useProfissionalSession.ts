@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Profissional } from '@/services/supabaseService';
 
 const STORAGE_KEY = 'profissional_session';
+const TEMP_CATEGORIES_KEY = 'temp_profissional_categories';
 
 export const useProfissionalSession = () => {
   const [profissionalLogado, setProfissionalLogado] = useState<Profissional | null>(null);
@@ -30,6 +31,7 @@ export const useProfissionalSession = () => {
 
   const logout = () => {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TEMP_CATEGORIES_KEY);
     setProfissionalLogado(null);
   };
 
@@ -38,12 +40,28 @@ export const useProfissionalSession = () => {
     setProfissionalLogado(profissional);
   };
 
+  const saveTempCategories = (categories: string[]) => {
+    localStorage.setItem(TEMP_CATEGORIES_KEY, JSON.stringify(categories));
+  };
+
+  const getTempCategories = (): string[] => {
+    const saved = localStorage.getItem(TEMP_CATEGORIES_KEY);
+    return saved ? JSON.parse(saved) : [];
+  };
+
+  const clearTempCategories = () => {
+    localStorage.removeItem(TEMP_CATEGORIES_KEY);
+  };
+
   return {
     profissionalLogado,
     loading,
     login,
     logout,
     updateSession,
+    saveTempCategories,
+    getTempCategories,
+    clearTempCategories,
     isLoggedIn: !!profissionalLogado
   };
 };

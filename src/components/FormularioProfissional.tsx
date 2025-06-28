@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Profissional, createProfissional, updateProfissional, loadCidades, loadProfissionalCategorias } from '@/services/supabaseService';
+import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 import CategoriasSelector from './CategoriasSelector';
 
 interface FormularioProfissionalProps {
@@ -18,6 +19,7 @@ interface FormularioProfissionalProps {
 
 const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: FormularioProfissionalProps) => {
   const { toast } = useToast();
+  const { saveTempCategories, getTempCategories, clearTempCategories, isLoggedIn } = useProfissionalSession();
   const [loading, setLoading] = useState(false);
   const [cidades, setCidades] = useState<any[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -53,19 +55,31 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
   }, [formData.estado]);
 
   useEffect(() => {
-    // Carregar categorias do profissional se estiver editando
     if (profissional?.id) {
+      // Se está editando um profissional existente, carregar categorias do banco
       loadProfissionalCategorias(profissional.id)
         .then(categorias => {
           const categoryIds = categorias.map(cat => cat.categoria_id);
           setSelectedCategories(categoryIds);
         })
         .catch(console.error);
+    } else {
+      // Se não está logado, carregar categorias temporárias
+      const tempCategories = getTempCategories();
+      setSelectedCategories(tempCategories);
     }
-  }, [profissional]);
+  }, [profissional, getTempCategories]);
 
   const handleInputChange = (field: keyof Profissional, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCategoriesChange = (categories: string[]) => {
+    setSelectedCategories(categories);
+    // Se não está logado, salvar temporariamente
+    if (!isLoggedIn) {
+      saveTempCategories(categories);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,6 +116,8 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
       } else {
         // Criar novo profissional
         result = await createProfissional(formData, selectedCategories);
+        // Limpar categorias temporárias após o cadastro
+        clearTempCategories();
         toast({
           title: "Sucesso",
           description: "Cadastro realizado com sucesso!"
@@ -254,7 +270,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
             <h3 className="text-lg font-semibold text-[#1E486F]">Categorias de Serviço *</h3>
             <CategoriasSelector 
               selectedCategories={selectedCategories}
-              onCategoriesChange={setSelectedCategories}
+              onCategoriesChange={handleCategoriesChange}
             />
           </div>
 
