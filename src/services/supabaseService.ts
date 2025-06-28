@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -374,4 +373,30 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   }
   
   return data;
+};
+
+export const getProfissionaisTelefonesByCategoriaECidade = async (categoriaId: string, cidade: string) => {
+  console.log('Buscando telefones de profissionais por categoria e cidade:', { categoriaId, cidade });
+  
+  const { data, error } = await supabase
+    .from('profissional_categorias')
+    .select('whatsapp')
+    .eq('categoria_id', categoriaId)
+    .eq('cidade', cidade)
+    .not('whatsapp', 'is', null);
+
+  if (error) {
+    console.error('Erro ao buscar telefones dos profissionais:', error);
+    throw error;
+  }
+
+  // Filtrar números válidos e remover duplicatas
+  const telefones = data
+    ?.map(item => item.whatsapp)
+    .filter(tel => tel && tel.trim() !== '')
+    .filter((tel, index, arr) => arr.indexOf(tel) === index) // remover duplicatas
+    || [];
+
+  console.log('Telefones encontrados:', telefones.length, telefones);
+  return telefones;
 };
