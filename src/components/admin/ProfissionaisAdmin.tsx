@@ -15,13 +15,13 @@ interface Profissional {
   nome: string;
   cpf_cnpj: string;
   whatsapp: string;
-  email: string;
-  cidade: string;
-  estado: string;
-  saldo: number;
-  desativado: boolean;
-  aceita_diaria: boolean;
-  valor_diaria: number;
+  email: string | null;
+  cidade: string | null;
+  estado: string | null;
+  saldo: number | null;
+  desativado: boolean | null;
+  aceita_diaria: boolean | null;
+  valor_diaria: number | null;
 }
 
 const ProfissionaisAdmin = () => {
@@ -59,12 +59,18 @@ const ProfissionaisAdmin = () => {
 
   const loadProfissionais = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('profissionais')
-        .select('*')
+        .select('id, nome, cpf_cnpj, whatsapp, email, cidade, estado, saldo, desativado, aceita_diaria, valor_diaria')
         .order('nome');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao carregar profissionais:', error);
+        throw error;
+      }
+      
+      console.log('Profissionais carregados:', data);
       setProfissionais(data || []);
     } catch (error) {
       console.error('Erro ao carregar profissionais:', error);
@@ -488,6 +494,12 @@ const ProfissionaisAdmin = () => {
             ))}
           </TableBody>
         </Table>
+
+        {filteredProfissionais.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            Nenhum profissional encontrado
+          </div>
+        )}
 
         {/* Dialog para visualizar detalhes */}
         <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>

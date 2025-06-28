@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,11 +18,11 @@ interface Demanda {
   cidade: string;
   estado: string;
   urgencia: string;
-  observacao: string;
+  observacao: string | null;
   status: string;
   created_at: string;
-  categorias?: { nome: string };
-  subcategorias?: { nome: string };
+  categorias?: { nome: string } | null;
+  subcategorias?: { nome: string } | null;
 }
 
 const DemandasAdmin = () => {
@@ -47,16 +46,31 @@ const DemandasAdmin = () => {
 
   const loadDemandas = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('demandas')
         .select(`
-          *,
+          id,
+          nome,
+          email,
+          whatsapp,
+          cidade,
+          estado,
+          urgencia,
+          observacao,
+          status,
+          created_at,
           categorias:categoria_id (nome),
           subcategorias:subcategoria_id (nome)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao carregar demandas:', error);
+        throw error;
+      }
+      
+      console.log('Demandas carregadas:', data);
       setDemandas(data || []);
     } catch (error) {
       console.error('Erro ao carregar demandas:', error);
@@ -263,7 +277,7 @@ const DemandasAdmin = () => {
             {filteredDemandas.map((demanda) => (
               <TableRow key={demanda.id}>
                 <TableCell className="font-medium">{demanda.nome}</TableCell>
-                <TableCell>{demanda.categorias?.nome}</TableCell>
+                <TableCell>{demanda.categorias?.nome || 'N/A'}</TableCell>
                 <TableCell>{demanda.cidade}/{demanda.estado}</TableCell>
                 <TableCell>
                   <Badge variant="outline">
@@ -298,6 +312,12 @@ const DemandasAdmin = () => {
             ))}
           </TableBody>
         </Table>
+
+        {filteredDemandas.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            Nenhuma demanda encontrada
+          </div>
+        )}
 
         {/* Dialog para visualizar detalhes */}
         <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>

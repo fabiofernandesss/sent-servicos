@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Database, Users, Package, FileText, Settings, ArrowLeft, LogOut } from 'lucide-react';
+import { Database, Users, Package, FileText, Settings, ArrowLeft, LogOut, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminSession } from '@/hooks/useAdminSession';
 import AdminLogin from '@/components/admin/AdminLogin';
+import AdminDashboard from '@/components/admin/AdminDashboard';
 import CategoriasAdmin from '@/components/admin/CategoriasAdmin';
 import SubcategoriasAdmin from '@/components/admin/SubcategoriasAdmin';
 import ProfissionaisAdmin from '@/components/admin/ProfissionaisAdmin';
@@ -54,8 +55,12 @@ const Admin = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="categorias" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
             <TabsTrigger value="categorias" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Categorias
@@ -77,6 +82,10 @@ const Admin = () => {
               Equipamentos
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <AdminDashboard />
+          </TabsContent>
 
           <TabsContent value="categorias">
             <CategoriasAdmin />
