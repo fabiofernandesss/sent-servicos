@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -29,6 +28,7 @@ export interface DemandaData {
   observacao: string;
 }
 
+// Interface atualizada para corresponder exatamente à tabela do banco
 export interface Profissional {
   id?: number;
   cpf_cnpj: string;
@@ -54,11 +54,12 @@ export interface Profissional {
   valor_diaria?: number;
 }
 
+// Interface atualizada para corresponder à tabela profissional_categorias
 export interface ProfissionalCategoria {
   id?: number;
   profissional_id: number;
   categoria_id: string; // UUID como string
-  whatsapp?: string; // Novo campo para WhatsApp
+  whatsapp?: string;
   created_at?: string;
 }
 
@@ -216,11 +217,15 @@ export const loadProfissionalByWhatsapp = async (whatsapp: string) => {
       .from('profissionais')
       .select('*')
       .eq('whatsapp', variation)
-      .single();
+      .maybeSingle(); // Usar maybeSingle() ao invés de single() para evitar erro quando não encontrar
 
     if (data && !error) {
-      console.log('Profissional encontrado com WhatsApp:', variation);
+      console.log('Profissional encontrado com WhatsApp:', variation, data);
       return data;
+    }
+    
+    if (error) {
+      console.log('Erro ao buscar com WhatsApp:', variation, error);
     }
   }
 
@@ -247,7 +252,7 @@ export const loadProfissionalCategorias = async (profissionalId: number) => {
     throw error;
   }
 
-  console.log('Categorias do profissional carregadas:', data?.length);
+  console.log('Categorias do profissional carregadas:', data?.length, data);
   return data || [];
 };
 
@@ -314,7 +319,7 @@ export const createProfissional = async (profissionalData: Profissional, categor
   console.log('Profissional criado:', data);
   
   // Salvar categorias se fornecidas
-  if (categoriaIds.length > 0) {
+  if (categoriaIds.length > 0 && data.id) {
     await saveProfissionalCategorias(data.id, categoriaIds, profissionalData.whatsapp);
   }
   
@@ -339,8 +344,8 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   console.log('Profissional atualizado:', data);
   
   // Atualizar categorias se fornecidas
-  if (categoriaIds) {
-    await saveProfissionalCategorias(id, categoriaIds, data.whatsapp);
+  if (categoriaIds && data.id) {
+    await saveProfissionalCategorias(data.id, categoriaIds, data.whatsapp);
   }
   
   return data;

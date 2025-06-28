@@ -25,23 +25,48 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   const [formData, setFormData] = useState<Profissional>({
-    cpf_cnpj: profissional?.cpf_cnpj || '',
-    nome: profissional?.nome || '',
-    whatsapp: profissional?.whatsapp || whatsapp,
-    email: profissional?.email || '',
-    estado: profissional?.estado || '',
-    cidade: profissional?.cidade || '',
-    bairro: profissional?.bairro || '',
-    rua: profissional?.rua || '',
-    numero: profissional?.numero || '',
-    cep: profissional?.cep || '',
-    aceita_diaria: profissional?.aceita_diaria || false,
-    valor_diaria: profissional?.valor_diaria || 0,
-    crea: profissional?.crea || '',
-    creci: profissional?.creci || '',
-    nacionalidade: profissional?.nacionalidade || 'Brasileira',
-    receber_msm: profissional?.receber_msm ?? true,
+    cpf_cnpj: '',
+    nome: '',
+    whatsapp: whatsapp,
+    email: '',
+    estado: '',
+    cidade: '',
+    bairro: '',
+    rua: '',
+    numero: '',
+    cep: '',
+    aceita_diaria: false,
+    valor_diaria: 0,
+    crea: '',
+    creci: '',
+    nacionalidade: 'Brasileira',
+    receber_msm: true,
   });
+
+  // Atualizar formData quando profissional mudar
+  useEffect(() => {
+    if (profissional) {
+      console.log('Atualizando formData com dados do profissional:', profissional);
+      setFormData({
+        cpf_cnpj: profissional.cpf_cnpj || '',
+        nome: profissional.nome || '',
+        whatsapp: profissional.whatsapp || whatsapp,
+        email: profissional.email || '',
+        estado: profissional.estado || '',
+        cidade: profissional.cidade || '',
+        bairro: profissional.bairro || '',
+        rua: profissional.rua || '',
+        numero: profissional.numero || '',
+        cep: profissional.cep || '',
+        aceita_diaria: profissional.aceita_diaria || false,
+        valor_diaria: profissional.valor_diaria || 0,
+        crea: profissional.crea || '',
+        creci: profissional.creci || '',
+        nacionalidade: profissional.nacionalidade || 'Brasileira',
+        receber_msm: profissional.receber_msm ?? true,
+      });
+    }
+  }, [profissional, whatsapp]);
 
   const estados = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
@@ -51,6 +76,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
 
   useEffect(() => {
     if (formData.estado) {
+      console.log('Carregando cidades para o estado:', formData.estado);
       loadCidades(formData.estado).then(setCidades).catch(console.error);
     }
   }, [formData.estado]);
@@ -59,15 +85,21 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
     // Carregar categorias apenas uma vez
     if (!categoriesLoaded) {
       if (profissional?.id) {
+        console.log('Carregando categorias para profissional existente:', profissional.id);
         // Se está editando um profissional existente, carregar categorias do banco
         loadProfissionalCategorias(profissional.id)
           .then(categorias => {
+            console.log('Categorias carregadas do banco:', categorias);
             const categoryIds = categorias.map(cat => cat.categoria_id);
             setSelectedCategories(categoryIds);
             setCategoriesLoaded(true);
           })
-          .catch(console.error);
+          .catch(error => {
+            console.error('Erro ao carregar categorias:', error);
+            setCategoriesLoaded(true);
+          });
       } else {
+        console.log('Carregando categorias temporárias para novo cadastro');
         // Se não está logado, carregar categorias temporárias
         const tempCategories = getTempCategories();
         setSelectedCategories(tempCategories);
@@ -77,10 +109,12 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
   }, [profissional, getTempCategories, categoriesLoaded]);
 
   const handleInputChange = (field: keyof Profissional, value: any) => {
+    console.log('Alterando campo:', field, 'para:', value);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleCategoriesChange = (categories: string[]) => {
+    console.log('Categorias selecionadas alteradas:', categories);
     setSelectedCategories(categories);
     // Se não está logado, salvar temporariamente
     if (!isLoggedIn) {
@@ -131,6 +165,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
       }
       onSuccess(result);
     } catch (error) {
+      console.error('Erro ao salvar profissional:', error);
       toast({
         title: "Erro",
         description: profissional ? "Erro ao atualizar perfil" : "Erro ao realizar cadastro",
@@ -142,6 +177,14 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
   };
 
   const isEditing = !!profissional?.id;
+
+  console.log('Renderizando formulário com dados:', {
+    profissional,
+    formData,
+    selectedCategories,
+    categoriesLoaded,
+    isEditing
+  });
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -199,6 +242,15 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                   className="bg-gray-100"
                 />
               </div>
+              <div>
+                <Label htmlFor="nacionalidade">Nacionalidade</Label>
+                <Input
+                  id="nacionalidade"
+                  value={formData.nacionalidade}
+                  onChange={(e) => handleInputChange('nacionalidade', e.target.value)}
+                  placeholder="Brasileira"
+                />
+              </div>
             </div>
           </div>
 
@@ -208,7 +260,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="estado">Estado</Label>
-                <Select value={formData.estado} onValueChange={(value) => handleInputChange('estado', value)}>
+                <Select value={formData.estado || ''} onValueChange={(value) => handleInputChange('estado', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o estado" />
                   </SelectTrigger>
@@ -221,7 +273,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
               </div>
               <div>
                 <Label htmlFor="cidade">Cidade</Label>
-                <Select value={formData.cidade} onValueChange={(value) => handleInputChange('cidade', value)}>
+                <Select value={formData.cidade || ''} onValueChange={(value) => handleInputChange('cidade', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a cidade" />
                   </SelectTrigger>
@@ -236,7 +288,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                 <Label htmlFor="bairro">Bairro</Label>
                 <Input
                   id="bairro"
-                  value={formData.bairro}
+                  value={formData.bairro || ''}
                   onChange={(e) => handleInputChange('bairro', e.target.value)}
                   placeholder="Seu bairro"
                 />
@@ -245,7 +297,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                 <Label htmlFor="rua">Rua</Label>
                 <Input
                   id="rua"
-                  value={formData.rua}
+                  value={formData.rua || ''}
                   onChange={(e) => handleInputChange('rua', e.target.value)}
                   placeholder="Nome da rua"
                 />
@@ -254,7 +306,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                 <Label htmlFor="numero">Número</Label>
                 <Input
                   id="numero"
-                  value={formData.numero}
+                  value={formData.numero || ''}
                   onChange={(e) => handleInputChange('numero', e.target.value)}
                   placeholder="Número"
                 />
@@ -263,7 +315,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                 <Label htmlFor="cep">CEP</Label>
                 <Input
                   id="cep"
-                  value={formData.cep}
+                  value={formData.cep || ''}
                   onChange={(e) => handleInputChange('cep', e.target.value)}
                   placeholder="00000-000"
                 />
@@ -290,7 +342,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                 <Label htmlFor="crea">CREA (se aplicável)</Label>
                 <Input
                   id="crea"
-                  value={formData.crea}
+                  value={formData.crea || ''}
                   onChange={(e) => handleInputChange('crea', e.target.value)}
                   placeholder="Número do CREA"
                 />
@@ -299,7 +351,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                 <Label htmlFor="creci">CRECI (se aplicável)</Label>
                 <Input
                   id="creci"
-                  value={formData.creci}
+                  value={formData.creci || ''}
                   onChange={(e) => handleInputChange('creci', e.target.value)}
                   placeholder="Número do CRECI"
                 />
@@ -309,7 +361,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="aceita_diaria"
-                checked={formData.aceita_diaria}
+                checked={formData.aceita_diaria || false}
                 onCheckedChange={(checked) => handleInputChange('aceita_diaria', checked)}
               />
               <Label htmlFor="aceita_diaria">Aceito trabalhar por diária</Label>
@@ -321,7 +373,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
                 <Input
                   id="valor_diaria"
                   type="number"
-                  value={formData.valor_diaria}
+                  value={formData.valor_diaria || 0}
                   onChange={(e) => handleInputChange('valor_diaria', parseFloat(e.target.value) || 0)}
                   placeholder="150.00"
                 />
@@ -331,7 +383,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="receber_msm"
-                checked={formData.receber_msm}
+                checked={formData.receber_msm ?? true}
                 onCheckedChange={(checked) => handleInputChange('receber_msm', checked)}
               />
               <Label htmlFor="receber_msm">Desejo receber mensagens sobre novas demandas</Label>
