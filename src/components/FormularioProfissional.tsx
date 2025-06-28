@@ -21,9 +21,7 @@ const FormularioProfissional = ({
   whatsapp,
   onSuccess
 }: FormularioProfissionalProps) => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const {
     saveTempCategories,
     getTempCategories,
@@ -63,7 +61,7 @@ const FormularioProfissional = ({
         whatsapp: profissional.whatsapp || whatsapp,
         email: profissional.email || '',
         estado: profissional.estado || '',
-        cidade: profissional.cidade || '', // Corrigindo para pegar a cidade do profissional
+        cidade: profissional.cidade || '',
         bairro: profissional.bairro || '',
         rua: profissional.rua || '',
         numero: profissional.numero || '',
@@ -75,15 +73,46 @@ const FormularioProfissional = ({
         nacionalidade: profissional.nacionalidade || 'Brasileira',
         receber_msm: profissional.receber_msm ?? true
       });
+
+      // Se o profissional tem estado, carregar as cidades
+      if (profissional.estado) {
+        console.log('Carregando cidades para o estado do profissional:', profissional.estado);
+        loadCidades(profissional.estado)
+          .then(cidadesData => {
+            console.log('Cidades carregadas para o profissional:', cidadesData.length);
+            setCidades(cidadesData);
+          })
+          .catch(error => {
+            console.error('Erro ao carregar cidades do profissional:', error);
+          });
+      }
     }
   }, [profissional, whatsapp]);
+
   const estados = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+
   useEffect(() => {
     if (formData.estado) {
-      console.log('Carregando cidades para o estado:', formData.estado);
-      loadCidades(formData.estado).then(setCidades).catch(console.error);
+      console.log('Estado alterado, carregando cidades para:', formData.estado);
+      loadCidades(formData.estado)
+        .then(cidadesData => {
+          console.log('Cidades carregadas:', cidadesData.length);
+          setCidades(cidadesData);
+          // Se não há cidade selecionada ou a cidade atual não está na nova lista, limpar
+          if (formData.cidade && !cidadesData.find(c => c.nome === formData.cidade)) {
+            setFormData(prev => ({ ...prev, cidade: '' }));
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao carregar cidades:', error);
+          setCidades([]);
+        });
+    } else {
+      setCidades([]);
+      setFormData(prev => ({ ...prev, cidade: '' }));
     }
   }, [formData.estado]);
+
   useEffect(() => {
     // Carregar categorias apenas uma vez
     if (!categoriesLoaded) {
@@ -108,6 +137,7 @@ const FormularioProfissional = ({
       }
     }
   }, [profissional, getTempCategories, categoriesLoaded]);
+
   const handleInputChange = (field: keyof Profissional, value: any) => {
     console.log('Alterando campo:', field, 'para:', value);
     setFormData(prev => ({
@@ -115,6 +145,7 @@ const FormularioProfissional = ({
       [field]: value
     }));
   };
+
   const handleCategoriesChange = (categories: string[]) => {
     console.log('Categorias selecionadas alteradas:', categories);
     setSelectedCategories(categories);
@@ -123,6 +154,7 @@ const FormularioProfissional = ({
       saveTempCategories(categories);
     }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nome || !formData.cpf_cnpj || !formData.email) {
@@ -173,15 +205,20 @@ const FormularioProfissional = ({
       setLoading(false);
     }
   };
+
   const isEditing = !!profissional?.id;
+
   console.log('Renderizando formulário com dados:', {
     profissional,
     formData,
     selectedCategories,
     categoriesLoaded,
-    isEditing
+    isEditing,
+    cidadesCount: cidades.length
   });
-  return <Card className="w-full max-w-4xl mx-auto">
+
+  return (
+    <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl text-[#1E486F]">
           {isEditing ? 'Editar Perfil Profissional' : 'Cadastro Profissional'}
@@ -267,9 +304,19 @@ const FormularioProfissional = ({
               </div>
               <div>
                 <Label htmlFor="cidade">Cidade *</Label>
-                <Select value={formData.cidade || ''} onValueChange={(value) => handleInputChange('cidade', value)}>
+                <Select 
+                  value={formData.cidade || ''} 
+                  onValueChange={(value) => handleInputChange('cidade', value)}
+                  disabled={!formData.estado || cidades.length === 0}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione a cidade" />
+                    <SelectValue placeholder={
+                      !formData.estado 
+                        ? "Selecione o estado primeiro" 
+                        : cidades.length === 0 
+                        ? "Carregando cidades..." 
+                        : "Selecione a cidade"
+                    } />
                   </SelectTrigger>
                   <SelectContent>
                     {cidades.map((cidade) => (
@@ -397,7 +444,8 @@ const FormularioProfissional = ({
           </div>
         </form>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
 
 export default FormularioProfissional;

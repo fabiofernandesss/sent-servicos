@@ -1,63 +1,105 @@
 
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Wrench, User } from 'lucide-react';
+import { useState } from 'react';
+import { Menu, X, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useProfissionalSession } from '@/hooks/useProfissionalSession';
+import { useToast } from '@/hooks/use-toast';
 
 const MobileNavbar = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+  const { profissionalLogado, logout } = useProfissionalSession();
+  const { toast } = useToast();
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-    // Scroll to top after navigation
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
-  };
-
-  const isActive = (path: string) => {
-    return location.pathname === path;
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso",
+    });
+    setIsOpen(false);
+    // Redirecionar para a página inicial
+    window.location.href = '/';
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden">
-      <div className="flex justify-around items-center py-2">
-        <button
-          onClick={() => handleNavigation('/')}
-          className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-            isActive('/') 
-              ? 'text-[#1E486F] bg-blue-50' 
-              : 'text-gray-600 hover:text-[#1E486F] hover:bg-gray-50'
-          }`}
-        >
-          <Home className="h-5 w-5" />
-          <span className="text-xs mt-1">Início</span>
-        </button>
-        
-        <button
-          onClick={() => handleNavigation('/equipamentos')}
-          className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-            isActive('/equipamentos') 
-              ? 'text-[#1E486F] bg-blue-50' 
-              : 'text-gray-600 hover:text-[#1E486F] hover:bg-gray-50'
-          }`}
-        >
-          <Wrench className="h-5 w-5" />
-          <span className="text-xs mt-1">Equipamentos</span>
-        </button>
-        
-        <button
-          onClick={() => handleNavigation('/perfil')}
-          className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-            isActive('/perfil') 
-              ? 'text-[#1E486F] bg-blue-50' 
-              : 'text-gray-600 hover:text-[#1E486F] hover:bg-gray-50'
-          }`}
-        >
-          <User className="h-5 w-5" />
-          <span className="text-xs mt-1">Perfil</span>
-        </button>
-      </div>
-    </div>
+    <>
+      {/* Mobile menu button */}
+      <button
+        className="md:hidden p-2 text-white"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle menu"
+      >
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Mobile menu overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 md:hidden">
+          <div className="fixed inset-y-0 right-0 w-64 bg-[#1E486F] shadow-lg">
+            <div className="flex items-center justify-between p-4 border-b border-white/20">
+              <span className="text-white font-semibold">Menu</span>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-white p-1"
+                aria-label="Close menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <nav className="p-4 space-y-4">
+              <Link
+                to="/"
+                className="block text-white hover:text-gray-200 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Início
+              </Link>
+              <Link
+                to="/cliente-demanda"
+                className="block text-white hover:text-gray-200 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Solicitar Serviço
+              </Link>
+              <Link
+                to="/equipamentos"
+                className="block text-white hover:text-gray-200 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Equipamentos
+              </Link>
+              <Link
+                to="/profissionais"
+                className="block text-white hover:text-gray-200 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Área do Profissional
+              </Link>
+              
+              {profissionalLogado && (
+                <>
+                  <div className="border-t border-white/20 pt-4 mt-4">
+                    <p className="text-white/70 text-sm mb-2">
+                      Logado como: {profissionalLogado.nome}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={handleLogout}
+                    className="w-full text-white hover:text-gray-200 hover:bg-white/10 flex items-center gap-2 justify-start"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sair
+                  </Button>
+                </>
+              )}
+            </nav>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
