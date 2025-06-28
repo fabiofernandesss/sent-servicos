@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,6 +33,7 @@ const FormularioProfissional = ({
   const [cidades, setCidades] = useState<any[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+  const [cidadesLoaded, setCidadesLoaded] = useState(false);
   const [formData, setFormData] = useState<Profissional>({
     cpf_cnpj: '',
     nome: '',
@@ -91,27 +91,36 @@ const FormularioProfissional = ({
           .then(cidadesData => {
             console.log('Cidades carregadas para profissional existente:', cidadesData.length);
             setCidades(cidadesData);
+            setCidadesLoaded(true);
           })
           .catch(error => {
             console.error('Erro ao carregar cidades:', error);
+            setCidadesLoaded(true);
           });
+      } else {
+        setCidadesLoaded(true);
       }
+    } else {
+      setCidadesLoaded(true);
     }
   }, [profissional, whatsapp]);
 
-  // Effect para carregar cidades quando estado muda - CORRIGIDO
+  // Effect para carregar cidades quando estado muda - APENAS para mudanças reais
   useEffect(() => {
-    if (formData.estado) {
-      // APENAS carregar cidades se for um novo cadastro OU se o estado realmente mudou
-      const shouldLoadCities = !profissional || (profissional && formData.estado !== profissional.estado);
+    // Só executar se:
+    // 1. O estado existe
+    // 2. As cidades já foram carregadas inicialmente (para evitar conflito com o primeiro useEffect)
+    // 3. É uma mudança real de estado (não o carregamento inicial)
+    if (formData.estado && cidadesLoaded) {
+      const isStateChange = profissional ? formData.estado !== profissional.estado : true;
       
-      if (shouldLoadCities) {
+      if (isStateChange) {
         console.log('Carregando cidades devido à mudança de estado:', formData.estado);
         loadCidades(formData.estado)
           .then(cidadesData => {
             console.log('Cidades carregadas:', cidadesData.length);
             setCidades(cidadesData);
-            // APENAS limpar a cidade se mudou o estado (não no carregamento inicial)
+            // Limpar cidade apenas se mudou o estado e não é o carregamento inicial
             if (profissional && formData.estado !== profissional.estado) {
               console.log('Limpando cidade devido à mudança de estado');
               setFormData(prev => ({ ...prev, cidade: '' }));
@@ -122,10 +131,8 @@ const FormularioProfissional = ({
             setCidades([]);
           });
       }
-    } else {
-      setCidades([]);
     }
-  }, [formData.estado, profissional]);
+  }, [formData.estado, cidadesLoaded, profissional]);
 
   useEffect(() => {
     // Carregar categorias apenas uma vez
