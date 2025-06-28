@@ -1,9 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  'https://ryvcwjajgspbzxzncpfi.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8'
-);
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Categoria {
   id: string;
@@ -127,7 +123,6 @@ export const createDemanda = async (demandaData: DemandaData) => {
   console.log('Dados preparados para inserção:', insertData);
   
   try {
-    // Primeira tentativa: inserção normal
     const { data, error } = await supabase
       .from('demandas')
       .insert([insertData])
@@ -140,33 +135,6 @@ export const createDemanda = async (demandaData: DemandaData) => {
         hint: error.hint,
         code: error.code
       });
-      
-      // Se for erro de RLS, vamos tentar uma abordagem alternativa
-      if (error.code === '42501') {
-        console.log('Erro de RLS detectado, tentando abordagem alternativa...');
-        
-        // Fazer uma chamada HTTP direta para a API REST do Supabase
-        const response = await fetch(`https://ryvcwjajgspbzxzncpfi.supabase.co/rest/v1/demandas`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8',
-            'Prefer': 'return=representation'
-          },
-          body: JSON.stringify(insertData)
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Erro na API REST:', errorText);
-          throw new Error('Erro ao salvar demanda. Verifique se todos os dados estão corretos.');
-        }
-
-        const restData = await response.json();
-        console.log('Demanda criada via API REST:', restData);
-        return Array.isArray(restData) ? restData : [restData];
-      }
       
       throw new Error('Erro ao salvar demanda. Tente novamente.');
     }
