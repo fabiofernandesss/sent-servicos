@@ -1,4 +1,3 @@
-
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -92,15 +91,16 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
                   ))
                 ) : (
                   !cidadesLoading && !cidadesError && formData.estado && (
-                    <SelectItem value="" disabled>
+                    <div className="p-2 text-sm text-gray-500">
                       Nenhuma cidade encontrada
-                    </SelectItem>
+                    </div>
                   )
                 )}
               </SelectContent>
             </Select>
           </div>
         </div>
+        
         
         <div>
           <Label htmlFor="bairro">Bairro</Label>
