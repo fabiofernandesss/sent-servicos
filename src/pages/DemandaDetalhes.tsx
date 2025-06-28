@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,9 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Clock, User, Phone, Mail, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { createClient } from '@supabase/supabase-js';
-
 const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
-
 interface Demanda {
   id: string;
   nome: string;
@@ -23,25 +20,25 @@ interface Demanda {
   observacao: string;
   created_at: string;
 }
-
 const DemandaDetalhes = () => {
-  const { id } = useParams();
+  const {
+    id
+  } = useParams();
   const navigate = useNavigate();
   const [demanda, setDemanda] = useState<Demanda | null>(null);
   const [loading, setLoading] = useState(true);
   const [showContacts, setShowContacts] = useState(false);
-
   useEffect(() => {
     if (id) {
       loadDemanda();
     }
   }, [id]);
-
   const loadDemanda = async () => {
     try {
-      const { data, error } = await supabase
-        .from('demandas')
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from('demandas').select(`
           id,
           nome,
           email,
@@ -53,12 +50,8 @@ const DemandaDetalhes = () => {
           created_at,
           categorias!inner(nome),
           subcategorias!inner(nome)
-        `)
-        .eq('id', id)
-        .single();
-
+        `).eq('id', id).single();
       if (error) throw error;
-
       if (data) {
         setDemanda({
           id: data.id,
@@ -80,7 +73,6 @@ const DemandaDetalhes = () => {
       setLoading(false);
     }
   };
-
   const formatUrgencia = (urgencia: string) => {
     const urgenciaMap = {
       'preciso_com_urgencia': {
@@ -105,7 +97,6 @@ const DemandaDetalhes = () => {
       color: 'bg-gradient-to-r from-gray-500 to-gray-600'
     };
   };
-
   const formatTempo = (created_at: string) => {
     const agora = new Date();
     const criacao = new Date(created_at);
@@ -116,7 +107,6 @@ const DemandaDetalhes = () => {
     const diffDias = Math.floor(diffHoras / 24);
     return `${diffDias} dias atrás`;
   };
-
   const maskContact = (contact: string, type: 'phone' | 'email') => {
     if (type === 'phone') {
       return contact.substring(0, 5) + '*'.repeat(contact.length - 5);
@@ -125,52 +115,37 @@ const DemandaDetalhes = () => {
       return user.substring(0, 3) + '*'.repeat(user.length - 3) + '@' + domain;
     }
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-lg text-gray-600">Carregando demanda...</div>
-      </div>
-    );
+      </div>;
   }
-
   if (!demanda) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Demanda não encontrada</h2>
           <Button onClick={() => navigate('/profissionais')}>
             Voltar para oportunidades
           </Button>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  const { icon: Icon, color } = getCategoryIcon(demanda.categoria_nome);
+  const {
+    icon: Icon,
+    color
+  } = getCategoryIcon(demanda.categoria_nome);
   const urgenciaInfo = formatUrgencia(demanda.urgencia);
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  return <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/profissionais')}
-                className="text-gray-600"
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate('/profissionais')} className="text-gray-600">
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Voltar
               </Button>
-              <img 
-                src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" 
-                alt="Sent Serviços" 
-                className="h-5 w-auto" 
-              />
+              <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
             </div>
           </div>
         </div>
@@ -226,8 +201,7 @@ const DemandaDetalhes = () => {
             </div>
 
             {/* Descrição da Demanda */}
-            {demanda.observacao && (
-              <div className="relative">
+            {demanda.observacao && <div className="relative">
                 <h3 className="font-semibold text-lg text-gray-900 mb-3">Descrição da Demanda</h3>
                 <div className="absolute left-0 top-8 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
                 <div className="pl-6 py-3 bg-indigo-50 rounded-lg border border-indigo-100">
@@ -235,22 +209,13 @@ const DemandaDetalhes = () => {
                     "{demanda.observacao}"
                   </p>
                 </div>
-              </div>
-            )}
+              </div>}
 
             {/* Contatos */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-lg text-gray-900">Informações de Contato</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowContacts(!showContacts)}
-                  className="flex items-center gap-2"
-                >
-                  {showContacts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  {showContacts ? 'Ocultar' : 'Mostrar'} Contatos
-                </Button>
+                
               </div>
 
               <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
@@ -271,40 +236,29 @@ const DemandaDetalhes = () => {
                   </div>
                 </div>
                 
-                {!showContacts && (
-                  <div className="mt-3 pt-3 border-t border-amber-300">
+                {!showContacts && <div className="mt-3 pt-3 border-t border-amber-300">
                     <p className="text-sm text-amber-700 font-medium">
                       🔒 Complete os dados para ver as informações completas de contato
                     </p>
-                  </div>
-                )}
+                  </div>}
               </div>
             </div>
 
             {/* Botão de Ação */}
             <div className="pt-4">
-              <Button 
-                className="w-full font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
-                style={{
-                  backgroundColor: '#CB0533',
-                  height: '54px',
-                  borderRadius: '27px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#a50429';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#CB0533';
-                }}
-              >
-                ENVIAR PROPOSTA
-              </Button>
+              <Button className="w-full font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" style={{
+              backgroundColor: '#CB0533',
+              height: '54px',
+              borderRadius: '27px'
+            }} onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = '#a50429';
+            }} onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = '#CB0533';
+            }}>Comprar Demanda</Button>
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default DemandaDetalhes;
