@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -200,10 +199,13 @@ export const loadCidades = async (uf: string) => {
 export const loadProfissionalByWhatsapp = async (whatsapp: string) => {
   console.log('Buscando profissional por WhatsApp:', whatsapp);
   
+  // Limpar o WhatsApp para busca (remover caracteres especiais)
+  const cleanWhatsapp = whatsapp.replace(/\D/g, '');
+  
   const { data, error } = await supabase
     .from('profissionais')
     .select('*')
-    .eq('whatsapp', whatsapp)
+    .or(`whatsapp.eq.${whatsapp},whatsapp.eq.${cleanWhatsapp}`)
     .single();
 
   if (error && error.code !== 'PGRST116') {
@@ -238,8 +240,8 @@ export const loadProfissionalCategorias = async (profissionalId: number) => {
   return data || [];
 };
 
-export const saveProfissionalCategorias = async (profissionalId: number, categoriaIds: string[]) => {
-  console.log('Salvando categorias do profissional:', profissionalId, categoriaIds);
+export const saveProfissionalCategorias = async (profissionalId: number, categoriaIds: string[], whatsapp: string) => {
+  console.log('Salvando categorias do profissional:', profissionalId, categoriaIds, whatsapp);
   
   // Primeiro, remover todas as categorias existentes
   const { error: deleteError } = await supabase
@@ -252,11 +254,15 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
     throw deleteError;
   }
 
-  // Depois, inserir as novas categorias
+  // Depois, inserir as novas categorias com whatsapp (incluindo prefixo 55)
   if (categoriaIds.length > 0) {
+    // Garantir que o whatsapp tenha o prefixo 55
+    const whatsappWithPrefix = whatsapp.startsWith('55') ? whatsapp : `55${whatsapp.replace(/\D/g, '')}`;
+    
     const insertData = categoriaIds.map(categoria_id => ({
       profissional_id: profissionalId,
-      categoria_id
+      categoria_id,
+      whatsapp: whatsappWithPrefix
     }));
 
     const { data, error } = await supabase
@@ -293,8 +299,8 @@ export const createProfissional = async (profissionalData: Profissional, categor
   console.log('Profissional criado:', data);
   
   // Salvar categorias se fornecidas
-  if (categoriaIds.length > 0) {
-    await saveProfissionalCategorias(data.id, categoriaIds);
+  if (categoriaIds.length > 0 && profissionalData.whatsapp) {
+    await saveProfissionalCategorias(data.id, categoriaIds, profissionalData.whatsapp);
   }
   
   return data;
@@ -318,8 +324,8 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   console.log('Profissional atualizado:', data);
   
   // Atualizar categorias se fornecidas
-  if (categoriaIds) {
-    await saveProfissionalCategorias(id, categoriaIds);
+  if (categoriaIds && data.whatsapp) {
+    await saveProfissionalCategorias(id, categoriaIds, data.whatsapp);
   }
   
   return data;
