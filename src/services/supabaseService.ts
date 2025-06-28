@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -257,11 +258,17 @@ export const loadProfissionalCategorias = async (profissionalId: number) => {
 };
 
 export const saveProfissionalCategorias = async (profissionalId: number, categoriaIds: string[], whatsapp?: string, estado?: string, cidade?: string) => {
-  console.log('Salvando categorias do profissional:', profissionalId, categoriaIds, whatsapp, 'Estado:', estado, 'Cidade:', cidade);
+  console.log('Salvando categorias do profissional:', {
+    profissionalId,
+    categoriaIds,
+    whatsapp,
+    estado,
+    cidade
+  });
   
-  // Primeiro, remover todas as categorias existentes
+  // Primeiro, remover todas as categorias existentes do profissional
   const { error: deleteError } = await supabase
-    .from('profissional_categoria')
+    .from('profissional_categorias')
     .delete()
     .eq('profissional_id', profissionalId);
 
@@ -270,7 +277,7 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
     throw deleteError;
   }
 
-  // Depois, inserir as novas categorias
+  // Depois, inserir as novas categorias se fornecidas
   if (categoriaIds.length > 0) {
     // Formatar WhatsApp com prefixo 55 se fornecido
     let formattedWhatsapp = '';
@@ -287,10 +294,10 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
       cidade: cidade || null
     }));
 
-    console.log('Dados para inserir na profissional_categoria:', insertData);
+    console.log('Dados para inserir na profissional_categorias:', insertData);
 
     const { data, error } = await supabase
-      .from('profissional_categoria')
+      .from('profissional_categorias')
       .insert(insertData)
       .select();
 
@@ -299,7 +306,7 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
       throw error;
     }
 
-    console.log('Categorias do profissional salvas:', data);
+    console.log('Categorias do profissional salvas com sucesso:', data);
     return data;
   }
 
@@ -324,7 +331,14 @@ export const createProfissional = async (profissionalData: Profissional, categor
   
   // Salvar categorias se fornecidas
   if (categoriaIds.length > 0 && data.id) {
-    await saveProfissionalCategorias(data.id, categoriaIds, profissionalData.whatsapp, profissionalData.estado, profissionalData.cidade);
+    console.log('Salvando categorias para o novo profissional...');
+    await saveProfissionalCategorias(
+      data.id, 
+      categoriaIds, 
+      profissionalData.whatsapp,
+      profissionalData.estado,
+      profissionalData.cidade
+    );
   }
   
   return data;
@@ -349,7 +363,14 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   
   // Atualizar categorias se fornecidas
   if (categoriaIds && data.id) {
-    await saveProfissionalCategorias(data.id, categoriaIds, data.whatsapp, data.estado, data.cidade);
+    console.log('Atualizando categorias do profissional...');
+    await saveProfissionalCategorias(
+      data.id, 
+      categoriaIds, 
+      data.whatsapp,
+      data.estado,
+      data.cidade
+    );
   }
   
   return data;
