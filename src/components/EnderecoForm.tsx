@@ -1,47 +1,29 @@
 
-import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Profissional } from '@/services/supabaseService';
 import { useInputMasks } from '@/hooks/useInputMasks';
+import { useCidades } from '@/hooks/useCidades';
 
 interface EnderecoFormProps {
   formData: Profissional;
   onInputChange: (field: keyof Profissional, value: any) => void;
-  cidades: any[];
   estados: string[];
 }
 
-const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFormProps) => {
+const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) => {
   const { formatCEP } = useInputMasks();
-  
-  console.log('=== ENDERECO FORM RENDER ===');
-  console.log('formData.cidade atual:', formData.cidade);
-  console.log('Cidades disponíveis:', cidades.length);
-  console.log('Estado atual:', formData.estado);
+  const { cidades, loading: cidadesLoading } = useCidades(formData.estado || '');
 
   const handleCidadeChange = (cidade: string) => {
-    console.log('=== MUDANÇA DE CIDADE NO ENDERECO FORM ===');
-    console.log('Cidade selecionada:', cidade);
-    console.log('Tipo da cidade:', typeof cidade);
-    console.log('Cidade antes da mudança:', formData.cidade);
-    
-    // Chamar diretamente o onInputChange
+    console.log('Nova cidade selecionada:', cidade);
     onInputChange('cidade', cidade);
-    
-    console.log('onInputChange chamado com cidade:', cidade);
-    console.log('=========================================');
   };
 
   const handleEstadoChange = (estado: string) => {
-    console.log('=== MUDANÇA DE ESTADO ===');
-    console.log('Novo estado:', estado);
-    
+    console.log('Novo estado selecionado:', estado);
     onInputChange('estado', estado);
-    
-    // Não limpar mais a cidade automaticamente - manter o valor do banco
-    console.log('Estado alterado, mas mantendo cidade do banco');
   };
 
   const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,14 +66,16 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
             <Select 
               value="" 
               onValueChange={handleCidadeChange}
-              disabled={!formData.estado}
+              disabled={!formData.estado || cidadesLoading}
             >
               <SelectTrigger className="h-[54px]">
                 <SelectValue placeholder={
                   !formData.estado 
                     ? "Selecione estado" 
-                    : cidades.length === 0 
+                    : cidadesLoading 
                     ? "Carregando..." 
+                    : cidades.length === 0 
+                    ? "Sem cidades" 
                     : "Selecionar cidade"
                 } />
               </SelectTrigger>
