@@ -161,7 +161,7 @@ const DemandaDetalhes = () => {
                   <Icon className="h-6 w-6 text-[#1E486F]" />
                 </div>
                 <div>
-                  <h1 className="font-bold text-2xl text-[#1E486F]">
+                  <h1 className="font-bold text-[#1E486F] text-lg">
                     {demanda.categoria_nome}
                   </h1>
                   <p className="text-gray-600 text-xs">
