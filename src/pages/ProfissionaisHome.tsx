@@ -186,7 +186,7 @@ const ProfissionaisHome = () => {
                 const isSelected = categoriaFiltro === categoria.nome;
                 return <Button key={categoria.id} variant="outline" onClick={() => setCategoriaFiltro(categoria.nome)} className={`shrink-0 flex items-center gap-2 ${borderColor} ${color} bg-white hover:bg-gray-50 ${isSelected ? 'ring-2 ring-offset-1 ring-current' : ''}`} size="sm">
                       <Icon className={`h-4 w-4 ${color}`} />
-                      <span className="whitespace-nowrap font-light text-sm">{categoria.nome} ({count})</span>
+                      <span className="whitespace-nowrap text-sm font-normal">{categoria.nome} ({count})</span>
                     </Button>;
               })}
               </div>
