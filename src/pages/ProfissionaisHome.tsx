@@ -12,9 +12,7 @@ import MobileMenu from '@/components/MobileMenu';
 import BannerCarousel from '@/components/BannerCarousel';
 import ProfessionalLogoutMenu from '@/components/ProfessionalLogoutMenu';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
-
 const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
-
 interface Demanda {
   id: string;
   nome: string;
@@ -32,15 +30,15 @@ interface Categoria {
   id: string;
   nome: string;
 }
-
 const ProfissionaisHome = () => {
   const navigate = useNavigate();
-  const { profissionalLogado } = useProfissionalSession();
+  const {
+    profissionalLogado
+  } = useProfissionalSession();
   const [demandas, setDemandas] = useState<Demanda[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>('');
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     loadData();
   }, []);
@@ -161,37 +159,22 @@ const ProfissionaisHome = () => {
               <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
             </div>
             <nav className="hidden md:flex space-x-2">
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 font-bold" 
-                onClick={() => navigate('/')}
-                style={{
-                  height: '54px',
-                  borderRadius: '27px'
-                }}
-              >
+              <Button variant="ghost" className="text-gray-600 font-bold" onClick={() => navigate('/')} style={{
+              height: '54px',
+              borderRadius: '27px'
+            }}>
                 Início
               </Button>
-              <Button 
-                variant="ghost" 
-                className="text-[#1c4970] font-bold" 
-                onClick={() => navigate('/equipamentos')}
-                style={{
-                  height: '54px',
-                  borderRadius: '27px'
-                }}
-              >
+              <Button variant="ghost" className="text-[#1c4970] font-bold" onClick={() => navigate('/equipamentos')} style={{
+              height: '54px',
+              borderRadius: '27px'
+            }}>
                 Equipamentos
               </Button>
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 font-bold" 
-                onClick={() => navigate('/perfil')}
-                style={{
-                  height: '54px',
-                  borderRadius: '27px'
-                }}
-              >
+              <Button variant="ghost" className="text-gray-600 font-bold" onClick={() => navigate('/perfil')} style={{
+              height: '54px',
+              borderRadius: '27px'
+            }}>
                 Perfil
               </Button>
               {profissionalLogado && <ProfessionalLogoutMenu />}
@@ -205,7 +188,7 @@ const ProfissionaisHome = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filtro por Categorias - Corrigido com ScrollArea igual aos Equipamentos */}
-        <div className="mb-6">
+        <div className="mb-6 my-[-15px]">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">Filtrar por Categoria</h3>
           <div className="w-full">
             <ScrollArea className="w-full whitespace-nowrap">
@@ -233,8 +216,8 @@ const ProfissionaisHome = () => {
         </div>
 
         {/* Lista de Demandas */}
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div className="space-y-4 my-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 my-0">
             <h3 className="text-xl font-semibold text-gray-800">
               Oportunidades Disponíveis
             </h3>
@@ -358,5 +341,4 @@ const ProfissionaisHome = () => {
       <MobileNavbar />
     </div>;
 };
-
 export default ProfissionaisHome;
