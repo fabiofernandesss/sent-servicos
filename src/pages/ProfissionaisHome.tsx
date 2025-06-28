@@ -301,9 +301,7 @@ const ProfissionaisHome = () => {
                     e.currentTarget.style.backgroundColor = '#a50429';
                   }} onMouseLeave={e => {
                     e.currentTarget.style.backgroundColor = '#CB0533';
-                  }}>
-                          Continuar como Profissional
-                        </Button>
+                  }}>VER DEMANDA</Button>
                       </CardContent>
                     </div>
                   </Card>;
