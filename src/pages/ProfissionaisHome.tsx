@@ -33,6 +33,7 @@ const ProfissionaisHome = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
     loadData();
   }, []);
@@ -131,11 +132,13 @@ const ProfissionaisHome = () => {
     }
   };
   const demandasFiltradas = categoriaFiltro ? demandas.filter(d => d.categoria_nome === categoriaFiltro) : demandas;
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-lg text-gray-600">Carregando oportunidades...</div>
       </div>;
   }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       {/* Header */}
@@ -242,19 +245,18 @@ const ProfissionaisHome = () => {
                 return (
                   <Card key={demanda.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden">
                     <div className="relative">
-                      {/* Header com gradiente */}
-                      <div className="bg-gradient-to-r from-[#1E486F] to-blue-700 p-4 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#1E486F]/90 to-blue-800/70"></div>
+                      {/* Header com borda azul - agora vazado */}
+                      <div className="border-2 border-[#1E486F] bg-transparent p-4 relative overflow-hidden rounded-t-lg">
                         <div className="relative flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
-                              <Icon className="h-5 w-5 text-white" />
+                            <div className="p-2 bg-[#1E486F]/10 border border-[#1E486F] rounded-full">
+                              <Icon className="h-5 w-5 text-[#1E486F]" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-lg">
+                              <h3 className="font-bold text-lg text-[#1E486F]">
                                 {demanda.categoria_nome}
                               </h3>
-                              <p className="text-white/90 text-sm">
+                              <p className="text-gray-600 text-sm">
                                 {demanda.subcategoria_nome}
                               </p>
                             </div>
@@ -265,7 +267,7 @@ const ProfissionaisHome = () => {
                         </div>
                       </div>
 
-                      <CardContent className="p-6 space-y-4">
+                      <CardContent className="p-6 space-y-4 bg-white">
                         {/* Info do Cliente */}
                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                           <div className="p-2 bg-white rounded-full shadow-sm">
@@ -315,12 +317,22 @@ const ProfissionaisHome = () => {
                           </p>
                         </div>
 
-                        {/* Botão de ação destacado */}
+                        {/* Botão padronizado seguindo o design da referência */}
                         <Button 
-                          className="w-full bg-gradient-to-r from-[#1E486F] to-blue-700 hover:from-[#1E486F]/90 hover:to-blue-800 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
-                          size="lg"
+                          className="w-full font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
+                          style={{
+                            backgroundColor: '#CB0533',
+                            height: '54px',
+                            borderRadius: '27px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#a50429';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#CB0533';
+                          }}
                         >
-                          💼 Enviar Proposta
+                          Continuar como Profissional
                         </Button>
                       </CardContent>
                     </div>
