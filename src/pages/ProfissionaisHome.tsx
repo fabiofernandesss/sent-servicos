@@ -311,7 +311,7 @@ const ProfissionaisHome = () => {
                             <span className="font-mono text-gray-800">{maskContact(demanda.email, 'email')}</span>
                           </div>
                           <p className="text-xs text-amber-700 font-medium">
-                            🔒 Dados completos liberados após envio da proposta
+                            🔒 Dados completos liberados após pagamento
                           </p>
                         </div>
 
