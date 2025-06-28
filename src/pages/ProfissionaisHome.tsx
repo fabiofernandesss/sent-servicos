@@ -8,7 +8,6 @@ import { getCategoryIcon } from '@/utils/categoryIcons';
 import { createClient } from '@supabase/supabase-js';
 import MobileNavbar from '@/components/MobileNavbar';
 import BannerCarousel from '@/components/BannerCarousel';
-
 const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
 interface Demanda {
   id: string;
@@ -136,8 +135,7 @@ const ProfissionaisHome = () => {
         <div className="text-lg text-gray-600">Carregando oportunidades...</div>
       </div>;
   }
-  return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+  return <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -146,13 +144,10 @@ const ProfissionaisHome = () => {
               <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
             </div>
             <nav className="hidden md:flex space-x-2">
-              <Button variant="ghost" size="sm" className="text-gray-600">
-                <Bell className="h-4 w-4 mr-1" />
-                Notificações
-              </Button>
-              <Button variant="ghost" size="sm" className="text-gray-600">Minhas Propostas</Button>
-              <Button variant="ghost" size="sm" className="text-gray-600">Perfil</Button>
-              <Button variant="outline" size="sm">Sair</Button>
+              
+              <Button variant="ghost" size="sm" className="text-[#1c4970]">Equipamentos</Button>
+              <Button variant="ghost" size="sm" className="text-gray-600">Menu</Button>
+              
             </nav>
             <Button variant="outline" size="sm" className="md:hidden" onClick={() => navigate('/')}>
               <Menu className="h-4 w-4 mr-1" />
@@ -171,36 +166,22 @@ const ProfissionaisHome = () => {
           <h3 className="text-lg font-semibold mb-4 text-gray-800">Filtrar por Categoria</h3>
           <div className="overflow-x-auto">
             <div className="flex gap-3 pb-2 min-w-max">
-              <Button
-                variant="outline"
-                onClick={() => setCategoriaFiltro('')}
-                className={`flex-shrink-0 ${
-                  categoriaFiltro === '' ? 'border-[#CB0533] text-[#CB0533] bg-[#CB0533]/10' : 'border-gray-300'
-                }`}
-                size="sm"
-              >
+              <Button variant="outline" onClick={() => setCategoriaFiltro('')} className={`flex-shrink-0 ${categoriaFiltro === '' ? 'border-[#CB0533] text-[#CB0533] bg-[#CB0533]/10' : 'border-gray-300'}`} size="sm">
                 Todas ({demandas.length})
               </Button>
-              {categorias.map((categoria) => {
-                const { icon: Icon, color, borderColor } = getCategoryIcon(categoria.nome);
-                const count = demandas.filter((d) => d.categoria_nome === categoria.nome).length;
-                const isSelected = categoriaFiltro === categoria.nome;
-
-                return (
-                  <Button
-                    key={categoria.id}
-                    variant="outline"
-                    onClick={() => setCategoriaFiltro(categoria.nome)}
-                    className={`flex-shrink-0 flex items-center gap-2 ${borderColor} ${color} bg-white hover:bg-gray-50 ${
-                      isSelected ? 'ring-2 ring-offset-1 ring-current' : ''
-                    }`}
-                    size="sm"
-                  >
+              {categorias.map(categoria => {
+              const {
+                icon: Icon,
+                color,
+                borderColor
+              } = getCategoryIcon(categoria.nome);
+              const count = demandas.filter(d => d.categoria_nome === categoria.nome).length;
+              const isSelected = categoriaFiltro === categoria.nome;
+              return <Button key={categoria.id} variant="outline" onClick={() => setCategoriaFiltro(categoria.nome)} className={`flex-shrink-0 flex items-center gap-2 ${borderColor} ${color} bg-white hover:bg-gray-50 ${isSelected ? 'ring-2 ring-offset-1 ring-current' : ''}`} size="sm">
                     <Icon className={`h-4 w-4 ${color}`} />
                     <span className="whitespace-nowrap">{categoria.nome} ({count})</span>
-                  </Button>
-                );
-              })}
+                  </Button>;
+            })}
             </div>
           </div>
         </div>
@@ -216,8 +197,7 @@ const ProfissionaisHome = () => {
             </span>
           </div>
 
-          {demandasFiltradas.length === 0 ? (
-            <Card className="text-center py-12">
+          {demandasFiltradas.length === 0 ? <Card className="text-center py-12">
               <CardContent>
                 <div className="max-w-md mx-auto">
                   <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -229,18 +209,14 @@ const ProfissionaisHome = () => {
                   </p>
                 </div>
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-              {demandasFiltradas.map((demanda) => {
-                const { icon: Icon, color } = getCategoryIcon(demanda.categoria_nome);
-                const urgenciaInfo = formatUrgencia(demanda.urgencia);
-
-                return (
-                  <Card
-                    key={demanda.id}
-                    className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden"
-                  >
+            </Card> : <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+              {demandasFiltradas.map(demanda => {
+            const {
+              icon: Icon,
+              color
+            } = getCategoryIcon(demanda.categoria_nome);
+            const urgenciaInfo = formatUrgencia(demanda.urgencia);
+            return <Card key={demanda.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden">
                     <div className="relative">
                       {/* Header com borda azul - agora vazado */}
                       <div className="border-2 border-[#F3F3F3] bg-transparent p-4 relative overflow-hidden rounded-t-lg">
@@ -286,16 +262,14 @@ const ProfissionaisHome = () => {
                         </div>
                         
                         {/* Observação com destaque */}
-                        {demanda.observacao && (
-                          <div className="relative">
+                        {demanda.observacao && <div className="relative">
                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
                             <div className="pl-4 py-2">
                               <p className="text-sm text-gray-700 leading-relaxed italic">
                                 "{demanda.observacao}"
                               </p>
                             </div>
-                          </div>
-                        )}
+                          </div>}
 
                         {/* Contatos mascarados */}
                         <div className="space-y-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
@@ -315,37 +289,27 @@ const ProfissionaisHome = () => {
                         </div>
 
                         {/* Botão padronizado seguindo o design da referência */}
-                        <Button
-                          onClick={() => navigate(`/demanda/${demanda.id}`)}
-                          className="w-full font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-                          style={{
-                            backgroundColor: '#CB0533',
-                            height: '54px',
-                            borderRadius: '27px'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#a50429';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#CB0533';
-                          }}
-                        >
+                        <Button onClick={() => navigate(`/demanda/${demanda.id}`)} className="w-full font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" style={{
+                    backgroundColor: '#CB0533',
+                    height: '54px',
+                    borderRadius: '27px'
+                  }} onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = '#a50429';
+                  }} onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = '#CB0533';
+                  }}>
                           VER DEMANDA
                         </Button>
                       </CardContent>
                     </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                  </Card>;
+          })}
+            </div>}
         </div>
       </div>
 
       {/* Mobile Navbar */}
       <MobileNavbar />
-    </div>
-  );
+    </div>;
 };
-
 export default ProfissionaisHome;
