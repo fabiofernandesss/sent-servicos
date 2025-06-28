@@ -256,12 +256,12 @@ export const loadProfissionalCategorias = async (profissionalId: number) => {
   return data || [];
 };
 
-export const saveProfissionalCategorias = async (profissionalId: number, categoriaIds: string[], whatsapp?: string) => {
-  console.log('Salvando categorias do profissional:', profissionalId, categoriaIds, whatsapp);
+export const saveProfissionalCategorias = async (profissionalId: number, categoriaIds: string[], whatsapp?: string, estado?: string, cidade?: string) => {
+  console.log('Salvando categorias do profissional:', profissionalId, categoriaIds, whatsapp, 'Estado:', estado, 'Cidade:', cidade);
   
   // Primeiro, remover todas as categorias existentes
   const { error: deleteError } = await supabase
-    .from('profissional_categorias')
+    .from('profissional_categoria')
     .delete()
     .eq('profissional_id', profissionalId);
 
@@ -282,11 +282,15 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
     const insertData = categoriaIds.map(categoria_id => ({
       profissional_id: profissionalId,
       categoria_id,
-      whatsapp: formattedWhatsapp || null
+      whatsapp: formattedWhatsapp || null,
+      estado: estado || null,
+      cidade: cidade || null
     }));
 
+    console.log('Dados para inserir na profissional_categoria:', insertData);
+
     const { data, error } = await supabase
-      .from('profissional_categorias')
+      .from('profissional_categoria')
       .insert(insertData)
       .select();
 
@@ -320,7 +324,7 @@ export const createProfissional = async (profissionalData: Profissional, categor
   
   // Salvar categorias se fornecidas
   if (categoriaIds.length > 0 && data.id) {
-    await saveProfissionalCategorias(data.id, categoriaIds, profissionalData.whatsapp);
+    await saveProfissionalCategorias(data.id, categoriaIds, profissionalData.whatsapp, profissionalData.estado, profissionalData.cidade);
   }
   
   return data;
@@ -345,7 +349,7 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   
   // Atualizar categorias se fornecidas
   if (categoriaIds && data.id) {
-    await saveProfissionalCategorias(data.id, categoriaIds, data.whatsapp);
+    await saveProfissionalCategorias(data.id, categoriaIds, data.whatsapp, data.estado, data.cidade);
   }
   
   return data;

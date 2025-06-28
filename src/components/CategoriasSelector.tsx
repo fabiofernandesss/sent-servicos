@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 import { loadCategorias, Categoria } from '@/services/supabaseService';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { useToast } from '@/hooks/use-toast';
@@ -11,9 +11,11 @@ import { useToast } from '@/hooks/use-toast';
 interface CategoriasSelectorProps {
   selectedCategories: string[];
   onCategoriesChange: (categories: string[]) => void;
+  estado?: string;
+  cidade?: string;
 }
 
-const CategoriasSelector = ({ selectedCategories, onCategoriesChange }: CategoriasSelectorProps) => {
+const CategoriasSelector = ({ selectedCategories, onCategoriesChange, estado, cidade }: CategoriasSelectorProps) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -39,6 +41,15 @@ const CategoriasSelector = ({ selectedCategories, onCategoriesChange }: Categori
   }, []);
 
   const addCategory = (categoryId: string) => {
+    if (!estado || !cidade) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha Estado e Cidade antes de selecionar categorias",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!selectedCategories.includes(categoryId)) {
       onCategoriesChange([...selectedCategories, categoryId]);
     }
@@ -52,14 +63,28 @@ const CategoriasSelector = ({ selectedCategories, onCategoriesChange }: Categori
     return categorias.filter(cat => selectedCategories.includes(cat.id));
   };
 
+  const canSelectCategories = estado && cidade;
+
   if (loading) {
     return <div>Carregando categorias...</div>;
   }
 
   return (
     <div className="space-y-4">
+      {/* Aviso se estado e cidade não estão preenchidos */}
+      {!canSelectCategories && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2 text-orange-700">
+              <AlertCircle className="h-4 w-4" />
+              <p className="text-sm">Preencha Estado e Cidade acima para selecionar categorias</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Dropdown de categorias disponíveis */}
-      <Card>
+      <Card className={!canSelectCategories ? 'opacity-50' : ''}>
         <CardHeader>
           <CardTitle className="text-lg text-[#1E486F]">Selecionar Categorias</CardTitle>
           <p className="text-sm text-gray-600">Clique nas categorias que você atende</p>
@@ -74,12 +99,13 @@ const CategoriasSelector = ({ selectedCategories, onCategoriesChange }: Categori
                 <Button
                   key={categoria.id}
                   variant={isSelected ? "default" : "outline"}
+                  disabled={!canSelectCategories}
                   onClick={() => isSelected ? removeCategory(categoria.id) : addCategory(categoria.id)}
                   className={`h-auto p-3 flex flex-col items-center space-y-2 ${
                     isSelected 
                       ? 'bg-[#1E486F] hover:bg-[#1E486F]/90 text-white' 
                       : `hover:border-2 ${borderColor} hover:bg-gray-50`
-                  }`}
+                  } ${!canSelectCategories ? 'cursor-not-allowed' : ''}`}
                 >
                   <IconComponent className={`h-6 w-6 ${isSelected ? 'text-white' : color}`} />
                   <span className="text-xs text-center leading-tight">{categoria.nome}</span>

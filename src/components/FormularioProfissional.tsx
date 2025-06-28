@@ -9,11 +9,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Profissional, createProfissional, updateProfissional, loadCidades, loadProfissionalCategorias } from '@/services/supabaseService';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 import CategoriasSelector from './CategoriasSelector';
+
 interface FormularioProfissionalProps {
   profissional: Profissional | null;
   whatsapp: string;
   onSuccess: (profissional: Profissional) => void;
 }
+
 const FormularioProfissional = ({
   profissional,
   whatsapp,
@@ -222,7 +224,7 @@ const FormularioProfissional = ({
             <h3 className="text-lg font-semibold text-[#1E486F]">Endereço</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="estado">Estado</Label>
+                <Label htmlFor="estado">Estado *</Label>
                 <Select value={formData.estado || ''} onValueChange={value => handleInputChange('estado', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o estado" />
@@ -233,7 +235,7 @@ const FormularioProfissional = ({
                 </Select>
               </div>
               <div>
-                <Label htmlFor="cidade">Cidade</Label>
+                <Label htmlFor="cidade">Cidade *</Label>
                 <Select value={formData.cidade || ''} onValueChange={value => handleInputChange('cidade', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a cidade" />
@@ -265,7 +267,14 @@ const FormularioProfissional = ({
           {/* Categorias de Serviço */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-[#1E486F]">Categorias de Serviço *</h3>
-            {categoriesLoaded && <CategoriasSelector selectedCategories={selectedCategories} onCategoriesChange={handleCategoriesChange} />}
+            {categoriesLoaded && (
+              <CategoriasSelector 
+                selectedCategories={selectedCategories} 
+                onCategoriesChange={handleCategoriesChange}
+                estado={formData.estado}
+                cidade={formData.cidade}
+              />
+            )}
           </div>
 
           {/* Dados Profissionais */}
@@ -307,4 +316,5 @@ const FormularioProfissional = ({
       </CardContent>
     </Card>;
 };
+
 export default FormularioProfissional;
