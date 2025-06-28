@@ -149,8 +149,9 @@ const WhatsAppMessagePanel = ({ filteredProfissionais, onSendComplete }: WhatsAp
             placeholder="Digite sua mensagem..."
             value={whatsappMessage}
             onChange={(e) => setWhatsappMessage(e.target.value)}
-            className="min-h-[100px] resize-y"
-            rows={4}
+            className="w-full min-h-[120px] max-h-[300px] resize-y"
+            rows={5}
+            style={{ height: 'auto', minHeight: '120px' }}
           />
           <div className="flex gap-2">
             <Button
