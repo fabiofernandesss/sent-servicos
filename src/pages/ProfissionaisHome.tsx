@@ -196,7 +196,6 @@ const ProfissionaisHome = () => {
               </Button>
               {profissionalLogado && <ProfessionalLogoutMenu />}
             </nav>
-            <MobileMenu />
           </div>
         </div>
       </header>
@@ -355,7 +354,7 @@ const ProfissionaisHome = () => {
         </div>
       </div>
 
-      {/* Mobile Navbar */}
+      {/* Mobile Navbar - Garantir que está sendo usado */}
       <MobileNavbar />
     </div>;
 };

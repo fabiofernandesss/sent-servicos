@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Menu, X, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +10,7 @@ const MobileNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { profissionalLogado, logout } = useProfissionalSession();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -18,20 +19,50 @@ const MobileNavbar = () => {
       description: "Você foi desconectado com sucesso",
     });
     setIsOpen(false);
-    // Redirecionar para a página inicial
     window.location.href = '/';
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
   };
 
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        className="md:hidden p-2 text-white"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Toggle menu"
-      >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      {/* Mobile menu button - posicionado no canto superior direito */}
+      <div className="md:hidden fixed top-4 right-4 z-50">
+        <button
+          className="p-2 text-white bg-[#1E486F] rounded-full shadow-lg"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle menu"
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile navbar fixo na parte inferior */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+        <div className="grid grid-cols-3 h-16">
+          <button
+            onClick={() => handleNavigation('/')}
+            className="flex flex-col items-center justify-center text-gray-600 hover:text-[#1E486F] transition-colors"
+          >
+            <span className="text-xs font-medium">Início</span>
+          </button>
+          <button
+            onClick={() => handleNavigation('/equipamentos')}
+            className="flex flex-col items-center justify-center text-gray-600 hover:text-[#1E486F] transition-colors"
+          >
+            <span className="text-xs font-medium">Equipamentos</span>
+          </button>
+          <button
+            onClick={() => handleNavigation('/perfil')}
+            className="flex flex-col items-center justify-center text-gray-600 hover:text-[#1E486F] transition-colors"
+          >
+            <span className="text-xs font-medium">Perfil</span>
+          </button>
+        </div>
+      </nav>
 
       {/* Mobile menu overlay */}
       {isOpen && (
