@@ -71,24 +71,33 @@ const ProfissionaisAdmin = () => {
     }
   };
 
-  // Dados únicos para os filtros
+  // Dados únicos para os filtros com validação extra
   const uniqueEstados = useMemo(() => {
-    const estados = [...new Set(profissionais.map(p => p.estado).filter(Boolean))];
+    const estados = [...new Set(profissionais
+      .map(p => p.estado)
+      .filter(estado => estado && typeof estado === 'string' && estado.trim() !== '')
+    )];
+    console.log('Unique Estados:', estados);
     return estados.sort();
   }, [profissionais]);
 
   const uniqueCidades = useMemo(() => {
-    let cidades = profissionais.map(p => p.cidade).filter(Boolean);
-    if (filterEstado) {
+    let cidades = profissionais
+      .map(p => p.cidade)
+      .filter(cidade => cidade && typeof cidade === 'string' && cidade.trim() !== '');
+    
+    if (filterEstado && filterEstado !== 'todos') {
       cidades = profissionais
         .filter(p => p.estado === filterEstado)
         .map(p => p.cidade)
-        .filter(Boolean);
+        .filter(cidade => cidade && typeof cidade === 'string' && cidade.trim() !== '');
     }
-    return [...new Set(cidades)].sort();
+    const uniqueCidades = [...new Set(cidades)].sort();
+    console.log('Unique Cidades:', uniqueCidades);
+    return uniqueCidades;
   }, [profissionais, filterEstado]);
 
-  // Profissionais filtrados
+  // Profissionais filtrados com ajustes para os novos valores
   const filteredProfissionais = useMemo(() => {
     return profissionais.filter(profissional => {
       const matchesSearch = !searchTerm || 
@@ -97,12 +106,12 @@ const ProfissionaisAdmin = () => {
         profissional.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         profissional.cpf_cnpj.includes(searchTerm);
       
-      const matchesEstado = !filterEstado || profissional.estado === filterEstado;
-      const matchesCidade = !filterCidade || profissional.cidade === filterCidade;
-      const matchesStatus = filterStatus === '' || 
+      const matchesEstado = !filterEstado || filterEstado === 'todos' || profissional.estado === filterEstado;
+      const matchesCidade = !filterCidade || filterCidade === 'todas' || profissional.cidade === filterCidade;
+      const matchesStatus = filterStatus === '' || filterStatus === 'todos' || 
         (filterStatus === 'ativo' && !profissional.desativado) ||
         (filterStatus === 'desativado' && profissional.desativado);
-      const matchesDiaria = filterDiaria === '' ||
+      const matchesDiaria = filterDiaria === '' || filterDiaria === 'todos' ||
         (filterDiaria === 'aceita' && profissional.aceita_diaria) ||
         (filterDiaria === 'nao_aceita' && !profissional.aceita_diaria);
 

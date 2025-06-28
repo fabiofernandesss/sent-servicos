@@ -39,9 +39,17 @@ const ProfissionaisFilters = ({
   totalFiltered,
   totalAll
 }: ProfissionaisFiltersProps) => {
-  // Filtrar valores válidos (não vazios e não nulos)
-  const validEstados = uniqueEstados.filter(estado => estado && estado.trim() !== '');
-  const validCidades = uniqueCidades.filter(cidade => cidade && cidade.trim() !== '');
+  // Filtrar e validar valores (não vazios, não nulos e não undefined)
+  const validEstados = (uniqueEstados || [])
+    .filter(estado => estado && typeof estado === 'string' && estado.trim() !== '')
+    .sort();
+  
+  const validCidades = (uniqueCidades || [])
+    .filter(cidade => cidade && typeof cidade === 'string' && cidade.trim() !== '')
+    .sort();
+
+  console.log('ProfissionaisFilters - Valid Estados:', validEstados);
+  console.log('ProfissionaisFilters - Valid Cidades:', validCidades);
 
   return (
     <div className="mb-6 space-y-4">
@@ -71,7 +79,7 @@ const ProfissionaisFilters = ({
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos os Estados</SelectItem>
+            <SelectItem value="todos">Todos os Estados</SelectItem>
             {validEstados.map(estado => (
               <SelectItem key={estado} value={estado}>{estado}</SelectItem>
             ))}
@@ -83,7 +91,7 @@ const ProfissionaisFilters = ({
             <SelectValue placeholder="Cidade" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todas as Cidades</SelectItem>
+            <SelectItem value="todas">Todas as Cidades</SelectItem>
             {validCidades.map(cidade => (
               <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>
             ))}
@@ -95,7 +103,7 @@ const ProfissionaisFilters = ({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="ativo">Ativo</SelectItem>
             <SelectItem value="desativado">Desativado</SelectItem>
           </SelectContent>
@@ -106,7 +114,7 @@ const ProfissionaisFilters = ({
             <SelectValue placeholder="Diária" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="aceita">Aceita Diária</SelectItem>
             <SelectItem value="nao_aceita">Não Aceita</SelectItem>
           </SelectContent>
