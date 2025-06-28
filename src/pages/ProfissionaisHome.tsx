@@ -242,7 +242,7 @@ const ProfissionaisHome = () => {
 
                       <CardContent className="p-6 space-y-4 bg-white">
                         {/* Info do Cliente */}
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-100">
                           <div className="p-2 bg-white rounded-full shadow-sm">
                             <User className="h-4 w-4 text-gray-600" />
                           </div>
