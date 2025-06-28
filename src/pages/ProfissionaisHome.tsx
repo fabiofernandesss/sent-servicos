@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, User, Phone, Mail, Bell, Search, Home, Briefcase, Settings, Wrench } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Mail, Bell, Search } from 'lucide-react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { createClient } from '@supabase/supabase-js';
-
 const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
-
 interface Demanda {
   id: string;
   nome: string;
@@ -21,22 +19,18 @@ interface Demanda {
   observacao: string;
   created_at: string;
 }
-
 interface Categoria {
   id: string;
   nome: string;
 }
-
 const ProfissionaisHome = () => {
   const [demandas, setDemandas] = useState<Demanda[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>('');
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     loadData();
   }, []);
-
   const loadData = async () => {
     try {
       // Carregar categorias
@@ -89,7 +83,6 @@ const ProfissionaisHome = () => {
       setLoading(false);
     }
   };
-
   const formatUrgencia = (urgencia: string) => {
     const urgenciaMap = {
       'preciso_com_urgencia': {
@@ -114,7 +107,6 @@ const ProfissionaisHome = () => {
       color: 'bg-gray-500'
     };
   };
-
   const formatTempo = (created_at: string) => {
     const agora = new Date();
     const criacao = new Date(created_at);
@@ -125,23 +117,20 @@ const ProfissionaisHome = () => {
     const diffDias = Math.floor(diffHoras / 24);
     return `${diffDias}d atrás`;
   };
-
   const demandasFiltradas = categoriaFiltro ? demandas.filter(d => d.categoria_nome === categoriaFiltro) : demandas;
-
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-lg text-gray-600">Carregando oportunidades...</div>
       </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-6">
+  return <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
+              
             </div>
             <nav className="hidden md:flex space-x-2">
               <Button variant="ghost" size="sm" className="text-gray-600">
@@ -159,45 +148,31 @@ const ProfissionaisHome = () => {
 
       {/* Banner */}
       <div className="relative">
-        <img alt="Banner Profissionais" src="/lovable-uploads/banner-profissionais.png" className="w-full h-24 sm:h-32 md:h-40 lg:h-48 object-cover" />
+        <img alt="Os melhores profissionais" src="/lovable-uploads/af1a336b-3a05-412b-aa88-9b754e687d34.png" className="w-full h-30 sm:h-30 md:h-30 lg:h-30 object-cover" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Filtro por Categorias - Horizontal com bordas coloridas */}
-        <div className="mb-8">
+        {/* Filtro por Categorias - Horizontal */}
+        <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">Filtrar por Categoria</h3>
           <div className="overflow-x-auto">
             <div className="flex gap-3 pb-2 min-w-max">
-              <Button 
-                variant={categoriaFiltro === '' ? 'default' : 'outline'} 
-                onClick={() => setCategoriaFiltro('')} 
-                className={`flex-shrink-0 ${categoriaFiltro === '' ? 'bg-[#CB0533] hover:bg-[#a50429] text-white border-[#CB0533]' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`} 
-                size="sm"
-              >
+              <Button variant={categoriaFiltro === '' ? 'default' : 'outline'} onClick={() => setCategoriaFiltro('')} className={`flex-shrink-0 ${categoriaFiltro === '' ? 'bg-[#CB0533] hover:bg-[#a50429] text-white' : ''}`} size="sm">
                 Todas ({demandas.length})
               </Button>
               {categorias.map(categoria => {
-                const { icon: Icon, color, borderColor } = getCategoryIcon(categoria.nome);
-                const count = demandas.filter(d => d.categoria_nome === categoria.nome).length;
-                const isSelected = categoriaFiltro === categoria.nome;
-                
-                return (
-                  <Button 
-                    key={categoria.id} 
-                    variant="outline" 
-                    onClick={() => setCategoriaFiltro(categoria.nome)} 
-                    className={`flex-shrink-0 flex items-center gap-2 font-medium transition-all hover:shadow-md ${
-                      isSelected 
-                        ? `${borderColor} ${color} bg-white border-2 shadow-md` 
-                        : `${borderColor} ${color} bg-white border-2 hover:shadow-md`
-                    }`}
-                    size="sm"
-                  >
-                    <Icon className={`h-4 w-4 ${color.replace('text-', 'text-')}`} />
+              const {
+                icon: Icon,
+                color,
+                bgColor
+              } = getCategoryIcon(categoria.nome);
+              const count = demandas.filter(d => d.categoria_nome === categoria.nome).length;
+              const isSelected = categoriaFiltro === categoria.nome;
+              return <Button key={categoria.id} variant="outline" onClick={() => setCategoriaFiltro(categoria.nome)} className={`flex-shrink-0 flex items-center gap-2 border-0 text-white font-medium ${isSelected ? 'ring-2 ring-white ring-offset-2' : ''} ${bgColor} hover:opacity-90`} size="sm">
+                    <Icon className="h-4 w-4 text-white" />
                     {categoria.nome} ({count})
-                  </Button>
-                );
-              })}
+                  </Button>;
+            })}
             </div>
           </div>
         </div>
@@ -213,8 +188,7 @@ const ProfissionaisHome = () => {
             </span>
           </div>
 
-          {demandasFiltradas.length === 0 ? (
-            <Card className="text-center py-12">
+          {demandasFiltradas.length === 0 ? <Card className="text-center py-12">
               <CardContent>
                 <div className="max-w-md mx-auto">
                   <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -226,110 +200,74 @@ const ProfissionaisHome = () => {
                   </p>
                 </div>
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
+            </Card> : <div className="grid gap-4">
               {demandasFiltradas.map(demanda => {
-                const { icon: Icon, color } = getCategoryIcon(demanda.categoria_nome);
-                const urgenciaInfo = formatUrgencia(demanda.urgencia);
-                
-                return (
-                  <Card key={demanda.id} className="hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white">
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        {/* Header do Card */}
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                          <div className="flex items-start gap-4 flex-1 min-w-0">
-                            <div className={`p-3 rounded-xl shadow-sm ${color.replace('text-', 'bg-').replace('-600', '-100')} border ${color.replace('text-', 'border-')}`}>
-                              <Icon className={`h-6 w-6 ${color}`} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-1">
-                                {demanda.categoria_nome} - {demanda.subcategoria_nome}
-                              </h4>
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-500">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4" />
-                                  <span>{demanda.cidade}, {demanda.estado}</span>
-                                </div>
-                                <span className="hidden sm:inline">•</span>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  <span>{formatTempo(demanda.created_at)}</span>
-                                </div>
+            const {
+              icon: Icon,
+              color
+            } = getCategoryIcon(demanda.categoria_nome);
+            const urgenciaInfo = formatUrgencia(demanda.urgencia);
+            return <Card key={demanda.id} className="hover:shadow-md transition-all duration-200 border border-gray-200">
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="p-2 bg-gray-50 rounded-lg">
+                            <Icon className={`h-5 w-5 ${color}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg text-gray-900 truncate">
+                              {demanda.categoria_nome} - {demanda.subcategoria_nome}
+                            </CardTitle>
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-1">
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {demanda.cidade}, {demanda.estado}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {formatTempo(demanda.created_at)}
                               </div>
                             </div>
                           </div>
-                          <Badge className={`${urgenciaInfo.color} text-white flex-shrink-0 px-3 py-1`}>
-                            {urgenciaInfo.text}
-                          </Badge>
                         </div>
-
-                        {/* Informações do Cliente */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <div className="flex items-center gap-2 mb-3">
-                            <User className="h-4 w-4 text-gray-600" />
-                            <span className="font-medium text-gray-900">{demanda.nome}</span>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4" />
-                              <span>{demanda.whatsapp}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4" />
-                              <span className="truncate">{demanda.email}</span>
-                            </div>
-                          </div>
+                        <Badge className={`${urgenciaInfo.color} text-white flex-shrink-0`}>
+                          {urgenciaInfo.text}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-gray-400" />
+                          <span className="font-medium text-gray-900">{demanda.nome}</span>
                         </div>
                         
-                        {/* Observação */}
-                        {demanda.observacao && (
-                          <div className="border-l-4 border-[#CB0533] pl-4 py-2">
-                            <p className="text-sm text-gray-700 italic">"{demanda.observacao}"</p>
-                          </div>
-                        )}
+                        {demanda.observacao && <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="text-sm text-gray-700 line-clamp-2">{demanda.observacao}</p>
+                          </div>}
                         
-                        {/* Botão de Ação */}
-                        <div className="flex justify-end pt-2">
-                          <Button className="bg-[#1B4970] hover:bg-[#153a5b] text-white px-6 py-2 font-medium">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-2">
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {demanda.whatsapp}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              <span className="truncate max-w-[200px]">{demanda.email}</span>
+                            </div>
+                          </div>
+                          <Button className="bg-[#1B4970] hover:bg-[#153a5b] text-white flex-shrink-0" size="sm">
                             Enviar Proposta
                           </Button>
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                  </Card>;
+          })}
+            </div>}
         </div>
       </div>
-
-      {/* Mobile Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="flex justify-around py-2">
-          <button className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-[#CB0533] transition-colors">
-            <Home className="h-5 w-5 mb-1" />
-            <span className="text-xs font-medium">Home</span>
-          </button>
-          <button className="flex flex-col items-center py-2 px-3 text-[#CB0533] transition-colors">
-            <Briefcase className="h-5 w-5 mb-1" />
-            <span className="text-xs font-medium">Demandas</span>
-          </button>
-          <button className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-[#CB0533] transition-colors">
-            <Wrench className="h-5 w-5 mb-1" />
-            <span className="text-xs font-medium">Equipamentos</span>
-          </button>
-          <button className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-[#CB0533] transition-colors">
-            <Settings className="h-5 w-5 mb-1" />
-            <span className="text-xs font-medium">Perfil</span>
-          </button>
-        </div>
-      </nav>
-    </div>
-  );
+    </div>;
 };
-
 export default ProfissionaisHome;
