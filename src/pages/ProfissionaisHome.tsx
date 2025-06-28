@@ -154,9 +154,39 @@ const ProfissionaisHome = () => {
               <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
             </div>
             <nav className="hidden md:flex space-x-2">
-              <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/')}>Início</Button>
-              <Button variant="ghost" size="sm" className="text-[#1c4970]" onClick={() => navigate('/equipamentos')}>Equipamentos</Button>
-              <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/perfil')}>Perfil</Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 font-bold" 
+                onClick={() => navigate('/')}
+                style={{
+                  height: '54px',
+                  borderRadius: '27px'
+                }}
+              >
+                Início
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-[#1c4970] font-bold" 
+                onClick={() => navigate('/equipamentos')}
+                style={{
+                  height: '54px',
+                  borderRadius: '27px'
+                }}
+              >
+                Equipamentos
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 font-bold" 
+                onClick={() => navigate('/perfil')}
+                style={{
+                  height: '54px',
+                  borderRadius: '27px'
+                }}
+              >
+                Perfil
+              </Button>
             </nav>
             <MobileMenu />
           </div>

@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Wallet, Plus, History, TrendingUp } from 'lucide-react';
@@ -31,12 +32,27 @@ const CarteiraCard = ({
           
           {/* Actions Section */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-            <Button onClick={() => navigate('/recarga')} className="bg-white text-[#1E486F] hover:bg-gray-100 font-semibold flex-1 sm:flex-none" size="sm">
+            <Button 
+              onClick={() => navigate('/recarga')} 
+              className="bg-white text-[#1E486F] hover:bg-gray-100 font-bold flex-1 sm:flex-none transition-all duration-200"
+              style={{
+                height: '54px',
+                borderRadius: '27px'
+              }}
+            >
               <Plus className="h-4 w-4 mr-2" />
               <span className="hidden xs:inline">Fazer</span> Recarga
             </Button>
             
-            <Button onClick={() => navigate('/historico-recargas')} variant="outline" size="sm" className="border-white/30 hover:bg-white/10 flex-1 sm:flex-none text-[#1d4970]">
+            <Button 
+              onClick={() => navigate('/historico-recargas')} 
+              variant="outline" 
+              className="border-white/30 hover:bg-white/10 flex-1 sm:flex-none text-white font-bold border-2 transition-all duration-200" 
+              style={{
+                height: '54px',
+                borderRadius: '27px'
+              }}
+            >
               <History className="h-4 w-4 mr-2" />
               <span className="hidden xs:inline">Ver</span> Histórico
             </Button>
