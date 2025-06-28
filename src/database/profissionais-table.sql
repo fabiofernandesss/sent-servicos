@@ -56,6 +56,8 @@ CREATE TABLE profissional_categoria (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     profissional_id UUID NOT NULL,
     categoria_id UUID NOT NULL,
+    estado CHAR(2) NOT NULL,
+    cidade VARCHAR(100) NOT NULL,
     data_vinculo TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     ativo BOOLEAN DEFAULT TRUE,
     
@@ -81,6 +83,7 @@ CREATE INDEX idx_profissionais_documento ON profissionais(documento_numero);
 CREATE INDEX idx_profissional_categoria_profissional ON profissional_categoria(profissional_id);
 CREATE INDEX idx_profissional_categoria_categoria ON profissional_categoria(categoria_id);
 CREATE INDEX idx_profissional_categoria_ativo ON profissional_categoria(ativo);
+CREATE INDEX idx_profissional_categoria_estado_cidade ON profissional_categoria(estado, cidade);
 
 -- ===================================
 -- TRIGGERS PARA AUDITORIA
@@ -114,6 +117,8 @@ COMMENT ON COLUMN profissionais.aceita_diaria IS 'Indica se o profissional aceit
 COMMENT ON COLUMN profissionais.valor_diaria IS 'Valor pretendido para diária (apenas se aceita_diaria = true)';
 
 COMMENT ON TABLE profissional_categoria IS 'Relacionamento N:N entre profissionais e categorias de serviço';
+COMMENT ON COLUMN profissional_categoria.estado IS 'Estado onde o profissional atende nesta categoria';
+COMMENT ON COLUMN profissional_categoria.cidade IS 'Cidade onde o profissional atende nesta categoria';
 
 -- ===================================
 -- EXEMPLO DE CONSULTAS ÚTEIS
@@ -125,8 +130,8 @@ SELECT p.nome_completo, p.telefone, p.email, c.nome as categoria
 FROM profissionais p
 JOIN profissional_categoria pc ON p.id = pc.profissional_id
 JOIN categorias c ON pc.categoria_id = c.id
-WHERE p.cidade = 'São Paulo'
-  AND p.estado = 'SP'
+WHERE pc.cidade = 'São Paulo'
+  AND pc.estado = 'SP'
   AND c.nome = 'Elétrica'
   AND p.ativo = TRUE
   AND pc.ativo = TRUE;
@@ -139,11 +144,11 @@ WHERE aceita_diaria = TRUE
   AND ativo = TRUE
 ORDER BY valor_diaria ASC;
 
--- Contar quantos profissionais há por categoria:
-SELECT c.nome as categoria, COUNT(pc.profissional_id) as total_profissionais
+-- Contar quantos profissionais há por categoria em uma cidade:
+SELECT c.nome as categoria, pc.cidade, pc.estado, COUNT(pc.profissional_id) as total_profissionais
 FROM categorias c
 LEFT JOIN profissional_categoria pc ON c.id = pc.categoria_id AND pc.ativo = TRUE
 LEFT JOIN profissionais p ON pc.profissional_id = p.id AND p.ativo = TRUE
-GROUP BY c.id, c.nome
+GROUP BY c.id, c.nome, pc.cidade, pc.estado
 ORDER BY total_profissionais DESC;
 */
