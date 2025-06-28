@@ -10,7 +10,6 @@ import { createClient } from '@supabase/supabase-js';
 import MobileNavbar from '@/components/MobileNavbar';
 import MobileMenu from '@/components/MobileMenu';
 import BannerCarousel from '@/components/BannerCarousel';
-
 const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
 interface Demanda {
   id: string;
@@ -41,9 +40,11 @@ const ProfissionaisHome = () => {
 
   // Scroll to top when component mounts
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }, []);
-
   const loadData = async () => {
     try {
       // Carregar categorias
@@ -172,34 +173,22 @@ const ProfissionaisHome = () => {
           <div className="w-full">
             <ScrollArea className="w-full whitespace-nowrap">
               <div className="flex gap-2 pb-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setCategoriaFiltro('')} 
-                  className={`shrink-0 ${categoriaFiltro === '' ? 'border-[#CB0533] text-[#CB0533] bg-[#CB0533]/10' : 'border-gray-300'}`} 
-                  size="sm"
-                >
+                <Button variant="outline" onClick={() => setCategoriaFiltro('')} className={`shrink-0 ${categoriaFiltro === '' ? 'border-[#CB0533] text-[#CB0533] bg-[#CB0533]/10' : 'border-gray-300'}`} size="sm">
                   Todas ({demandas.length})
                 </Button>
                 {categorias.map(categoria => {
-                  const { icon: Icon, color, borderColor } = getCategoryIcon(categoria.nome);
-                  const count = demandas.filter(d => d.categoria_nome === categoria.nome).length;
-                  const isSelected = categoriaFiltro === categoria.nome;
-                  
-                  return (
-                    <Button
-                      key={categoria.id}
-                      variant="outline"
-                      onClick={() => setCategoriaFiltro(categoria.nome)}
-                      className={`shrink-0 flex items-center gap-2 ${borderColor} ${color} bg-white hover:bg-gray-50 ${
-                        isSelected ? 'ring-2 ring-offset-1 ring-current' : ''
-                      }`}
-                      size="sm"
-                    >
+                const {
+                  icon: Icon,
+                  color,
+                  borderColor
+                } = getCategoryIcon(categoria.nome);
+                const count = demandas.filter(d => d.categoria_nome === categoria.nome).length;
+                const isSelected = categoriaFiltro === categoria.nome;
+                return <Button key={categoria.id} variant="outline" onClick={() => setCategoriaFiltro(categoria.nome)} className={`shrink-0 flex items-center gap-2 ${borderColor} ${color} bg-white hover:bg-gray-50 ${isSelected ? 'ring-2 ring-offset-1 ring-current' : ''}`} size="sm">
                       <Icon className={`h-4 w-4 ${color}`} />
-                      <span className="whitespace-nowrap">{categoria.nome} ({count})</span>
-                    </Button>
-                  );
-                })}
+                      <span className="whitespace-nowrap font-light text-sm">{categoria.nome} ({count})</span>
+                    </Button>;
+              })}
               </div>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
@@ -217,8 +206,7 @@ const ProfissionaisHome = () => {
             </span>
           </div>
 
-          {demandasFiltradas.length === 0 ? (
-            <Card className="text-center py-12">
+          {demandasFiltradas.length === 0 ? <Card className="text-center py-12">
               <CardContent>
                 <div className="max-w-md mx-auto">
                   <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -230,16 +218,14 @@ const ProfissionaisHome = () => {
                   </p>
                 </div>
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+            </Card> : <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
               {demandasFiltradas.map(demanda => {
-                const {
-                  icon: Icon,
-                  color
-                } = getCategoryIcon(demanda.categoria_nome);
-                const urgenciaInfo = formatUrgencia(demanda.urgencia);
-                return <Card key={demanda.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden">
+            const {
+              icon: Icon,
+              color
+            } = getCategoryIcon(demanda.categoria_nome);
+            const urgenciaInfo = formatUrgencia(demanda.urgencia);
+            return <Card key={demanda.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden">
                     <div className="relative">
                       {/* Header com borda azul - agora vazado */}
                       <div className="border-2 border-[#F3F3F3] bg-transparent p-4 relative overflow-hidden rounded-t-lg">
@@ -326,9 +312,8 @@ const ProfissionaisHome = () => {
                       </CardContent>
                     </div>
                   </Card>;
-              })}
-            </div>
-          )}
+          })}
+            </div>}
         </div>
       </div>
 
