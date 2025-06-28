@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,8 +67,8 @@ const DemandaDetalhes = () => {
           whatsapp: data.whatsapp,
           cidade: data.cidade,
           estado: data.estado,
-          categoria_nome: Array.isArray(data.categorias) ? data.categorias[0]?.nome : data.categorias.nome,
-          subcategoria_nome: Array.isArray(data.subcategorias) ? data.subcategorias[0]?.nome : data.subcategorias.nome,
+          categoria_nome: (data.categorias as any).nome,
+          subcategoria_nome: (data.subcategorias as any).nome,
           urgencia: data.urgencia,
           observacao: data.observacao,
           created_at: data.created_at
