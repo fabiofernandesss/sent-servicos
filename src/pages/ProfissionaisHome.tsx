@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -148,6 +149,7 @@ const ProfissionaisHome = () => {
             <nav className="hidden md:flex space-x-2">
               <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/')}>Início</Button>
               <Button variant="ghost" size="sm" className="text-[#1c4970]" onClick={() => navigate('/equipamentos')}>Equipamentos</Button>
+              <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/perfil')}>Perfil</Button>
             </nav>
             <MobileMenu />
           </div>

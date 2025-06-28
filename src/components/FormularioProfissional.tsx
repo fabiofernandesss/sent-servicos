@@ -23,6 +23,7 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
   const [loading, setLoading] = useState(false);
   const [cidades, setCidades] = useState<any[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   const [formData, setFormData] = useState<Profissional>({
     cpf_cnpj: profissional?.cpf_cnpj || '',
     nome: profissional?.nome || '',
@@ -55,20 +56,25 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
   }, [formData.estado]);
 
   useEffect(() => {
-    if (profissional?.id) {
-      // Se está editando um profissional existente, carregar categorias do banco
-      loadProfissionalCategorias(profissional.id)
-        .then(categorias => {
-          const categoryIds = categorias.map(cat => cat.categoria_id);
-          setSelectedCategories(categoryIds);
-        })
-        .catch(console.error);
-    } else {
-      // Se não está logado, carregar categorias temporárias
-      const tempCategories = getTempCategories();
-      setSelectedCategories(tempCategories);
+    // Carregar categorias apenas uma vez
+    if (!categoriesLoaded) {
+      if (profissional?.id) {
+        // Se está editando um profissional existente, carregar categorias do banco
+        loadProfissionalCategorias(profissional.id)
+          .then(categorias => {
+            const categoryIds = categorias.map(cat => cat.categoria_id);
+            setSelectedCategories(categoryIds);
+            setCategoriesLoaded(true);
+          })
+          .catch(console.error);
+      } else {
+        // Se não está logado, carregar categorias temporárias
+        const tempCategories = getTempCategories();
+        setSelectedCategories(tempCategories);
+        setCategoriesLoaded(true);
+      }
     }
-  }, [profissional, getTempCategories]);
+  }, [profissional, getTempCategories, categoriesLoaded]);
 
   const handleInputChange = (field: keyof Profissional, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -268,10 +274,12 @@ const FormularioProfissional = ({ profissional, whatsapp, onSuccess }: Formulari
           {/* Categorias de Serviço */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-[#1E486F]">Categorias de Serviço *</h3>
-            <CategoriasSelector 
-              selectedCategories={selectedCategories}
-              onCategoriesChange={handleCategoriesChange}
-            />
+            {categoriesLoaded && (
+              <CategoriasSelector 
+                selectedCategories={selectedCategories}
+                onCategoriesChange={handleCategoriesChange}
+              />
+            )}
           </div>
 
           {/* Dados Profissionais */}

@@ -58,6 +58,7 @@ export interface ProfissionalCategoria {
   id?: number;
   profissional_id: number;
   categoria_id: string; // UUID como string
+  whatsapp?: string; // Novo campo para WhatsApp
   created_at?: string;
 }
 
@@ -148,7 +149,7 @@ export const createDemanda = async (demandaData: DemandaData) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJPjvfyWQ30dxo8',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8',
             'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8',
             'Prefer': 'return=representation'
           },
@@ -200,19 +201,31 @@ export const loadCidades = async (uf: string) => {
 export const loadProfissionalByWhatsapp = async (whatsapp: string) => {
   console.log('Buscando profissional por WhatsApp:', whatsapp);
   
-  const { data, error } = await supabase
-    .from('profissionais')
-    .select('*')
-    .eq('whatsapp', whatsapp)
-    .single();
+  // Tentar buscar com o número original e com variações de formatação
+  const whatsappVariations = [
+    whatsapp,
+    whatsapp.replace(/\D/g, ''), // Remove todos os não-dígitos
+    '55' + whatsapp.replace(/\D/g, ''), // Adiciona 55
+    whatsapp.replace(/\D/g, '').replace(/^55/, ''), // Remove 55 se existir
+  ];
 
-  if (error && error.code !== 'PGRST116') {
-    console.error('Erro ao buscar profissional:', error);
-    throw error;
+  console.log('Tentando variações do WhatsApp:', whatsappVariations);
+
+  for (const variation of whatsappVariations) {
+    const { data, error } = await supabase
+      .from('profissionais')
+      .select('*')
+      .eq('whatsapp', variation)
+      .single();
+
+    if (data && !error) {
+      console.log('Profissional encontrado com WhatsApp:', variation);
+      return data;
+    }
   }
 
-  console.log('Profissional encontrado:', data);
-  return data;
+  console.log('Nenhum profissional encontrado para as variações do WhatsApp');
+  return null;
 };
 
 export const loadProfissionalCategorias = async (profissionalId: number) => {
@@ -238,8 +251,8 @@ export const loadProfissionalCategorias = async (profissionalId: number) => {
   return data || [];
 };
 
-export const saveProfissionalCategorias = async (profissionalId: number, categoriaIds: string[]) => {
-  console.log('Salvando categorias do profissional:', profissionalId, categoriaIds);
+export const saveProfissionalCategorias = async (profissionalId: number, categoriaIds: string[], whatsapp?: string) => {
+  console.log('Salvando categorias do profissional:', profissionalId, categoriaIds, whatsapp);
   
   // Primeiro, remover todas as categorias existentes
   const { error: deleteError } = await supabase
@@ -254,9 +267,17 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
 
   // Depois, inserir as novas categorias
   if (categoriaIds.length > 0) {
+    // Formatar WhatsApp com prefixo 55 se fornecido
+    let formattedWhatsapp = '';
+    if (whatsapp) {
+      const cleanWhatsapp = whatsapp.replace(/\D/g, '');
+      formattedWhatsapp = cleanWhatsapp.startsWith('55') ? cleanWhatsapp : '55' + cleanWhatsapp;
+    }
+
     const insertData = categoriaIds.map(categoria_id => ({
       profissional_id: profissionalId,
-      categoria_id
+      categoria_id,
+      whatsapp: formattedWhatsapp || null
     }));
 
     const { data, error } = await supabase
@@ -294,7 +315,7 @@ export const createProfissional = async (profissionalData: Profissional, categor
   
   // Salvar categorias se fornecidas
   if (categoriaIds.length > 0) {
-    await saveProfissionalCategorias(data.id, categoriaIds);
+    await saveProfissionalCategorias(data.id, categoriaIds, profissionalData.whatsapp);
   }
   
   return data;
@@ -319,7 +340,7 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   
   // Atualizar categorias se fornecidas
   if (categoriaIds) {
-    await saveProfissionalCategorias(id, categoriaIds);
+    await saveProfissionalCategorias(id, categoriaIds, data.whatsapp);
   }
   
   return data;
