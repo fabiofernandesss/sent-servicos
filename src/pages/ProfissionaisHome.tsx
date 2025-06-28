@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, User, Phone, Mail, Bell, Search, Menu } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Mail, Bell, Search } from 'lucide-react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { createClient } from '@supabase/supabase-js';
 import MobileNavbar from '@/components/MobileNavbar';
+import MobileMenu from '@/components/MobileMenu';
 import BannerCarousel from '@/components/BannerCarousel';
+
 const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
 interface Demanda {
   id: string;
@@ -144,15 +146,10 @@ const ProfissionaisHome = () => {
               <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
             </div>
             <nav className="hidden md:flex space-x-2">
-              
-              <Button variant="ghost" size="sm" className="text-[#1c4970]">Equipamentos</Button>
-              <Button variant="ghost" size="sm" className="text-gray-600">Início</Button>
-              
+              <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/')}>Início</Button>
+              <Button variant="ghost" size="sm" className="text-[#1c4970]" onClick={() => navigate('/equipamentos')}>Equipamentos</Button>
             </nav>
-            <Button variant="outline" size="sm" className="md:hidden" onClick={() => navigate('/')}>
-              <Menu className="h-4 w-4 mr-1" />
-              Menu
-            </Button>
+            <MobileMenu />
           </div>
         </div>
       </header>
