@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Profissional, createProfissional, updateProfissional, loadCidades, loadProfissionalCategorias } from '@/services/supabaseService';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
@@ -26,7 +27,8 @@ const FormularioProfissional = ({
     saveTempCategories,
     getTempCategories,
     clearTempCategories,
-    isLoggedIn
+    isLoggedIn,
+    logout
   } = useProfissionalSession();
   const [loading, setLoading] = useState(false);
   const [cidades, setCidades] = useState<any[]>([]);
@@ -204,6 +206,16 @@ const FormularioProfissional = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso",
+    });
+    // Redirecionar para a página inicial
+    window.location.href = '/';
   };
 
   const isEditing = !!profissional?.id;
@@ -441,6 +453,18 @@ const FormularioProfissional = ({
             >
               {loading ? 'Salvando...' : isEditing ? 'Atualizar Perfil' : 'Criar Cadastro'}
             </Button>
+            
+            {isLoggedIn && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleLogout}
+                className="py-0 rounded-3xl font-semibold flex items-center gap-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
+            )}
           </div>
         </form>
       </CardContent>
