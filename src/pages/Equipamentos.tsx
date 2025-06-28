@@ -1,13 +1,15 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, ArrowLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MessageCircle, ArrowLeft, Search, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
+const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJPjvfyWQ30dxo8');
 
 interface Equipamento {
   id: string;
@@ -21,7 +23,9 @@ const Equipamentos = () => {
   const navigate = useNavigate();
   const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  
   useEffect(() => {
     loadEquipamentos();
   }, []);
@@ -41,6 +45,21 @@ const Equipamentos = () => {
       setLoading(false);
     }
   };
+
+  const categorias = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(equipamentos.map(eq => eq.categoria)));
+    return uniqueCategories.sort();
+  }, [equipamentos]);
+
+  const filteredEquipamentos = useMemo(() => {
+    return equipamentos.filter(equipamento => {
+      const matchesSearch = equipamento.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           equipamento.descrição.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !selectedCategory || equipamento.categoria === selectedCategory;
+      
+      return matchesSearch && matchesCategory;
+    });
+  }, [equipamentos, searchTerm, selectedCategory]);
 
   const handleWhatsAppClick = () => {
     window.open('https://api.whatsapp.com/message/Q4IOVKWQAXLGN1?autoload=1&app_absent=0', '_blank');
@@ -80,7 +99,7 @@ const Equipamentos = () => {
         </div>
       </header>
 
-      {/* Título */}
+      {/* Título e Filtros */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#1E486F] mb-2">
@@ -91,9 +110,58 @@ const Equipamentos = () => {
           </p>
         </div>
 
+        {/* Filtros */}
+        <div className="mb-8 bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Barra de Pesquisa */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Pesquisar equipamentos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filtro por Categoria */}
+            <div className="md:w-64">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Todas as categorias" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas as categorias</SelectItem>
+                  {categorias.map((categoria) => (
+                    <SelectItem key={categoria} value={categoria}>
+                      {categoria}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Resultados da pesquisa */}
+          <div className="mt-4 text-sm text-gray-600">
+            {filteredEquipamentos.length} equipamento(s) encontrado(s)
+            {searchTerm && (
+              <span className="ml-2">
+                para "{searchTerm}"
+              </span>
+            )}
+            {selectedCategory && (
+              <span className="ml-2">
+                na categoria "{selectedCategory}"
+              </span>
+            )}
+          </div>
+        </div>
+
         {/* Grid de Equipamentos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {equipamentos.map((equipamento) => (
+          {filteredEquipamentos.map((equipamento) => (
             <Card key={equipamento.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
               {/* Imagem */}
               <div className="aspect-square bg-gray-100 flex items-center justify-center">
@@ -137,10 +205,13 @@ const Equipamentos = () => {
           ))}
         </div>
 
-        {equipamentos.length === 0 && (
+        {filteredEquipamentos.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
-              Nenhum equipamento encontrado no momento.
+              {searchTerm || selectedCategory 
+                ? "Nenhum equipamento encontrado com os filtros aplicados."
+                : "Nenhum equipamento encontrado no momento."
+              }
             </p>
           </div>
         )}
