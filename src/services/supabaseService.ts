@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -27,6 +26,31 @@ export interface DemandaData {
   subcategoria_id: string;
   urgencia: string;
   observacao: string;
+}
+
+export interface Profissional {
+  id?: number;
+  cpf_cnpj: string;
+  nome: string;
+  whatsapp: string;
+  aceita_diaria?: boolean;
+  foto_perfil?: string;
+  bairro?: string;
+  cep?: string;
+  cidade?: string;
+  crea?: string;
+  creci?: string;
+  desativado?: boolean;
+  email?: string;
+  estado?: string;
+  estrelas?: number;
+  nacionalidade?: string;
+  numero?: string;
+  receber_msm?: boolean;
+  rua?: string;
+  saldo?: number;
+  termos?: string;
+  valor_diaria?: number;
 }
 
 export const loadCategorias = async () => {
@@ -163,4 +187,59 @@ export const loadCidades = async (uf: string) => {
     console.error('Erro ao carregar cidades:', error);
     throw error;
   }
+};
+
+export const loadProfissionalByWhatsapp = async (whatsapp: string) => {
+  console.log('Buscando profissional por WhatsApp:', whatsapp);
+  
+  const { data, error } = await supabase
+    .from('profissionais')
+    .select('*')
+    .eq('whatsapp', whatsapp)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    console.error('Erro ao buscar profissional:', error);
+    throw error;
+  }
+
+  console.log('Profissional encontrado:', data);
+  return data;
+};
+
+export const createProfissional = async (profissionalData: Profissional) => {
+  console.log('Criando profissional:', profissionalData);
+  
+  const { data, error } = await supabase
+    .from('profissionais')
+    .insert([profissionalData])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Erro ao criar profissional:', error);
+    throw error;
+  }
+
+  console.log('Profissional criado:', data);
+  return data;
+};
+
+export const updateProfissional = async (id: number, profissionalData: Partial<Profissional>) => {
+  console.log('Atualizando profissional:', id, profissionalData);
+  
+  const { data, error } = await supabase
+    .from('profissionais')
+    .update(profissionalData)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Erro ao atualizar profissional:', error);
+    throw error;
+  }
+
+  console.log('Profissional atualizado:', data);
+  return data;
 };

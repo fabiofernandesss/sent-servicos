@@ -10,15 +10,17 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import MobileNavbar from '@/components/MobileNavbar';
 import MobileMenu from '@/components/MobileMenu';
+import FormularioProfissional from '@/components/FormularioProfissional';
+import { Profissional, loadProfissionalByWhatsapp } from '@/services/supabaseService';
 
 const ProfissionalPerfil = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [step, setStep] = useState<'login' | 'otp' | 'cadastro' | 'perfil'>('login');
+  const [step, setStep] = useState<'login' | 'otp' | 'form'>('login');
   const [whatsapp, setWhatsapp] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [profissional, setProfissional] = useState(null);
+  const [profissional, setProfissional] = useState<Profissional | null>(null);
 
   const sendOTP = async () => {
     if (!whatsapp || whatsapp.length < 10) {
@@ -85,7 +87,7 @@ Se você não solicitou este código, ignore esta mensagem.`;
     }
   };
 
-  const verifyOTP = () => {
+  const verifyOTP = async () => {
     const savedCode = localStorage.getItem('otp_code');
     const savedWhatsapp = localStorage.getItem('otp_whatsapp');
     
@@ -94,13 +96,35 @@ Se você não solicitou este código, ignore esta mensagem.`;
       localStorage.removeItem('otp_code');
       localStorage.removeItem('otp_whatsapp');
       
-      // Verificar se profissional existe (simulação)
-      const existeProfissional = false; // Aqui você faria a consulta no Supabase
-      
-      if (existeProfissional) {
-        setStep('perfil');
-      } else {
-        setStep('cadastro');
+      setLoading(true);
+      try {
+        // Verificar se profissional existe no Supabase
+        const profissionalExistente = await loadProfissionalByWhatsapp(whatsapp);
+        
+        if (profissionalExistente) {
+          setProfissional(profissionalExistente);
+          toast({
+            title: "Bem-vindo de volta!",
+            description: "Você pode editar suas informações abaixo"
+          });
+        } else {
+          setProfissional(null);
+          toast({
+            title: "Novo Cadastro",
+            description: "Complete seu cadastro para começar a receber demandas"
+          });
+        }
+        
+        setStep('form');
+      } catch (error) {
+        console.error('Erro ao verificar profissional:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao verificar cadastro. Tente novamente.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
       }
     } else {
       toast({
@@ -108,6 +132,17 @@ Se você não solicitou este código, ignore esta mensagem.`;
         description: "Verifique o código e tente novamente",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleFormSuccess = () => {
+    toast({
+      title: "Sucesso!",
+      description: profissional ? "Perfil atualizado com sucesso" : "Cadastro realizado com sucesso"
+    });
+    // Recarregar dados do profissional após salvar
+    if (profissional) {
+      loadProfissionalByWhatsapp(whatsapp).then(setProfissional).catch(console.error);
     }
   };
 
@@ -166,10 +201,10 @@ Se você não solicitou este código, ignore esta mensagem.`;
         </div>
         <Button 
           onClick={verifyOTP}
-          disabled={otpCode.length !== 4}
+          disabled={otpCode.length !== 4 || loading}
           className="w-full bg-[#1E486F] hover:bg-[#1E486F]/90"
         >
-          Verificar Código
+          {loading ? 'Verificando...' : 'Verificar Código'}
         </Button>
         <Button 
           variant="ghost" 
@@ -178,40 +213,6 @@ Se você não solicitou este código, ignore esta mensagem.`;
         >
           Voltar
         </Button>
-      </CardContent>
-    </Card>
-  );
-
-  const renderCadastro = () => (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl text-[#1E486F]">Cadastro Profissional</CardTitle>
-        <p className="text-gray-600">Complete seu perfil profissional</p>
-      </CardHeader>
-      <CardContent>
-        <div className="text-center py-8">
-          <p className="text-gray-600">Formulário de cadastro será implementado aqui</p>
-          <Button 
-            onClick={() => setStep('perfil')}
-            className="mt-4 bg-[#1E486F] hover:bg-[#1E486F]/90"
-          >
-            Simular Cadastro Completo
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const renderPerfil = () => (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl text-[#1E486F]">Meu Perfil</CardTitle>
-        <p className="text-gray-600">Gerencie suas informações profissionais</p>
-      </CardHeader>
-      <CardContent>
-        <div className="text-center py-8">
-          <p className="text-gray-600">Área do perfil do profissional será implementada aqui</p>
-        </div>
       </CardContent>
     </Card>
   );
@@ -252,8 +253,13 @@ Se você não solicitou este código, ignore esta mensagem.`;
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {step === 'login' && renderLogin()}
         {step === 'otp' && renderOTP()}
-        {step === 'cadastro' && renderCadastro()}
-        {step === 'perfil' && renderPerfil()}
+        {step === 'form' && (
+          <FormularioProfissional 
+            profissional={profissional}
+            whatsapp={whatsapp}
+            onSuccess={handleFormSuccess}
+          />
+        )}
       </div>
 
       {/* Mobile Navbar */}
