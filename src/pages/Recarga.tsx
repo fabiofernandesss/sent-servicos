@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Wallet, Gift, CreditCard } from 'lucide-react';
@@ -79,6 +78,11 @@ const Recarga = () => {
       setSelectedValue(null);
     }
   };
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
@@ -202,7 +206,7 @@ const Recarga = () => {
           </CardContent>
         </Card>
 
-        {/* Métodos de Pagamento */}
+        {/* Métodos de Pagamento - Sem Débito */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg text-[#1E486F]">Métodos de Pagamento</CardTitle>
@@ -216,10 +220,6 @@ const Recarga = () => {
               <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
                 <CreditCard className="h-4 w-4" />
                 <span className="text-sm">Cartão de Crédito</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-                <CreditCard className="h-4 w-4" />
-                <span className="text-sm">Cartão de Débito</span>
               </div>
             </div>
           </CardContent>

@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { MapPin, Clock, User, Phone, Mail, Bell, Search } from 'lucide-react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { createClient } from '@supabase/supabase-js';
@@ -38,6 +38,12 @@ const ProfissionaisHome = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const loadData = async () => {
     try {
       // Carregar categorias
@@ -160,11 +166,11 @@ const ProfissionaisHome = () => {
       <BannerCarousel />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Filtro por Categorias - Horizontal */}
+        {/* Filtro por Categorias - Melhorado com ScrollArea */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">Filtrar por Categoria</h3>
-          <div className="overflow-x-auto">
-            <div className="flex gap-3 pb-2 min-w-max">
+          <ScrollArea className="w-full">
+            <div className="flex gap-3 pb-4 min-w-max pr-4">
               <Button variant="outline" onClick={() => setCategoriaFiltro('')} className={`flex-shrink-0 ${categoriaFiltro === '' ? 'border-[#CB0533] text-[#CB0533] bg-[#CB0533]/10' : 'border-gray-300'}`} size="sm">
                 Todas ({demandas.length})
               </Button>
@@ -182,7 +188,7 @@ const ProfissionaisHome = () => {
                   </Button>;
             })}
             </div>
-          </div>
+          </ScrollArea>
         </div>
 
         {/* Lista de Demandas */}

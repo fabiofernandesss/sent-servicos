@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,31 @@ const ProfissionalPerfil = () => {
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [profissional, setProfissional] = useState<Profissional | null>(null);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Função para aplicar máscara de telefone
+  const formatPhoneNumber = (value: string) => {
+    // Remove todos os caracteres não numéricos
+    const onlyNumbers = value.replace(/\D/g, '');
+    
+    // Aplica a máscara (XX) XXXXX-XXXX
+    if (onlyNumbers.length <= 2) {
+      return `(${onlyNumbers}`;
+    } else if (onlyNumbers.length <= 7) {
+      return `(${onlyNumbers.slice(0, 2)}) ${onlyNumbers.slice(2)}`;
+    } else {
+      return `(${onlyNumbers.slice(0, 2)}) ${onlyNumbers.slice(2, 7)}-${onlyNumbers.slice(7, 11)}`;
+    }
+  };
+
+  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setWhatsapp(formatted);
+  };
 
   // Se já estiver logado, mostrar diretamente o formulário
   if (!sessionLoading && profissionalLogado) {
@@ -206,8 +232,9 @@ const ProfissionalPerfil = () => {
             type="tel"
             placeholder="(11) 99999-9999"
             value={whatsapp}
-            onChange={(e) => setWhatsapp(e.target.value)}
+            onChange={handleWhatsappChange}
             className="mt-1"
+            maxLength={15}
           />
         </div>
         <Button 
