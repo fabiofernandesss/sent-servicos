@@ -112,7 +112,7 @@ const WhatsAppMessagePanel = ({
     setWhatsappButtonState('draft');
     setWhatsappMessage('');
   };
-  return <div className="items-center max-w-full items-center ">
+  return <div className="flex-auto -bottom-0 -bottom-0 ">
       <Button variant={whatsappButtonState === 'draft' ? 'outline' : whatsappButtonState === 'ready' ? 'default' : 'secondary'} onClick={handleWhatsappButtonClick} disabled={sendingWhatsapp || filteredProfissionais.length === 0} className={whatsappButtonState === 'ready' ? 'bg-green-600 hover:bg-green-700' : ''}>
         <MessageSquare className="h-4 w-4 mr-2" />
         {whatsappButtonState === 'draft' && 'Enviar WhatsApp'}
@@ -120,7 +120,7 @@ const WhatsAppMessagePanel = ({
         {whatsappButtonState === 'sending' && 'Enviando...'}
       </Button>
 
-      {whatsappButtonState === 'ready' && <div className="p-4 border rounded-lg bg-green-50 space-y-3">
+      {whatsappButtonState === 'ready' && <div className="p-4 border rounded-lg bg-green-50 space-y-3 my-[14px]">
           <label className="block text-sm font-medium">
             Mensagem para {filteredProfissionais.length} profissionais:
           </label>
