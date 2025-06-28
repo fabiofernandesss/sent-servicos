@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,7 +68,7 @@ const FormularioProfissional = ({
         whatsapp: profissional.whatsapp || whatsapp,
         email: profissional.email || '',
         estado: profissional.estado || '',
-        cidade: profissional.cidade || '', // Preservar cidade original
+        cidade: profissional.cidade || '',
         bairro: profissional.bairro || '',
         rua: profissional.rua || '',
         numero: profissional.numero || '',
@@ -85,12 +86,11 @@ const FormularioProfissional = ({
 
       // Carregar cidades do estado se existir
       if (profissional.estado) {
-        console.log('Carregando cidades para o estado:', profissional.estado);
+        console.log('Carregando cidades para o estado existente:', profissional.estado);
         loadCidades(profissional.estado)
           .then(cidadesData => {
-            console.log('Cidades carregadas:', cidadesData.length);
+            console.log('Cidades carregadas para profissional existente:', cidadesData.length);
             setCidades(cidadesData);
-            console.log('Cidade preservada após carregar cidades:', profissional.cidade);
           })
           .catch(error => {
             console.error('Erro ao carregar cidades:', error);
@@ -99,37 +99,29 @@ const FormularioProfissional = ({
     }
   }, [profissional, whatsapp]);
 
-  // Effect separado para carregar cidades quando estado muda (mas preservando cidade existente)
+  // Effect para carregar cidades quando estado muda (apenas para novos cadastros ou mudança de estado)
   useEffect(() => {
-    if (formData.estado && !profissional) {
-      // Só carregar cidades automaticamente se for um novo cadastro
-      console.log('Carregando cidades para novo cadastro, estado:', formData.estado);
-      loadCidades(formData.estado)
-        .then(cidadesData => {
-          console.log('Cidades carregadas para novo cadastro:', cidadesData.length);
-          setCidades(cidadesData);
-        })
-        .catch(error => {
-          console.error('Erro ao carregar cidades para novo cadastro:', error);
-          setCidades([]);
-        });
-    } else if (formData.estado && profissional && formData.estado !== profissional.estado) {
-      // Se mudou o estado de um profissional existente, carregar cidades mas limpar cidade
-      console.log('Estado alterado, carregando novas cidades e limpando cidade');
-      loadCidades(formData.estado)
-        .then(cidadesData => {
-          console.log('Cidades carregadas após mudança de estado:', cidadesData.length);
-          setCidades(cidadesData);
-          // Limpar cidade apenas se mudou o estado
-          setFormData(prev => ({ ...prev, cidade: '' }));
-        })
-        .catch(error => {
-          console.error('Erro ao carregar cidades:', error);
-          setCidades([]);
-        });
-    } else if (!formData.estado) {
+    if (formData.estado) {
+      // Se não tem profissional (novo cadastro) ou mudou o estado
+      if (!profissional || (profissional && formData.estado !== profissional.estado)) {
+        console.log('Carregando cidades devido à mudança de estado:', formData.estado);
+        loadCidades(formData.estado)
+          .then(cidadesData => {
+            console.log('Cidades carregadas:', cidadesData.length);
+            setCidades(cidadesData);
+            // Se mudou o estado, limpar a cidade
+            if (profissional && formData.estado !== profissional.estado) {
+              console.log('Limpando cidade devido à mudança de estado');
+              setFormData(prev => ({ ...prev, cidade: '' }));
+            }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar cidades:', error);
+            setCidades([]);
+          });
+      }
+    } else {
       setCidades([]);
-      setFormData(prev => ({ ...prev, cidade: '' }));
     }
   }, [formData.estado, profissional]);
 
@@ -138,7 +130,6 @@ const FormularioProfissional = ({
     if (!categoriesLoaded) {
       if (profissional?.id) {
         console.log('Carregando categorias para profissional existente:', profissional.id);
-        // Se está editando um profissional existente, carregar categorias do banco
         loadProfissionalCategorias(profissional.id).then(categorias => {
           console.log('Categorias carregadas do banco:', categorias);
           const categoryIds = categorias.map(cat => cat.categoria_id);
@@ -150,7 +141,6 @@ const FormularioProfissional = ({
         });
       } else {
         console.log('Carregando categorias temporárias para novo cadastro');
-        // Se não está logado, carregar categorias temporárias
         const tempCategories = getTempCategories();
         setSelectedCategories(tempCategories);
         setCategoriesLoaded(true);
@@ -168,7 +158,7 @@ const FormularioProfissional = ({
         [field]: value
       };
       
-      console.log('FormData após alteração:', newData);
+      console.log('FormData após alteração do campo', field, ':', newData[field]);
       return newData;
     });
   };
@@ -186,8 +176,8 @@ const FormularioProfissional = ({
     e.preventDefault();
     
     console.log('=== INICIANDO SUBMIT ===');
-    console.log('FormData antes da validação:', formData);
-    console.log('Cidade antes da validação:', formData.cidade);
+    console.log('FormData completo antes da validação:', formData);
+    console.log('Cidade que será enviada:', formData.cidade);
     
     if (!formData.nome || !formData.cpf_cnpj || !formData.email) {
       toast({
@@ -206,11 +196,9 @@ const FormularioProfissional = ({
       return;
     }
     
-    console.log('=== DADOS ANTES DE ENVIAR PARA SUPABASE ===');
-    console.log('FormData completo:', formData);
-    console.log('Campo cidade especificamente:', formData.cidade);
-    console.log('Tipo da cidade:', typeof formData.cidade);
-    console.log('===============================================');
+    console.log('=== DADOS FINAIS PARA ENVIO ===');
+    console.log('Cidade final que será salva:', formData.cidade);
+    console.log('===============================');
     
     setLoading(true);
     try {
@@ -218,6 +206,7 @@ const FormularioProfissional = ({
       if (profissional?.id) {
         // Atualizar profissional existente
         console.log('Atualizando profissional ID:', profissional.id);
+        console.log('Dados sendo enviados para atualização:', formData);
         result = await updateProfissional(profissional.id, formData, selectedCategories);
         toast({
           title: "Sucesso",
@@ -226,8 +215,8 @@ const FormularioProfissional = ({
       } else {
         // Criar novo profissional
         console.log('Criando novo profissional');
+        console.log('Dados sendo enviados para criação:', formData);
         result = await createProfissional(formData, selectedCategories);
-        // Limpar categorias temporárias após o cadastro
         clearTempCategories();
         toast({
           title: "Sucesso",
@@ -235,12 +224,11 @@ const FormularioProfissional = ({
         });
       }
       
-      console.log('=== RESULTADO DO SAVE ===');
+      console.log('=== RESULTADO FINAL ===');
       console.log('Profissional salvo:', result);
-      console.log('Cidade salva:', result.cidade);
-      console.log('=========================');
+      console.log('Cidade salva no resultado:', result.cidade);
+      console.log('======================');
       
-      // Só chamar onSuccess DEPOIS que a operação foi bem-sucedida
       onSuccess(result);
       
     } catch (error) {
@@ -261,17 +249,10 @@ const FormularioProfissional = ({
       title: "Logout realizado",
       description: "Você foi desconectado com sucesso",
     });
-    // Redirecionar para a página inicial
     window.location.href = '/';
   };
 
   const isEditing = !!profissional?.id;
-
-  console.log('=== RENDERIZANDO FORMULÁRIO ===');
-  console.log('FormData atual:', formData);
-  console.log('Cidade no formData:', formData.cidade);
-  console.log('Cidades disponíveis:', cidades.length);
-  console.log('===================================');
 
   return (
     <Card className="w-full max-w-4xl mx-auto">

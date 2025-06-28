@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,6 +13,39 @@ interface EnderecoFormProps {
 }
 
 const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFormProps) => {
+  const [selectedCidade, setSelectedCidade] = useState<string>('');
+
+  // Inicializar cidade selecionada quando formData.cidade mudar
+  useEffect(() => {
+    if (formData.cidade && formData.cidade !== selectedCidade) {
+      console.log('=== INICIALIZANDO CIDADE SELECIONADA ===');
+      console.log('Cidade do formData:', formData.cidade);
+      setSelectedCidade(formData.cidade);
+    }
+  }, [formData.cidade]); // Removido selectedCidade da dependência para evitar loop
+
+  // Limpar cidade selecionada quando estado mudar
+  useEffect(() => {
+    if (formData.estado) {
+      console.log('=== ESTADO MUDOU ===');
+      console.log('Novo estado:', formData.estado);
+      // Só limpar se realmente mudou o estado e não é a inicialização
+      if (selectedCidade && cidades.length === 0) {
+        console.log('Limpando cidade selecionada devido à mudança de estado');
+        setSelectedCidade('');
+        onInputChange('cidade', '');
+      }
+    }
+  }, [formData.estado, cidades.length]);
+
+  const handleCidadeChange = (cidade: string) => {
+    console.log('=== CIDADE SELECIONADA PELO USUÁRIO ===');
+    console.log('Cidade selecionada:', cidade);
+    setSelectedCidade(cidade);
+    onInputChange('cidade', cidade);
+    console.log('========================================');
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-[#1E486F]">Endereço</h3>
@@ -30,16 +64,10 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
           </Select>
         </div>
         <div>
-          <Label htmlFor="cidade">Cidade * (Atual: {formData.cidade || 'Nenhuma'})</Label>
+          <Label htmlFor="cidade">Cidade * (Selecionada: {selectedCidade || 'Nenhuma'})</Label>
           <Select 
-            value={formData.cidade || ''} 
-            onValueChange={(value) => {
-              console.log('=== SELECT CIDADE ACIONADO ===');
-              console.log('Valor selecionado:', value);
-              console.log('Valor atual no formData:', formData.cidade);
-              onInputChange('cidade', value);
-              console.log('==============================');
-            }}
+            value={selectedCidade} 
+            onValueChange={handleCidadeChange}
             disabled={!formData.estado}
           >
             <SelectTrigger>
