@@ -1,11 +1,13 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -29,6 +31,14 @@ const DemandasAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewingDemanda, setViewingDemanda] = useState<Demanda | null>(null);
+  
+  // Estados dos filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterEstado, setFilterEstado] = useState('');
+  const [filterCidade, setFilterCidade] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterUrgencia, setFilterUrgencia] = useState('');
+  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -58,6 +68,49 @@ const DemandasAdmin = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Dados únicos para os filtros
+  const uniqueEstados = useMemo(() => {
+    const estados = [...new Set(demandas.map(d => d.estado).filter(Boolean))];
+    return estados.sort();
+  }, [demandas]);
+
+  const uniqueCidades = useMemo(() => {
+    let cidades = demandas.map(d => d.cidade).filter(Boolean);
+    if (filterEstado) {
+      cidades = demandas
+        .filter(d => d.estado === filterEstado)
+        .map(d => d.cidade)
+        .filter(Boolean);
+    }
+    return [...new Set(cidades)].sort();
+  }, [demandas, filterEstado]);
+
+  // Demandas filtradas
+  const filteredDemandas = useMemo(() => {
+    return demandas.filter(demanda => {
+      const matchesSearch = !searchTerm || 
+        demanda.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        demanda.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        demanda.whatsapp.includes(searchTerm) ||
+        demanda.categorias?.nome.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesEstado = !filterEstado || demanda.estado === filterEstado;
+      const matchesCidade = !filterCidade || demanda.cidade === filterCidade;
+      const matchesStatus = !filterStatus || demanda.status === filterStatus;
+      const matchesUrgencia = !filterUrgencia || demanda.urgencia === filterUrgencia;
+
+      return matchesSearch && matchesEstado && matchesCidade && matchesStatus && matchesUrgencia;
+    });
+  }, [demandas, searchTerm, filterEstado, filterCidade, filterStatus, filterUrgencia]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterEstado('');
+    setFilterCidade('');
+    setFilterStatus('');
+    setFilterUrgencia('');
   };
 
   const handleView = (demanda: Demanda) => {
@@ -117,9 +170,83 @@ const DemandasAdmin = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Gerenciar Demandas</CardTitle>
+        <div>
+          <CardTitle>Gerenciar Demandas</CardTitle>
+          <p className="text-sm text-gray-600 mt-1">
+            {filteredDemandas.length} de {demandas.length} demandas
+          </p>
+        </div>
       </CardHeader>
       <CardContent>
+        {/* Filtros */}
+        <div className="mb-6 space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="h-4 w-4" />
+            <span className="font-medium">Filtros</span>
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              Limpar Filtros
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <Input
+              placeholder="Buscar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            
+            <Select value={filterEstado} onValueChange={setFilterEstado}>
+              <SelectTrigger>
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos os Estados</SelectItem>
+                {uniqueEstados.map(estado => (
+                  <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterCidade} onValueChange={setFilterCidade}>
+              <SelectTrigger>
+                <SelectValue placeholder="Cidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todas as Cidades</SelectItem>
+                {uniqueCidades.map(cidade => (
+                  <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                <SelectItem value="concluida">Concluída</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterUrgencia} onValueChange={setFilterUrgencia}>
+              <SelectTrigger>
+                <SelectValue placeholder="Urgência" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="preciso_com_urgencia">Urgente</SelectItem>
+                <SelectItem value="quero_para_esses_dias">Breve</SelectItem>
+                <SelectItem value="nao_tenho_tanta_pressa">Flexível</SelectItem>
+                <SelectItem value="so_orcamento">Orçamento</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -133,7 +260,7 @@ const DemandasAdmin = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {demandas.map((demanda) => (
+            {filteredDemandas.map((demanda) => (
               <TableRow key={demanda.id}>
                 <TableCell className="font-medium">{demanda.nome}</TableCell>
                 <TableCell>{demanda.categorias?.nome}</TableCell>

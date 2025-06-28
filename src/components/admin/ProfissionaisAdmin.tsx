@@ -1,12 +1,12 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Search, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -31,6 +31,14 @@ const ProfissionaisAdmin = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editingProfissional, setEditingProfissional] = useState<Profissional | null>(null);
   const [viewingProfissional, setViewingProfissional] = useState<Profissional | null>(null);
+  
+  // Estados dos filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterEstado, setFilterEstado] = useState('');
+  const [filterCidade, setFilterCidade] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDiaria, setFilterDiaria] = useState('');
+  
   const [formData, setFormData] = useState({
     nome: '',
     cpf_cnpj: '',
@@ -68,6 +76,53 @@ const ProfissionaisAdmin = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Dados únicos para os filtros
+  const uniqueEstados = useMemo(() => {
+    const estados = [...new Set(profissionais.map(p => p.estado).filter(Boolean))];
+    return estados.sort();
+  }, [profissionais]);
+
+  const uniqueCidades = useMemo(() => {
+    let cidades = profissionais.map(p => p.cidade).filter(Boolean);
+    if (filterEstado) {
+      cidades = profissionais
+        .filter(p => p.estado === filterEstado)
+        .map(p => p.cidade)
+        .filter(Boolean);
+    }
+    return [...new Set(cidades)].sort();
+  }, [profissionais, filterEstado]);
+
+  // Profissionais filtrados
+  const filteredProfissionais = useMemo(() => {
+    return profissionais.filter(profissional => {
+      const matchesSearch = !searchTerm || 
+        profissional.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profissional.whatsapp.includes(searchTerm) ||
+        profissional.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profissional.cpf_cnpj.includes(searchTerm);
+      
+      const matchesEstado = !filterEstado || profissional.estado === filterEstado;
+      const matchesCidade = !filterCidade || profissional.cidade === filterCidade;
+      const matchesStatus = filterStatus === '' || 
+        (filterStatus === 'ativo' && !profissional.desativado) ||
+        (filterStatus === 'desativado' && profissional.desativado);
+      const matchesDiaria = filterDiaria === '' ||
+        (filterDiaria === 'aceita' && profissional.aceita_diaria) ||
+        (filterDiaria === 'nao_aceita' && !profissional.aceita_diaria);
+
+      return matchesSearch && matchesEstado && matchesCidade && matchesStatus && matchesDiaria;
+    });
+  }, [profissionais, searchTerm, filterEstado, filterCidade, filterStatus, filterDiaria]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterEstado('');
+    setFilterCidade('');
+    setFilterStatus('');
+    setFilterDiaria('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,7 +231,12 @@ const ProfissionaisAdmin = () => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Gerenciar Profissionais</CardTitle>
+        <div>
+          <CardTitle>Gerenciar Profissionais</CardTitle>
+          <p className="text-sm text-gray-600 mt-1">
+            {filteredProfissionais.length} de {profissionais.length} profissionais
+          </p>
+        </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
@@ -308,6 +368,74 @@ const ProfissionaisAdmin = () => {
         </Dialog>
       </CardHeader>
       <CardContent>
+        {/* Filtros */}
+        <div className="mb-6 space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="h-4 w-4" />
+            <span className="font-medium">Filtros</span>
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              Limpar Filtros
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div>
+              <Input
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <Select value={filterEstado} onValueChange={setFilterEstado}>
+              <SelectTrigger>
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos os Estados</SelectItem>
+                {uniqueEstados.map(estado => (
+                  <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterCidade} onValueChange={setFilterCidade}>
+              <SelectTrigger>
+                <SelectValue placeholder="Cidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todas as Cidades</SelectItem>
+                {uniqueCidades.map(cidade => (
+                  <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="ativo">Ativo</SelectItem>
+                <SelectItem value="desativado">Desativado</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterDiaria} onValueChange={setFilterDiaria}>
+              <SelectTrigger>
+                <SelectValue placeholder="Diária" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="aceita">Aceita Diária</SelectItem>
+                <SelectItem value="nao_aceita">Não Aceita</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -320,7 +448,7 @@ const ProfissionaisAdmin = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {profissionais.map((profissional) => (
+            {filteredProfissionais.map((profissional) => (
               <TableRow key={profissional.id}>
                 <TableCell className="font-medium">{profissional.nome}</TableCell>
                 <TableCell>{profissional.whatsapp}</TableCell>

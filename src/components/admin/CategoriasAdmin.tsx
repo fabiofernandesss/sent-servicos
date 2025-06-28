@@ -1,13 +1,13 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,6 +24,11 @@ const CategoriasAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null);
+  
+  // Estados dos filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
@@ -54,6 +59,26 @@ const CategoriasAdmin = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Categorias filtradas
+  const filteredCategorias = useMemo(() => {
+    return categorias.filter(categoria => {
+      const matchesSearch = !searchTerm || 
+        categoria.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        categoria.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = filterStatus === '' || 
+        (filterStatus === 'ativo' && categoria.ativo) ||
+        (filterStatus === 'inativo' && !categoria.ativo);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [categorias, searchTerm, filterStatus]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterStatus('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,7 +164,12 @@ const CategoriasAdmin = () => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Gerenciar Categorias</CardTitle>
+        <div>
+          <CardTitle>Gerenciar Categorias</CardTitle>
+          <p className="text-sm text-gray-600 mt-1">
+            {filteredCategorias.length} de {categorias.length} categorias
+          </p>
+        </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
@@ -193,6 +223,36 @@ const CategoriasAdmin = () => {
         </Dialog>
       </CardHeader>
       <CardContent>
+        {/* Filtros */}
+        <div className="mb-6 space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="h-4 w-4" />
+            <span className="font-medium">Filtros</span>
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              Limpar Filtros
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              placeholder="Buscar por nome ou descrição..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="ativo">Ativo</SelectItem>
+                <SelectItem value="inativo">Inativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -204,7 +264,7 @@ const CategoriasAdmin = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {categorias.map((categoria) => (
+            {filteredCategorias.map((categoria) => (
               <TableRow key={categoria.id}>
                 <TableCell className="font-medium">{categoria.nome}</TableCell>
                 <TableCell>{categoria.descricao}</TableCell>

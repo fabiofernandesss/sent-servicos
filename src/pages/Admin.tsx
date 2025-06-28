@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Database, Users, Package, FileText, Settings, ArrowLeft } from 'lucide-react';
+import { Database, Users, Package, FileText, Settings, ArrowLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAdminSession } from '@/hooks/useAdminSession';
+import AdminLogin from '@/components/admin/AdminLogin';
 import CategoriasAdmin from '@/components/admin/CategoriasAdmin';
 import SubcategoriasAdmin from '@/components/admin/SubcategoriasAdmin';
 import ProfissionaisAdmin from '@/components/admin/ProfissionaisAdmin';
@@ -13,6 +15,19 @@ import EquipamentosAdmin from '@/components/admin/EquipamentosAdmin';
 
 const Admin = () => {
   const navigate = useNavigate();
+  const { isAdminLoggedIn, loading, loginAdmin, logoutAdmin } = useAdminSession();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAdminLoggedIn) {
+    return <AdminLogin onLogin={loginAdmin} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -30,6 +45,10 @@ const Admin = () => {
                 <h1 className="text-xl font-bold text-gray-900">Painel Administrativo</h1>
               </div>
             </div>
+            <Button variant="outline" size="sm" onClick={logoutAdmin} className="text-red-600">
+              <LogOut className="h-4 w-4 mr-1" />
+              Sair
+            </Button>
           </div>
         </div>
       </header>
