@@ -390,6 +390,8 @@ export const getProfissionaisTelefonesByCategoriaECidade = async (categoriaId: s
     throw error;
   }
 
+  console.log('Dados brutos retornados:', data);
+
   // Filtrar números válidos e remover duplicatas
   const telefones = data
     ?.map(item => item.whatsapp)
@@ -397,6 +399,6 @@ export const getProfissionaisTelefonesByCategoriaECidade = async (categoriaId: s
     .filter((tel, index, arr) => arr.indexOf(tel) === index) // remover duplicatas
     || [];
 
-  console.log('Telefones encontrados:', telefones.length, telefones);
+  console.log('Telefones filtrados encontrados:', telefones.length, telefones);
   return telefones;
 };

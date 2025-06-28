@@ -63,7 +63,7 @@ const FormularioProfissional = ({
         whatsapp: profissional.whatsapp || whatsapp,
         email: profissional.email || '',
         estado: profissional.estado || '',
-        cidade: profissional.cidade || '',
+        cidade: profissional.cidade || '', // Corrigindo para pegar a cidade do profissional
         bairro: profissional.bairro || '',
         rua: profissional.rua || '',
         numero: profissional.numero || '',
@@ -198,23 +198,52 @@ const FormularioProfissional = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="nome">Nome Completo *</Label>
-                <Input id="nome" value={formData.nome} onChange={e => handleInputChange('nome', e.target.value)} placeholder="Seu nome completo" required />
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => handleInputChange('nome', e.target.value)}
+                  placeholder="Seu nome completo"
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="cpf_cnpj">CPF/CNPJ *</Label>
-                <Input id="cpf_cnpj" value={formData.cpf_cnpj} onChange={e => handleInputChange('cpf_cnpj', e.target.value)} placeholder="000.000.000-00 ou 00.000.000/0000-00" required />
+                <Input
+                  id="cpf_cnpj"
+                  value={formData.cpf_cnpj}
+                  onChange={(e) => handleInputChange('cpf_cnpj', e.target.value)}
+                  placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="email">E-mail *</Label>
-                <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange('email', e.target.value)} placeholder="seu.email@exemplo.com" required />
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="seu.email@exemplo.com"
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="whatsapp">WhatsApp</Label>
-                <Input id="whatsapp" value={formData.whatsapp} disabled className="bg-gray-100" />
+                <Input
+                  id="whatsapp"
+                  value={formData.whatsapp}
+                  disabled
+                  className="bg-gray-100"
+                />
               </div>
               <div>
                 <Label htmlFor="nacionalidade">Nacionalidade</Label>
-                <Input id="nacionalidade" value={formData.nacionalidade} onChange={e => handleInputChange('nacionalidade', e.target.value)} placeholder="Brasileira" />
+                <Input
+                  id="nacionalidade"
+                  value={formData.nacionalidade}
+                  onChange={(e) => handleInputChange('nacionalidade', e.target.value)}
+                  placeholder="Brasileira"
+                />
               </div>
             </div>
           </div>
@@ -225,41 +254,65 @@ const FormularioProfissional = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="estado">Estado *</Label>
-                <Select value={formData.estado || ''} onValueChange={value => handleInputChange('estado', value)}>
+                <Select value={formData.estado || ''} onValueChange={(value) => handleInputChange('estado', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    {estados.map(estado => <SelectItem key={estado} value={estado}>{estado}</SelectItem>)}
+                    {estados.map((estado) => (
+                      <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label htmlFor="cidade">Cidade *</Label>
-                <Select value={formData.cidade || ''} onValueChange={value => handleInputChange('cidade', value)}>
+                <Select value={formData.cidade || ''} onValueChange={(value) => handleInputChange('cidade', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a cidade" />
                   </SelectTrigger>
                   <SelectContent>
-                    {cidades.map(cidade => <SelectItem key={cidade.id} value={cidade.nome}>{cidade.nome}</SelectItem>)}
+                    {cidades.map((cidade) => (
+                      <SelectItem key={cidade.id} value={cidade.nome}>{cidade.nome}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label htmlFor="bairro">Bairro</Label>
-                <Input id="bairro" value={formData.bairro || ''} onChange={e => handleInputChange('bairro', e.target.value)} placeholder="Seu bairro" />
+                <Input
+                  id="bairro"
+                  value={formData.bairro || ''}
+                  onChange={(e) => handleInputChange('bairro', e.target.value)}
+                  placeholder="Seu bairro"
+                />
               </div>
               <div>
                 <Label htmlFor="rua">Rua</Label>
-                <Input id="rua" value={formData.rua || ''} onChange={e => handleInputChange('rua', e.target.value)} placeholder="Nome da rua" />
+                <Input
+                  id="rua"
+                  value={formData.rua || ''}
+                  onChange={(e) => handleInputChange('rua', e.target.value)}
+                  placeholder="Nome da rua"
+                />
               </div>
               <div>
                 <Label htmlFor="numero">Número</Label>
-                <Input id="numero" value={formData.numero || ''} onChange={e => handleInputChange('numero', e.target.value)} placeholder="Número" />
+                <Input
+                  id="numero"
+                  value={formData.numero || ''}
+                  onChange={(e) => handleInputChange('numero', e.target.value)}
+                  placeholder="Número"
+                />
               </div>
               <div>
                 <Label htmlFor="cep">CEP</Label>
-                <Input id="cep" value={formData.cep || ''} onChange={e => handleInputChange('cep', e.target.value)} placeholder="00000-000" />
+                <Input
+                  id="cep"
+                  value={formData.cep || ''}
+                  onChange={(e) => handleInputChange('cep', e.target.value)}
+                  placeholder="00000-000"
+                />
               </div>
             </div>
           </div>
@@ -283,32 +336,62 @@ const FormularioProfissional = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="crea">CREA (se aplicável)</Label>
-                <Input id="crea" value={formData.crea || ''} onChange={e => handleInputChange('crea', e.target.value)} placeholder="Número do CREA" />
+                <Input
+                  id="crea"
+                  value={formData.crea || ''}
+                  onChange={(e) => handleInputChange('crea', e.target.value)}
+                  placeholder="Número do CREA"
+                />
               </div>
               <div>
                 <Label htmlFor="creci">CRECI (se aplicável)</Label>
-                <Input id="creci" value={formData.creci || ''} onChange={e => handleInputChange('creci', e.target.value)} placeholder="Número do CRECI" />
+                <Input
+                  id="creci"
+                  value={formData.creci || ''}
+                  onChange={(e) => handleInputChange('creci', e.target.value)}
+                  placeholder="Número do CRECI"
+                />
               </div>
             </div>
             
             <div className="flex items-center space-x-2">
-              <Checkbox id="aceita_diaria" checked={formData.aceita_diaria || false} onCheckedChange={checked => handleInputChange('aceita_diaria', checked)} />
+              <Checkbox
+                id="aceita_diaria"
+                checked={formData.aceita_diaria || false}
+                onCheckedChange={(checked) => handleInputChange('aceita_diaria', checked)}
+              />
               <Label htmlFor="aceita_diaria">Aceito trabalhar por diária</Label>
             </div>
             
-            {formData.aceita_diaria && <div>
+            {formData.aceita_diaria && (
+              <div>
                 <Label htmlFor="valor_diaria">Valor da Diária (R$)</Label>
-                <Input id="valor_diaria" type="number" value={formData.valor_diaria || 0} onChange={e => handleInputChange('valor_diaria', parseFloat(e.target.value) || 0)} placeholder="150.00" />
-              </div>}
+                <Input
+                  id="valor_diaria"
+                  type="number"
+                  value={formData.valor_diaria || 0}
+                  onChange={(e) => handleInputChange('valor_diaria', parseFloat(e.target.value) || 0)}
+                  placeholder="150.00"
+                />
+              </div>
+            )}
             
             <div className="flex items-center space-x-2">
-              <Checkbox id="receber_msm" checked={formData.receber_msm ?? true} onCheckedChange={checked => handleInputChange('receber_msm', checked)} />
+              <Checkbox
+                id="receber_msm"
+                checked={formData.receber_msm ?? true}
+                onCheckedChange={(checked) => handleInputChange('receber_msm', checked)}
+              />
               <Label htmlFor="receber_msm">Desejo receber mensagens sobre novas demandas</Label>
             </div>
           </div>
 
           <div className="flex gap-4">
-            <Button type="submit" disabled={loading} className="bg-[#1E486F] hover:bg-[#1E486F]/90 py-0 rounded-3xl font-semibold">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-[#1E486F] hover:bg-[#1E486F]/90 py-0 rounded-3xl font-semibold"
+            >
               {loading ? 'Salvando...' : isEditing ? 'Atualizar Perfil' : 'Criar Cadastro'}
             </Button>
           </div>
