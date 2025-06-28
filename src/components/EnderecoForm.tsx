@@ -14,7 +14,7 @@ interface EnderecoFormProps {
 
 const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) => {
   const { formatCEP } = useInputMasks();
-  const { cidades, loading: cidadesLoading } = useCidades(formData.estado || '');
+  const { cidades, loading: cidadesLoading, error: cidadesError } = useCidades(formData.estado || '');
 
   const handleCidadeChange = (cidade: string) => {
     console.log('Nova cidade selecionada:', cidade);
@@ -24,6 +24,8 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
   const handleEstadoChange = (estado: string) => {
     console.log('Novo estado selecionado:', estado);
     onInputChange('estado', estado);
+    // Limpar cidade quando mudar estado
+    onInputChange('cidade', '');
   };
 
   const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,32 +59,44 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
               id="cidade-atual"
               value={formData.cidade || ''}
               readOnly
-              className="bg-gray-100 cursor-not-allowed h-[54px]"
-              placeholder="Cidade no banco"
+              className="bg-gray-50 cursor-not-allowed h-[54px] text-gray-600"
+              placeholder="Cidade salva"
             />
           </div>
           <div>
-            <Label htmlFor="cidade-nova">Nova Cidade</Label>
+            <Label htmlFor="cidade-nova">Alterar Cidade</Label>
             <Select 
               value="" 
               onValueChange={handleCidadeChange}
-              disabled={!formData.estado || cidadesLoading}
+              disabled={!formData.estado}
             >
               <SelectTrigger className="h-[54px]">
                 <SelectValue placeholder={
                   !formData.estado 
-                    ? "Selecione estado" 
+                    ? "Selecione estado primeiro" 
                     : cidadesLoading 
-                    ? "Carregando..." 
+                    ? "Carregando cidades..." 
+                    : cidadesError
+                    ? "Erro ao carregar"
                     : cidades.length === 0 
-                    ? "Sem cidades" 
-                    : "Selecionar cidade"
+                    ? "Nenhuma cidade encontrada" 
+                    : "Selecionar nova cidade"
                 } />
               </SelectTrigger>
               <SelectContent>
-                {cidades.map((cidade) => (
-                  <SelectItem key={cidade.id} value={cidade.nome}>{cidade.nome}</SelectItem>
-                ))}
+                {cidades.length > 0 ? (
+                  cidades.map((cidade) => (
+                    <SelectItem key={cidade.id} value={cidade.nome}>
+                      {cidade.nome}
+                    </SelectItem>
+                  ))
+                ) : (
+                  !cidadesLoading && !cidadesError && formData.estado && (
+                    <SelectItem value="" disabled>
+                      Nenhuma cidade encontrada
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -95,6 +109,7 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
             value={formData.bairro || ''}
             onChange={(e) => onInputChange('bairro', e.target.value)}
             placeholder="Seu bairro"
+            className="h-[54px]"
           />
         </div>
         <div>
@@ -104,6 +119,7 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
             value={formData.rua || ''}
             onChange={(e) => onInputChange('rua', e.target.value)}
             placeholder="Nome da rua"
+            className="h-[54px]"
           />
         </div>
         <div>
@@ -113,6 +129,7 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
             value={formData.numero || ''}
             onChange={(e) => onInputChange('numero', e.target.value)}
             placeholder="Número"
+            className="h-[54px]"
           />
         </div>
         <div>
@@ -123,9 +140,16 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
             onChange={handleCEPChange}
             placeholder="00000-000"
             maxLength={9}
+            className="h-[54px]"
           />
         </div>
       </div>
+      
+      {cidadesError && (
+        <div className="text-sm text-red-600 mt-2">
+          {cidadesError} - Tente novamente em alguns segundos
+        </div>
+      )}
     </div>
   );
 };
