@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +32,16 @@ const ProfissionaisAdmin = () => {
     saldo: 0,
     desativado: false,
     aceita_diaria: false,
-    valor_diaria: 0
+    valor_diaria: 0,
+    nacionalidade: '',
+    bairro: '',
+    rua: '',
+    numero: '',
+    cep: '',
+    crea: '',
+    creci: '',
+    receber_msm: true,
+    sobre: ''
   });
   const { toast } = useToast();
 
@@ -46,7 +54,11 @@ const ProfissionaisAdmin = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('profissionais')
-        .select('id, nome, cpf_cnpj, whatsapp, email, cidade, estado, saldo, desativado, aceita_diaria, valor_diaria')
+        .select(`
+          id, nome, cpf_cnpj, whatsapp, email, cidade, estado, saldo, 
+          desativado, aceita_diaria, valor_diaria, nacionalidade, bairro, 
+          rua, numero, cep, crea, creci, receber_msm, sobre
+        `)
         .order('nome');
 
       if (error) {
@@ -135,7 +147,16 @@ const ProfissionaisAdmin = () => {
       saldo: 0,
       desativado: false,
       aceita_diaria: false,
-      valor_diaria: 0
+      valor_diaria: 0,
+      nacionalidade: '',
+      bairro: '',
+      rua: '',
+      numero: '',
+      cep: '',
+      crea: '',
+      creci: '',
+      receber_msm: true,
+      sobre: ''
     });
   };
 
@@ -192,7 +213,16 @@ const ProfissionaisAdmin = () => {
       saldo: profissional.saldo || 0,
       desativado: profissional.desativado || false,
       aceita_diaria: profissional.aceita_diaria || false,
-      valor_diaria: profissional.valor_diaria || 0
+      valor_diaria: profissional.valor_diaria || 0,
+      nacionalidade: profissional.nacionalidade || '',
+      bairro: profissional.bairro || '',
+      rua: profissional.rua || '',
+      numero: profissional.numero || '',
+      cep: profissional.cep || '',
+      crea: profissional.crea || '',
+      creci: profissional.creci || '',
+      receber_msm: profissional.receber_msm ?? true,
+      sobre: profissional.sobre || ''
     });
     setDialogOpen(true);
   };

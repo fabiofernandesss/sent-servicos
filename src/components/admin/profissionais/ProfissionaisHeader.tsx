@@ -26,27 +26,44 @@ const ProfissionaisHeader = ({
   onSubmit,
   onNewProfissional
 }: ProfissionaisHeaderProps) => {
-  return <CardHeader className="flex flex-row items-center justify-between">
+  return (
+    <CardHeader className="flex flex-row items-center justify-between">
       <div>
-        <CardTitle>Gerenciar Profissionais</CardTitle>
+        <CardTitle className="text-[#1E486F]">Gerenciar Profissionais</CardTitle>
       </div>
-      <div className="flex-auto flex-auto mx-[20px]">
-        <WhatsAppMessagePanel filteredProfissionais={filteredProfissionais} onSendComplete={() => {}} />
+      <div className="flex items-center gap-4">
+        <WhatsAppMessagePanel 
+          filteredProfissionais={filteredProfissionais} 
+          onSendComplete={() => {}} 
+        />
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            
+            <Button 
+              onClick={onNewProfissional}
+              className="bg-[#1E486F] hover:bg-[#1E486F]/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Profissional
+            </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-[#1E486F]">
                 {editingProfissional ? 'Editar Profissional' : 'Novo Profissional'}
               </DialogTitle>
             </DialogHeader>
-            <ProfissionalForm formData={formData} setFormData={setFormData} onSubmit={onSubmit} onCancel={() => setDialogOpen(false)} isEditing={editingProfissional} />
+            <ProfissionalForm 
+              formData={formData} 
+              setFormData={setFormData} 
+              onSubmit={onSubmit} 
+              onCancel={() => setDialogOpen(false)} 
+              isEditing={editingProfissional} 
+            />
           </DialogContent>
         </Dialog>
       </div>
-    </CardHeader>;
+    </CardHeader>
+  );
 };
 export default ProfissionaisHeader;
