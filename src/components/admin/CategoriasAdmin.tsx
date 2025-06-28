@@ -1,59 +1,91 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Filter } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Categoria {
-  id: string;
+  id: number;
   nome: string;
-  descricao: string;
+  descricao: string | null;
+  icone: string | null;
   ativo: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 const CategoriasAdmin = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [filteredCategorias, setFilteredCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null);
-  
-  // Estados dos filtros
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const { toast } = useToast();
+
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
+    icone: '',
     ativo: true
   });
-  const { toast } = useToast();
 
   useEffect(() => {
-    loadCategorias();
+    fetchCategorias();
   }, []);
 
-  const loadCategorias = async () => {
+  useEffect(() => {
+    let filtered = categorias;
+
+    // Filtro por termo de busca
+    if (searchTerm) {
+      filtered = filtered.filter(categoria =>
+        categoria.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (categoria.descricao && categoria.descricao.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Filtro por status
+    if (statusFilter !== 'todos') {
+      const isActive = statusFilter === 'ativo';
+      filtered = filtered.filter(categoria => categoria.ativo === isActive);
+    }
+
+    setFilteredCategorias(filtered);
+  }, [categorias, searchTerm, statusFilter]);
+
+  const fetchCategorias = async () => {
     try {
       const { data, error } = await supabase
         .from('categorias')
         .select('*')
-        .order('nome');
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setCategorias(data || []);
     } catch (error) {
-      console.error('Erro ao carregar categorias:', error);
+      console.error('Erro ao buscar categorias:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar categorias.",
+        description: "Erro ao carregar categorias",
         variant: "destructive",
       });
     } finally {
@@ -61,37 +93,25 @@ const CategoriasAdmin = () => {
     }
   };
 
-  // Categorias filtradas
-  const filteredCategorias = useMemo(() => {
-    return categorias.filter(categoria => {
-      const matchesSearch = !searchTerm || 
-        categoria.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        categoria.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = filterStatus === '' || 
-        (filterStatus === 'ativo' && categoria.ativo) ||
-        (filterStatus === 'inativo' && !categoria.ativo);
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [categorias, searchTerm, filterStatus]);
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setFilterStatus('');
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setLoading(true);
+
     try {
       if (editingCategoria) {
         const { error } = await supabase
           .from('categorias')
-          .update(formData)
+          .update({
+            nome: formData.nome,
+            descricao: formData.descricao || null,
+            icone: formData.icone || null,
+            ativo: formData.ativo,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', editingCategoria.id);
 
         if (error) throw error;
+
         toast({
           title: "Sucesso",
           description: "Categoria atualizada com sucesso!",
@@ -99,9 +119,15 @@ const CategoriasAdmin = () => {
       } else {
         const { error } = await supabase
           .from('categorias')
-          .insert([formData]);
+          .insert([{
+            nome: formData.nome,
+            descricao: formData.descricao || null,
+            icone: formData.icone || null,
+            ativo: formData.ativo
+          }]);
 
         if (error) throw error;
+
         toast({
           title: "Sucesso",
           description: "Categoria criada com sucesso!",
@@ -110,15 +136,17 @@ const CategoriasAdmin = () => {
 
       setDialogOpen(false);
       setEditingCategoria(null);
-      setFormData({ nome: '', descricao: '', ativo: true });
-      loadCategorias();
+      setFormData({ nome: '', descricao: '', icone: '', ativo: true });
+      fetchCategorias();
     } catch (error) {
       console.error('Erro ao salvar categoria:', error);
       toast({
         title: "Erro",
-        description: "Erro ao salvar categoria.",
+        description: "Erro ao salvar categoria",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,12 +155,13 @@ const CategoriasAdmin = () => {
     setFormData({
       nome: categoria.nome,
       descricao: categoria.descricao || '',
+      icone: categoria.icone || '',
       ativo: categoria.ativo
     });
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Tem certeza que deseja excluir esta categoria?')) return;
 
     try {
@@ -142,110 +171,127 @@ const CategoriasAdmin = () => {
         .eq('id', id);
 
       if (error) throw error;
+
       toast({
         title: "Sucesso",
         description: "Categoria excluída com sucesso!",
       });
-      loadCategorias();
+      fetchCategorias();
     } catch (error) {
       console.error('Erro ao excluir categoria:', error);
       toast({
         title: "Erro",
-        description: "Erro ao excluir categoria.",
+        description: "Erro ao excluir categoria",
         variant: "destructive",
       });
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-8">Carregando categorias...</div>;
-  }
-
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Gerenciar Categorias</CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
-            {filteredCategorias.length} de {categorias.length} categorias
-          </p>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Categorias</CardTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              {filteredCategorias.length} de {categorias.length} categorias
+            </p>
+          </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => {
+                setEditingCategoria(null);
+                setFormData({ nome: '', descricao: '', icone: '', ativo: true });
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Categoria
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCategoria ? 'Editar Categoria' : 'Nova Categoria'}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="nome">Nome *</Label>
+                  <Input
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="descricao">Descrição</Label>
+                  <Input
+                    id="descricao"
+                    value={formData.descricao}
+                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="icone">Ícone</Label>
+                  <Input
+                    id="icone"
+                    value={formData.icone}
+                    onChange={(e) => setFormData({ ...formData, icone: e.target.value })}
+                    placeholder="Ex: wrench, hammer, etc."
+                  />
+                </div>
+                <div>
+                  <Label>Status</Label>
+                  <Select 
+                    value={formData.ativo ? 'ativo' : 'inativo'} 
+                    onValueChange={(value) => setFormData({ ...formData, ativo: value === 'ativo' })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? 'Salvando...' : 'Salvar'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingCategoria(null);
-              setFormData({ nome: '', descricao: '', ativo: true });
-            }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Categoria
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingCategoria ? 'Editar Categoria' : 'Nova Categoria'}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Nome</label>
-                <Input
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Descrição</label>
-                <Textarea
-                  value={formData.descricao}
-                  onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.ativo}
-                  onChange={(e) => setFormData({ ...formData, ativo: e.target.checked })}
-                />
-                <label className="text-sm font-medium">Ativo</label>
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingCategoria ? 'Atualizar' : 'Criar'}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
       </CardHeader>
       <CardContent>
         {/* Filtros */}
-        <div className="mb-6 space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="h-4 w-4" />
-            <span className="font-medium">Filtros</span>
-            <Button variant="outline" size="sm" onClick={clearFilters}>
-              Limpar Filtros
-            </Button>
+        <div className="flex gap-4 mb-6">
+          <div className="flex-1">
+            <Label htmlFor="search">Buscar</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="search"
+                placeholder="Buscar por nome ou descrição..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              placeholder="Buscar por nome ou descrição..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <div className="w-48">
+            <Label>Status</Label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Status" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="todos">Todos</SelectItem>
                 <SelectItem value="ativo">Ativo</SelectItem>
                 <SelectItem value="inativo">Inativo</SelectItem>
               </SelectContent>
@@ -253,49 +299,47 @@ const CategoriasAdmin = () => {
           </div>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Descrição</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Criado em</TableHead>
-              <TableHead>Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        {loading ? (
+          <div className="text-center py-4">Carregando...</div>
+        ) : (
+          <div className="space-y-2">
             {filteredCategorias.map((categoria) => (
-              <TableRow key={categoria.id}>
-                <TableCell className="font-medium">{categoria.nome}</TableCell>
-                <TableCell>{categoria.descricao}</TableCell>
-                <TableCell>
-                  <Badge variant={categoria.ativo ? "default" : "secondary"}>
-                    {categoria.ativo ? 'Ativo' : 'Inativo'}
-                  </Badge>
-                </TableCell>
-                <TableCell>{new Date(categoria.created_at).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(categoria)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(categoria.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+              <div key={categoria.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium">{categoria.nome}</h3>
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      categoria.ativo 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {categoria.ativo ? 'Ativo' : 'Inativo'}
+                    </span>
                   </div>
-                </TableCell>
-              </TableRow>
+                  {categoria.descricao && (
+                    <p className="text-sm text-gray-600 mt-1">{categoria.descricao}</p>
+                  )}
+                  {categoria.icone && (
+                    <p className="text-xs text-gray-500 mt-1">Ícone: {categoria.icone}</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(categoria)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleDelete(categoria.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             ))}
-          </TableBody>
-        </Table>
+            {filteredCategorias.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                Nenhuma categoria encontrada
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

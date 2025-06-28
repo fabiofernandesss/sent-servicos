@@ -10,24 +10,33 @@ export const useAdminSession = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('useAdminSession: Verificando sessão admin...');
     // Verificar se já existe uma sessão admin
     const adminSession = localStorage.getItem(ADMIN_SESSION_KEY);
-    if (adminSession) {
+    console.log('useAdminSession: Sessão encontrada:', adminSession);
+    if (adminSession === 'true') {
       setIsAdminLoggedIn(true);
+      console.log('useAdminSession: Admin logado automaticamente');
     }
     setLoading(false);
   }, []);
 
   const loginAdmin = (whatsapp: string, code: string) => {
+    console.log('loginAdmin: Tentando login com:', { whatsapp, code });
+    console.log('loginAdmin: Valores esperados:', { expected_whatsapp: ADMIN_WHATSAPP, expected_code: ADMIN_CODE });
+    
     if (whatsapp === ADMIN_WHATSAPP && code === ADMIN_CODE) {
+      console.log('loginAdmin: Credenciais corretas, fazendo login...');
       localStorage.setItem(ADMIN_SESSION_KEY, 'true');
       setIsAdminLoggedIn(true);
       return true;
     }
+    console.log('loginAdmin: Credenciais incorretas');
     return false;
   };
 
   const logoutAdmin = () => {
+    console.log('logoutAdmin: Fazendo logout do admin...');
     localStorage.removeItem(ADMIN_SESSION_KEY);
     setIsAdminLoggedIn(false);
   };
