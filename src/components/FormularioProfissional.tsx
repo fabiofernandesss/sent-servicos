@@ -63,7 +63,7 @@ const FormularioProfissional = ({
         whatsapp: profissional.whatsapp || whatsapp,
         email: profissional.email || '',
         estado: profissional.estado || '',
-        cidade: profissional.cidade || '',
+        cidade: profissional.cidade || '', // Manter a cidade original
         bairro: profissional.bairro || '',
         rua: profissional.rua || '',
         numero: profissional.numero || '',
@@ -100,10 +100,7 @@ const FormularioProfissional = ({
         .then(cidadesData => {
           console.log('Cidades carregadas:', cidadesData.length);
           setCidades(cidadesData);
-          // Se não há cidade selecionada ou a cidade atual não está na nova lista, limpar
-          if (formData.cidade && !cidadesData.find(c => c.nome === formData.cidade)) {
-            setFormData(prev => ({ ...prev, cidade: '' }));
-          }
+          // NÃO limpar a cidade automaticamente - apenas se o usuário mudar manualmente
         })
         .catch(error => {
           console.error('Erro ao carregar cidades:', error);
@@ -175,6 +172,10 @@ const FormularioProfissional = ({
       });
       return;
     }
+    
+    console.log('Dados do formulário antes de enviar:', formData);
+    console.log('Campo cidade especificamente:', formData.cidade);
+    
     setLoading(true);
     try {
       let result;
@@ -318,8 +319,11 @@ const FormularioProfissional = ({
                 <Label htmlFor="cidade">Cidade *</Label>
                 <Select 
                   value={formData.cidade || ''} 
-                  onValueChange={(value) => handleInputChange('cidade', value)}
-                  disabled={!formData.estado || cidades.length === 0}
+                  onValueChange={(value) => {
+                    console.log('Cidade selecionada:', value);
+                    handleInputChange('cidade', value);
+                  }}
+                  disabled={!formData.estado}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={

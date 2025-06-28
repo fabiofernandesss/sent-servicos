@@ -367,6 +367,7 @@ export const createProfissional = async (profissionalData: Profissional, categor
 
 export const updateProfissional = async (id: number, profissionalData: Partial<Profissional>, categoriaIds?: string[]) => {
   console.log('Atualizando profissional:', id, profissionalData);
+  console.log('Campo cidade recebido:', profissionalData.cidade);
   
   // Garantir que todos os campos estão sendo enviados corretamente, incluindo cidade
   const cleanData = {
@@ -389,6 +390,7 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   };
 
   console.log('Dados limpos para atualizar profissional (incluindo cidade):', cleanData);
+  console.log('Valor específico da cidade nos dados limpos:', cleanData.cidade);
   
   const { data, error } = await supabase
     .from('profissionais')
@@ -403,6 +405,7 @@ export const updateProfissional = async (id: number, profissionalData: Partial<P
   }
 
   console.log('Profissional atualizado (verificar se cidade foi salva):', data);
+  console.log('Cidade no resultado da atualização:', data.cidade);
   
   // Atualizar categorias se fornecidas
   if (categoriaIds && data.id) {
