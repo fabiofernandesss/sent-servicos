@@ -18,14 +18,16 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
   
   console.log('=== ENDERECO FORM RENDER ===');
   console.log('formData.cidade atual:', formData.cidade);
-  console.log('formData.estado atual:', formData.estado);
-  console.log('Cidades disponíveis:', cidades.length, cidades);
-  console.log('Estados disponíveis:', estados.length);
+  console.log('Cidades disponíveis:', cidades.length);
+  console.log('Estado atual:', formData.estado);
 
   const handleCidadeChange = (cidade: string) => {
     console.log('=== MUDANÇA DE CIDADE NO ENDERECO FORM ===');
     console.log('Cidade selecionada:', cidade);
+    console.log('Tipo da cidade:', typeof cidade);
+    console.log('Cidade antes da mudança:', formData.cidade);
     
+    // Chamar diretamente o onInputChange
     onInputChange('cidade', cidade);
     
     console.log('onInputChange chamado com cidade:', cidade);
@@ -38,9 +40,8 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
     
     onInputChange('estado', estado);
     
-    // Limpar cidade quando estado muda
-    onInputChange('cidade', '');
-    console.log('Estado alterado, cidade limpa');
+    // Não limpar mais a cidade automaticamente - manter o valor do banco
+    console.log('Estado alterado, mas mantendo cidade do banco');
   };
 
   const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,28 +67,41 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
           </Select>
         </div>
         
-        <div>
-          <Label htmlFor="cidade">Cidade *</Label>
-          <Select 
-            value={formData.cidade || ''} 
-            onValueChange={handleCidadeChange}
-            disabled={!formData.estado}
-          >
-            <SelectTrigger className="h-[54px]">
-              <SelectValue placeholder={
-                !formData.estado 
-                  ? "Selecione um estado primeiro" 
-                  : cidades.length === 0 
-                  ? "Carregando cidades..." 
-                  : "Selecione uma cidade"
-              } />
-            </SelectTrigger>
-            <SelectContent>
-              {cidades.map((cidade) => (
-                <SelectItem key={cidade.id} value={cidade.nome}>{cidade.nome}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Dois inputs de cidade lado a lado */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label htmlFor="cidade-atual">Cidade Atual</Label>
+            <Input
+              id="cidade-atual"
+              value={formData.cidade || ''}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed h-[54px]"
+              placeholder="Cidade no banco"
+            />
+          </div>
+          <div>
+            <Label htmlFor="cidade-nova">Nova Cidade</Label>
+            <Select 
+              value="" 
+              onValueChange={handleCidadeChange}
+              disabled={!formData.estado}
+            >
+              <SelectTrigger className="h-[54px]">
+                <SelectValue placeholder={
+                  !formData.estado 
+                    ? "Selecione estado" 
+                    : cidades.length === 0 
+                    ? "Carregando..." 
+                    : "Selecionar cidade"
+                } />
+              </SelectTrigger>
+              <SelectContent>
+                {cidades.map((cidade) => (
+                  <SelectItem key={cidade.id} value={cidade.nome}>{cidade.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
         <div>

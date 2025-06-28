@@ -80,34 +80,62 @@ const FormularioProfissional = ({
         nacionalidade: profissional.nacionalidade || 'Brasileira',
         receber_msm: profissional.receber_msm ?? true
       });
+
+      // Se tiver estado, carregar as cidades
+      if (profissional.estado) {
+        console.log('Carregando cidades para estado:', profissional.estado);
+        loadCidades(profissional.estado)
+          .then(cidadesData => {
+            console.log('Cidades carregadas:', cidadesData.length);
+            setCidades(cidadesData);
+            
+            // Se tiver cidade no banco, verificar se existe na lista de cidades
+            if (profissional.cidade && cidadesData.length > 0) {
+              console.log('Procurando cidade:', profissional.cidade);
+              const cidadeEncontrada = cidadesData.find(cidade => 
+                cidade.nome.toLowerCase() === profissional.cidade!.toLowerCase()
+              );
+              
+              if (cidadeEncontrada) {
+                console.log('Cidade encontrada na API:', cidadeEncontrada.nome);
+                // Atualizar formData com a cidade encontrada
+                setFormData(prev => ({
+                  ...prev,
+                  cidade: cidadeEncontrada.nome
+                }));
+              } else {
+                console.log('Cidade não encontrada na API, mantendo valor do banco');
+                // Manter valor do banco mesmo se não encontrar na API
+                setFormData(prev => ({
+                  ...prev,
+                  cidade: profissional.cidade || ''
+                }));
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar cidades:', error);
+            setCidades([]);
+          });
+      }
     }
   }, [profissional, whatsapp]);
 
-  // Carregar cidades quando estado está presente
+  // Carregar cidades quando estado muda (apenas para mudanças manuais)
   useEffect(() => {
-    if (formData.estado) {
-      console.log('=== CARREGANDO CIDADES PARA ESTADO ===');
-      console.log('Estado:', formData.estado);
-      
+    // Só executar se não for o carregamento inicial de um profissional existente
+    if (formData.estado && !profissional) {
+      console.log('Carregando cidades para novo cadastro, estado:', formData.estado);
       loadCidades(formData.estado)
         .then(cidadesData => {
-          console.log('Cidades carregadas:', cidadesData.length, cidadesData);
           setCidades(cidadesData);
         })
         .catch(error => {
           console.error('Erro ao carregar cidades:', error);
           setCidades([]);
-          toast({
-            title: "Erro",
-            description: "Erro ao carregar cidades. Tente novamente.",
-            variant: "destructive"
-          });
         });
-    } else {
-      console.log('Estado vazio, limpando cidades');
-      setCidades([]);
     }
-  }, [formData.estado, toast]);
+  }, [formData.estado, profissional]);
 
   useEffect(() => {
     // Carregar categorias apenas uma vez
@@ -143,6 +171,23 @@ const FormularioProfissional = ({
       };
       
       console.log('Valor definido no formData para', field, ':', newData[field]);
+      
+      // Se mudou o estado manualmente, limpar cidade
+      if (field === 'estado' && profissional && value !== profissional.estado) {
+        console.log('Estado mudou manualmente, limpando cidade');
+        newData.cidade = '';
+        
+        // Carregar novas cidades
+        loadCidades(value)
+          .then(cidadesData => {
+            setCidades(cidadesData);
+          })
+          .catch(error => {
+            console.error('Erro ao carregar cidades:', error);
+            setCidades([]);
+          });
+      }
+      
       return newData;
     });
   };
