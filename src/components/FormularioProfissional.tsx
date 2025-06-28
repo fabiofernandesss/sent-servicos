@@ -99,17 +99,19 @@ const FormularioProfissional = ({
     }
   }, [profissional, whatsapp]);
 
-  // Effect para carregar cidades quando estado muda (apenas para novos cadastros ou mudança de estado)
+  // Effect para carregar cidades quando estado muda - CORRIGIDO
   useEffect(() => {
     if (formData.estado) {
-      // Se não tem profissional (novo cadastro) ou mudou o estado
-      if (!profissional || (profissional && formData.estado !== profissional.estado)) {
+      // APENAS carregar cidades se for um novo cadastro OU se o estado realmente mudou
+      const shouldLoadCities = !profissional || (profissional && formData.estado !== profissional.estado);
+      
+      if (shouldLoadCities) {
         console.log('Carregando cidades devido à mudança de estado:', formData.estado);
         loadCidades(formData.estado)
           .then(cidadesData => {
             console.log('Cidades carregadas:', cidadesData.length);
             setCidades(cidadesData);
-            // Se mudou o estado, limpar a cidade
+            // APENAS limpar a cidade se mudou o estado (não no carregamento inicial)
             if (profissional && formData.estado !== profissional.estado) {
               console.log('Limpando cidade devido à mudança de estado');
               setFormData(prev => ({ ...prev, cidade: '' }));

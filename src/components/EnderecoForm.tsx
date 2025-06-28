@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Profissional } from '@/services/supabaseService';
+import { useInputMasks } from '@/hooks/useInputMasks';
 
 interface EnderecoFormProps {
   formData: Profissional;
@@ -13,6 +14,8 @@ interface EnderecoFormProps {
 }
 
 const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFormProps) => {
+  const { formatCEP } = useInputMasks();
+  
   console.log('=== ENDERECO FORM RENDER ===');
   console.log('formData.cidade atual:', formData.cidade);
   console.log('Cidades disponíveis:', cidades.length);
@@ -44,6 +47,11 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
     }
   };
 
+  const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCEP(e.target.value);
+    onInputChange('cep', formatted);
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-[#1E486F]">Endereço</h3>
@@ -62,7 +70,7 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
           </Select>
         </div>
         <div>
-          <Label htmlFor="cidade">Cidade * (Atual: {formData.cidade || 'Nenhuma'})</Label>
+          <Label htmlFor="cidade">Cidade *</Label>
           <Select 
             value={formData.cidade || ''} 
             onValueChange={handleCidadeChange}
@@ -116,8 +124,9 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
           <Input
             id="cep"
             value={formData.cep || ''}
-            onChange={(e) => onInputChange('cep', e.target.value)}
+            onChange={handleCEPChange}
             placeholder="00000-000"
+            maxLength={9}
           />
         </div>
       </div>

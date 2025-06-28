@@ -2,6 +2,7 @@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Profissional } from '@/services/supabaseService';
+import { useInputMasks } from '@/hooks/useInputMasks';
 
 interface DadosPessoaisFormProps {
   formData: Profissional;
@@ -9,6 +10,13 @@ interface DadosPessoaisFormProps {
 }
 
 const DadosPessoaisForm = ({ formData, onInputChange }: DadosPessoaisFormProps) => {
+  const { formatCPFCNPJ } = useInputMasks();
+
+  const handleCPFCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCPFCNPJ(e.target.value);
+    onInputChange('cpf_cnpj', formatted);
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-[#1E486F]">Dados Pessoais</h3>
@@ -28,9 +36,10 @@ const DadosPessoaisForm = ({ formData, onInputChange }: DadosPessoaisFormProps) 
           <Input
             id="cpf_cnpj"
             value={formData.cpf_cnpj}
-            onChange={(e) => onInputChange('cpf_cnpj', e.target.value)}
+            onChange={handleCPFCNPJChange}
             placeholder="000.000.000-00 ou 00.000.000/0000-00"
             required
+            maxLength={18}
           />
         </div>
         <div>
