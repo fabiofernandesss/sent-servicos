@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ import {
 } from '@/components/ui/select';
 
 interface Categoria {
-  id: number;
+  id: string;
   nome: string;
   descricao: string | null;
   icone: string | null;
@@ -76,11 +77,18 @@ const CategoriasAdmin = () => {
     try {
       const { data, error } = await supabase
         .from('categorias')
-        .select('*')
+        .select('id, nome, descricao, ativo, created_at, updated_at')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCategorias(data || []);
+      
+      // Add icone property to match interface
+      const categoriasWithIcone = (data || []).map(categoria => ({
+        ...categoria,
+        icone: null as string | null
+      }));
+      
+      setCategorias(categoriasWithIcone);
     } catch (error) {
       console.error('Erro ao buscar categorias:', error);
       toast({
@@ -104,7 +112,6 @@ const CategoriasAdmin = () => {
           .update({
             nome: formData.nome,
             descricao: formData.descricao || null,
-            icone: formData.icone || null,
             ativo: formData.ativo,
             updated_at: new Date().toISOString()
           })
@@ -122,7 +129,6 @@ const CategoriasAdmin = () => {
           .insert([{
             nome: formData.nome,
             descricao: formData.descricao || null,
-            icone: formData.icone || null,
             ativo: formData.ativo
           }]);
 
@@ -161,7 +167,7 @@ const CategoriasAdmin = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir esta categoria?')) return;
 
     try {
@@ -229,15 +235,6 @@ const CategoriasAdmin = () => {
                     id="descricao"
                     value={formData.descricao}
                     onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="icone">Ícone</Label>
-                  <Input
-                    id="icone"
-                    value={formData.icone}
-                    onChange={(e) => setFormData({ ...formData, icone: e.target.value })}
-                    placeholder="Ex: wrench, hammer, etc."
                   />
                 </div>
                 <div>
@@ -318,9 +315,6 @@ const CategoriasAdmin = () => {
                   </div>
                   {categoria.descricao && (
                     <p className="text-sm text-gray-600 mt-1">{categoria.descricao}</p>
-                  )}
-                  {categoria.icone && (
-                    <p className="text-xs text-gray-500 mt-1">Ícone: {categoria.icone}</p>
                   )}
                 </div>
                 <div className="flex gap-2">
