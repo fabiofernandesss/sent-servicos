@@ -146,7 +146,7 @@ const ProfissionaisHome = () => {
             <nav className="hidden md:flex space-x-2">
               
               <Button variant="ghost" size="sm" className="text-[#1c4970]">Equipamentos</Button>
-              <Button variant="ghost" size="sm" className="text-gray-600">Menu</Button>
+              <Button variant="ghost" size="sm" className="text-gray-600">Início</Button>
               
             </nav>
             <Button variant="outline" size="sm" className="md:hidden" onClick={() => navigate('/')}>
