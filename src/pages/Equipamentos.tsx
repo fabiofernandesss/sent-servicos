@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import MobileNavbar from '@/components/MobileNavbar';
 import MobileMenu from '@/components/MobileMenu';
+import ProfessionalLogoutMenu from '@/components/ProfessionalLogoutMenu';
+import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 
 const supabase = createClient('https://ryvcwjajgspbzxzncpfi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8');
 
@@ -22,6 +24,7 @@ interface Equipamento {
 
 const Equipamentos = () => {
   const navigate = useNavigate();
+  const { profissionalLogado } = useProfissionalSession();
   const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,6 +33,11 @@ const Equipamentos = () => {
 
   useEffect(() => {
     loadEquipamentos();
+    // Scroll to top when component mounts
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }, []);
 
   const loadEquipamentos = async () => {
@@ -82,16 +90,7 @@ const Equipamentos = () => {
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/')}
-                className="text-gray-600"
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Voltar
-              </Button>
+            <div className="flex items-center">
               <img 
                 src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" 
                 alt="Sent Serviços" 
@@ -99,9 +98,39 @@ const Equipamentos = () => {
               />
             </div>
             <nav className="hidden md:flex space-x-2">
-              <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/')}>Início</Button>
-              <Button variant="ghost" size="sm" className="text-[#1c4970]">Equipamentos</Button>
-              <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/perfil')}>Perfil</Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 font-bold" 
+                onClick={() => navigate('/')}
+                style={{
+                  height: '54px',
+                  borderRadius: '27px'
+                }}
+              >
+                Início
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-[#1c4970] font-bold"
+                style={{
+                  height: '54px',
+                  borderRadius: '27px'
+                }}
+              >
+                Equipamentos
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 font-bold" 
+                onClick={() => navigate('/perfil')}
+                style={{
+                  height: '54px',
+                  borderRadius: '27px'
+                }}
+              >
+                Perfil
+              </Button>
+              {profissionalLogado && <ProfessionalLogoutMenu />}
             </nav>
             <MobileMenu />
           </div>

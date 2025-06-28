@@ -126,3 +126,75 @@ ${demandaData.observacao ? `📝 *OBSERVAÇÕES ADICIONAIS:*\n• ${demandaData.
     return { success: false, error: error.message || error };
   }
 };
+
+// Nova função para enviar mensagem para profissionais com link da demanda
+export const sendWhatsAppToProfessionals = async (
+  whatsapp: string,
+  demandaId: string,
+  clienteNome: string,
+  cidade: string,
+  estado: string,
+  categoriaNome: string,
+  urgencia: string,
+  observacao?: string
+) => {
+  try {
+    const phoneNumber = whatsapp.replace(/\D/g, '');
+    const jid = `55${phoneNumber}`;
+    
+    const urgenciaTexto = {
+      'preciso_com_urgencia': 'Preciso com urgência',
+      'quero_para_esses_dias': 'Quero para esses dias',
+      'nao_tenho_tanta_pressa': 'Não tenho tanta pressa',
+      'so_orcamento': 'Só orçamento'
+    }[urgencia] || urgencia;
+
+    // URL da demanda - usando o domínio atual
+    const demandaUrl = `${window.location.origin}/demanda/${demandaId}`;
+
+    const message = `🔔 *NOVA DEMANDA DISPONÍVEL!*
+
+📋 *Detalhes da Solicitação:*
+• *Cliente:* ${clienteNome}
+• *Local:* ${cidade}/${estado}
+• *Categoria:* ${categoriaNome}
+• *Urgência:* ${urgenciaTexto}
+
+${observacao ? `📝 *Observações:* ${observacao}\n\n` : ''}💼 *Uma nova oportunidade de trabalho está disponível na sua região!*
+
+🔗 *ACESSE A DEMANDA COMPLETA:*
+${demandaUrl}
+
+📞 *Aja rápido! O primeiro profissional a responder tem mais chances de ser escolhido!*
+
+Entre em contato com o cliente para oferecer seus serviços e fechar este negócio.`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch('https://9045.bubblewhats.com/send-message', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'YzFkMGVkNzUwYzBjMjlhYzg0ZmJjYmU3',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jid: jid,
+        message: message
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Erro HTTP: ${response.status}`);
+    }
+
+    return { success: true };
+
+  } catch (error) {
+    console.error('Erro ao enviar mensagem WhatsApp para profissional:', error);
+    return { success: false, error: error.message || error };
+  }
+};

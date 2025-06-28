@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import MobileNavbar from '@/components/MobileNavbar';
 import MobileMenu from '@/components/MobileMenu';
 import FormularioProfissional from '@/components/FormularioProfissional';
 import CarteiraCard from '@/components/CarteiraCard';
+import ProfessionalLogoutMenu from '@/components/ProfessionalLogoutMenu';
 import { Profissional, loadProfissionalByWhatsapp } from '@/services/supabaseService';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 
@@ -58,19 +58,7 @@ const ProfissionalPerfil = () => {
         <header className="bg-white shadow-sm border-b sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => navigate('/')} 
-                  className="text-gray-600 font-bold"
-                  style={{
-                    height: '54px',
-                    borderRadius: '27px'
-                  }}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Voltar
-                </Button>
+              <div className="flex items-center">
                 <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
               </div>
               <div className="flex items-center gap-2">
@@ -107,6 +95,7 @@ const ProfissionalPerfil = () => {
                   >
                     Perfil
                   </Button>
+                  {profissionalLogado && <ProfessionalLogoutMenu />}
                 </nav>
                 
                 <MobileMenu />
@@ -350,19 +339,7 @@ const ProfissionalPerfil = () => {
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/')} 
-                className="text-gray-600 font-bold"
-                style={{
-                  height: '54px',
-                  borderRadius: '27px'
-                }}
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Voltar
-              </Button>
+            <div className="flex items-center">
               <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
             </div>
             <nav className="hidden md:flex space-x-2">
@@ -398,6 +375,7 @@ const ProfissionalPerfil = () => {
               >
                 Perfil
               </Button>
+              {profissionalLogado && <ProfessionalLogoutMenu />}
             </nav>
             <MobileMenu />
           </div>

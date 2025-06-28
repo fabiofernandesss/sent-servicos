@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createDemanda, type DemandaData } from '@/services/supabaseService';
-import { sendWhatsAppMessage } from '@/services/whatsappService';
+import { sendWhatsAppMessage, sendWhatsAppToProfessionals } from '@/services/whatsappService';
 import { sendRecursiveWhatsappMessage } from '@/services/recursiveWhatsappService';
 
 export const useFormSubmission = () => {
@@ -15,9 +15,9 @@ export const useFormSubmission = () => {
     
     try {
       // Criar demanda no Supabase
-      await createDemanda(data);
+      const demandaId = await createDemanda(data);
       
-      console.log('Demanda criada com sucesso, enviando WhatsApp...');
+      console.log('Demanda criada com sucesso, ID:', demandaId);
       
       // Mostrar toast de sucesso imediatamente após salvar no banco
       toast({
@@ -40,24 +40,41 @@ export const useFormSubmission = () => {
         console.warn('Erro no WhatsApp individual (não crítico):', error);
       });
 
-      // Enviar mensagem recursiva para profissionais da categoria e cidade
-      const mensagemProfissionais = `🔔 *NOVA DEMANDA DISPONÍVEL!*
+      // Buscar nomes das categorias para a mensagem dos profissionais
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        'https://ryvcwjajgspbzxzncpfi.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5dmN3amFqZ3NwYnp4em5jcGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkzNjAsImV4cCI6MjA2MjE2NTM2MH0.1GhRnk2-YbL4awFz0c9bFWOleO_cFJKjvfyWQ30dxo8'
+      );
+
+      const categoriaResult = await supabase
+        .from('categorias')
+        .select('nome')
+        .eq('id', data.categoria_id)
+        .single();
+
+      const categoriaNome = categoriaResult.data?.nome || 'Categoria';
+
+      // Enviar mensagem recursiva para profissionais da categoria e cidade com link da demanda
+      sendRecursiveWhatsappMessage(
+        data.categoria_id,
+        data.cidade,
+        `🔔 *NOVA DEMANDA DISPONÍVEL!*
 
 📋 *Detalhes da Solicitação:*
 • *Cliente:* ${data.nome}
 • *Local:* ${data.cidade}/${data.estado}
+• *Categoria:* ${categoriaNome}
 • *Urgência:* ${data.urgencia}
 
-${data.observacao ? `📝 *Observações:* ${data.observacao}\n\n` : ''}💼 *Uma nova oportunidade de trabalho está disponível na sua região!*
+${data.observacao ? `📝 *Observações:* ${data.observacao}\n\n` : ''}🔗 *ACESSE A DEMANDA COMPLETA:*
+${window.location.origin}/demanda/${demandaId}
 
-Entre em contato com o cliente para oferecer seus serviços e fechar este negócio.
+💼 *Uma nova oportunidade de trabalho está disponível na sua região!*
 
-📞 *Aja rápido! O primeiro profissional a responder tem mais chances de ser escolhido!*`;
+📞 *Aja rápido! O primeiro profissional a responder tem mais chances de ser escolhido!*
 
-      sendRecursiveWhatsappMessage(
-        data.categoria_id,
-        data.cidade,
-        mensagemProfissionais,
+Entre em contato com o cliente para oferecer seus serviços e fechar este negócio.`,
         '10-15'
       ).then((recursiveResult) => {
         if (recursiveResult.success) {
