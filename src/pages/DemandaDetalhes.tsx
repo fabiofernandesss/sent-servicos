@@ -164,7 +164,7 @@ const DemandaDetalhes = () => {
                   <h1 className="font-bold text-2xl text-[#1E486F]">
                     {demanda.categoria_nome}
                   </h1>
-                  <p className="text-gray-600 text-lg">
+                  <p className="text-gray-600 text-xs">
                     {demanda.subcategoria_nome}
                   </p>
                 </div>
