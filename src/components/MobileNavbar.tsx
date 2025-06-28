@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Menu, X, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +10,7 @@ const MobileNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { profissionalLogado, logout } = useProfissionalSession();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -20,6 +21,11 @@ const MobileNavbar = () => {
     setIsOpen(false);
     // Redirecionar para a página inicial
     window.location.href = '/';
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
   };
 
   return (
@@ -49,34 +55,24 @@ const MobileNavbar = () => {
             </div>
             
             <nav className="p-4 space-y-4">
-              <Link
-                to="/"
-                className="block text-white hover:text-gray-200 py-2"
-                onClick={() => setIsOpen(false)}
+              <button
+                onClick={() => handleNavigation('/')}
+                className="block w-full text-left text-white hover:text-gray-200 py-2"
               >
-                Início
-              </Link>
-              <Link
-                to="/cliente-demanda"
-                className="block text-white hover:text-gray-200 py-2"
-                onClick={() => setIsOpen(false)}
-              >
-                Solicitar Serviço
-              </Link>
-              <Link
-                to="/equipamentos"
-                className="block text-white hover:text-gray-200 py-2"
-                onClick={() => setIsOpen(false)}
+                Home
+              </button>
+              <button
+                onClick={() => handleNavigation('/equipamentos')}
+                className="block w-full text-left text-white hover:text-gray-200 py-2"
               >
                 Equipamentos
-              </Link>
-              <Link
-                to="/profissionais"
-                className="block text-white hover:text-gray-200 py-2"
-                onClick={() => setIsOpen(false)}
+              </button>
+              <button
+                onClick={() => handleNavigation('/profissionais')}
+                className="block w-full text-left text-white hover:text-gray-200 py-2"
               >
-                Área do Profissional
-              </Link>
+                Perfil
+              </button>
               
               {profissionalLogado && (
                 <>
