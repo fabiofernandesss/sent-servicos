@@ -14,12 +14,20 @@ const MobileMenu = () => {
   const handleNavigation = (path: string) => {
     navigate(path);
     setOpen(false);
+    // Scroll to top after navigation
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const handleLogout = () => {
     logout();
     setOpen(false);
     navigate('/');
+    // Scroll to top after logout
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   return (
