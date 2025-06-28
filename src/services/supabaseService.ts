@@ -58,18 +58,17 @@ export interface ProfissionalCategoria {
   created_at?: string;
 }
 
-// Função para limpar formatação do WhatsApp
+// Função para limpar formatação do WhatsApp - ATUALIZADA
 const cleanWhatsApp = (whatsapp: string): string => {
   // Remove todos os caracteres que não são dígitos
   const cleaned = whatsapp.replace(/\D/g, '');
   
-  // Se começar com 55 (código do Brasil), mantém
-  // Se não começar com 55, adiciona
+  // Remove o código do país 55 se estiver presente no início
   if (cleaned.startsWith('55')) {
-    return cleaned;
-  } else {
-    return '55' + cleaned;
+    return cleaned.substring(2); // Remove os primeiros 2 dígitos (55)
   }
+  
+  return cleaned;
 };
 
 export const loadCategorias = async () => {
@@ -190,7 +189,6 @@ export const loadProfissionalByWhatsapp = async (whatsapp: string) => {
   const whatsappVariations = [
     cleanedWhatsapp,
     whatsapp.replace(/\D/g, ''), // Remove todos os não-dígitos
-    '55' + whatsapp.replace(/\D/g, ''), // Adiciona 55
     whatsapp.replace(/\D/g, '').replace(/^55/, ''), // Remove 55 se existir
   ];
 
