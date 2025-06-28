@@ -149,8 +149,9 @@ const FormularioProfissional = ({
   }, [profissional, getTempCategories, categoriesLoaded]);
 
   const handleInputChange = (field: keyof Profissional, value: any) => {
-    console.log('=== ALTERANDO CAMPO ===');
-    console.log('Campo:', field, 'Valor:', value);
+    console.log('=== ALTERANDO CAMPO NO FORMULARIO ===');
+    console.log('Campo:', field, 'Valor recebido:', value);
+    console.log('Tipo do valor:', typeof value);
     
     setFormData(prev => {
       const newData = {
@@ -158,7 +159,18 @@ const FormularioProfissional = ({
         [field]: value
       };
       
-      console.log('FormData após alteração do campo', field, ':', newData[field]);
+      console.log('Valor definido no formData para', field, ':', newData[field]);
+      console.log('Tipo do valor no formData:', typeof newData[field]);
+      
+      // Log especial para cidade
+      if (field === 'cidade') {
+        console.log('=== CIDADE SENDO ALTERADA ===');
+        console.log('Cidade anterior:', prev.cidade);
+        console.log('Nova cidade:', value);
+        console.log('Cidade no newData:', newData.cidade);
+        console.log('==========================');
+      }
+      
       return newData;
     });
   };
@@ -176,8 +188,9 @@ const FormularioProfissional = ({
     e.preventDefault();
     
     console.log('=== INICIANDO SUBMIT ===');
-    console.log('FormData completo antes da validação:', formData);
-    console.log('Cidade que será enviada:', formData.cidade);
+    console.log('FormData completo antes da validação:', JSON.stringify(formData, null, 2));
+    console.log('Campo cidade específico:', formData.cidade);
+    console.log('Tipo da cidade:', typeof formData.cidade);
     
     if (!formData.nome || !formData.cpf_cnpj || !formData.email) {
       toast({
@@ -196,9 +209,20 @@ const FormularioProfissional = ({
       return;
     }
     
-    console.log('=== DADOS FINAIS PARA ENVIO ===');
-    console.log('Cidade final que será salva:', formData.cidade);
-    console.log('===============================');
+    // VALIDAÇÃO EXTRA PARA CIDADE ANTES DO ENVIO
+    console.log('=== VALIDAÇÃO FINAL ANTES DO ENVIO ===');
+    console.log('Cidade no formData:', formData.cidade);
+    console.log('Estado no formData:', formData.estado);
+    
+    // Criar uma cópia limpa dos dados para envio
+    const dadosParaEnvio = {
+      ...formData,
+      cidade: formData.cidade && formData.cidade.trim() ? formData.cidade.trim() : null
+    };
+    
+    console.log('Dados processados para envio:', JSON.stringify(dadosParaEnvio, null, 2));
+    console.log('Cidade processada para envio:', dadosParaEnvio.cidade);
+    console.log('=====================================');
     
     setLoading(true);
     try {
@@ -206,8 +230,8 @@ const FormularioProfissional = ({
       if (profissional?.id) {
         // Atualizar profissional existente
         console.log('Atualizando profissional ID:', profissional.id);
-        console.log('Dados sendo enviados para atualização:', formData);
-        result = await updateProfissional(profissional.id, formData, selectedCategories);
+        console.log('Dados sendo enviados para atualização:', dadosParaEnvio);
+        result = await updateProfissional(profissional.id, dadosParaEnvio, selectedCategories);
         toast({
           title: "Sucesso",
           description: "Perfil atualizado com sucesso!"
@@ -215,8 +239,8 @@ const FormularioProfissional = ({
       } else {
         // Criar novo profissional
         console.log('Criando novo profissional');
-        console.log('Dados sendo enviados para criação:', formData);
-        result = await createProfissional(formData, selectedCategories);
+        console.log('Dados sendo enviados para criação:', dadosParaEnvio);
+        result = await createProfissional(dadosParaEnvio, selectedCategories);
         clearTempCategories();
         toast({
           title: "Sucesso",

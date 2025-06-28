@@ -281,7 +281,9 @@ export const saveProfissionalCategorias = async (profissionalId: number, categor
 };
 
 export const createProfissional = async (profissionalData: Profissional, categoriaIds: string[] = []) => {
-  console.log('Criando profissional:', profissionalData);
+  console.log('=== CRIAR PROFISSIONAL ===');
+  console.log('Dados recebidos:', profissionalData);
+  console.log('Cidade recebida:', profissionalData.cidade);
   
   // Garantir que todos os campos estão sendo enviados corretamente
   const cleanData = {
@@ -290,7 +292,7 @@ export const createProfissional = async (profissionalData: Profissional, categor
     whatsapp: profissionalData.whatsapp?.trim(),
     email: profissionalData.email?.trim(),
     estado: profissionalData.estado?.trim(),
-    cidade: profissionalData.cidade?.trim(), // Garantir que cidade está sendo enviada
+    cidade: profissionalData.cidade?.trim() || null, // FORÇAR NULL SE VAZIO
     bairro: profissionalData.bairro?.trim() || null,
     rua: profissionalData.rua?.trim() || null,
     numero: profissionalData.numero?.trim() || null,
@@ -303,7 +305,9 @@ export const createProfissional = async (profissionalData: Profissional, categor
     receber_msm: profissionalData.receber_msm ?? true
   };
 
-  console.log('Dados limpos para criar profissional:', cleanData);
+  console.log('=== DADOS PROCESSADOS PARA CRIAR ===');
+  console.log('cleanData:', cleanData);
+  console.log('Cidade processada:', cleanData.cidade);
   
   const { data, error } = await supabase
     .from('profissionais')
@@ -312,11 +316,14 @@ export const createProfissional = async (profissionalData: Profissional, categor
     .single();
 
   if (error) {
-    console.error('Erro ao criar profissional:', error);
+    console.error('=== ERRO AO CRIAR PROFISSIONAL ===');
+    console.error('Erro:', error);
     throw error;
   }
 
-  console.log('Profissional criado:', data);
+  console.log('=== PROFISSIONAL CRIADO ===');
+  console.log('Resultado:', data);
+  console.log('Cidade salva:', data.cidade);
   
   // Salvar categorias se fornecidas
   if (categoriaIds.length > 0 && data.id) {
@@ -336,62 +343,127 @@ export const createProfissional = async (profissionalData: Profissional, categor
 export const updateProfissional = async (id: number, profissionalData: Partial<Profissional>, categoriaIds?: string[]) => {
   console.log('=== INÍCIO UPDATE PROFISSIONAL ===');
   console.log('ID:', id);
-  console.log('Dados recebidos:', profissionalData);
-  console.log('Campo cidade recebido:', profissionalData.cidade);
+  console.log('Dados completos recebidos:', JSON.stringify(profissionalData, null, 2));
+  console.log('Campo cidade específico:', profissionalData.cidade);
   console.log('Tipo da cidade:', typeof profissionalData.cidade);
+  console.log('Cidade é undefined?', profissionalData.cidade === undefined);
+  console.log('Cidade é null?', profissionalData.cidade === null);
+  console.log('Cidade é string vazia?', profissionalData.cidade === '');
   
-  // Criar objeto de dados limpo com todas as verificações explícitas
-  const cleanData: any = {};
+  // NOVA ABORDAGEM: Criar objeto explícito com validação rigorosa
+  const updateData: Record<string, any> = {};
   
-  // Campos obrigatórios
-  if (profissionalData.cpf_cnpj !== undefined) cleanData.cpf_cnpj = profissionalData.cpf_cnpj.trim();
-  if (profissionalData.nome !== undefined) cleanData.nome = profissionalData.nome.trim();
-  if (profissionalData.whatsapp !== undefined) cleanData.whatsapp = profissionalData.whatsapp.trim();
-  if (profissionalData.email !== undefined) cleanData.email = profissionalData.email.trim();
-  if (profissionalData.estado !== undefined) cleanData.estado = profissionalData.estado.trim();
-  
-  // CIDADE - tratamento especial
-  if (profissionalData.cidade !== undefined) {
-    cleanData.cidade = profissionalData.cidade?.trim() || null;
-    console.log('CIDADE processada para o banco:', cleanData.cidade);
+  // Processar cada campo individualmente com logs detalhados
+  if (profissionalData.cpf_cnpj !== undefined) {
+    updateData.cpf_cnpj = profissionalData.cpf_cnpj.trim();
+    console.log('CPF processado:', updateData.cpf_cnpj);
   }
   
-  // Outros campos opcionais
-  if (profissionalData.bairro !== undefined) cleanData.bairro = profissionalData.bairro?.trim() || null;
-  if (profissionalData.rua !== undefined) cleanData.rua = profissionalData.rua?.trim() || null;
-  if (profissionalData.numero !== undefined) cleanData.numero = profissionalData.numero?.trim() || null;
-  if (profissionalData.cep !== undefined) cleanData.cep = profissionalData.cep?.trim() || null;
-  if (profissionalData.aceita_diaria !== undefined) cleanData.aceita_diaria = profissionalData.aceita_diaria;
-  if (profissionalData.valor_diaria !== undefined) cleanData.valor_diaria = profissionalData.valor_diaria;
-  if (profissionalData.crea !== undefined) cleanData.crea = profissionalData.crea?.trim() || null;
-  if (profissionalData.creci !== undefined) cleanData.creci = profissionalData.creci?.trim() || null;
-  if (profissionalData.nacionalidade !== undefined) cleanData.nacionalidade = profissionalData.nacionalidade?.trim() || 'Brasileira';
-  if (profissionalData.receber_msm !== undefined) cleanData.receber_msm = profissionalData.receber_msm;
-
-  console.log('=== DADOS FINAIS PARA O BANCO ===');
-  console.log('cleanData completo:', cleanData);
-  console.log('Cidade nos dados limpos:', cleanData.cidade);
-  console.log('================================');
+  if (profissionalData.nome !== undefined) {
+    updateData.nome = profissionalData.nome.trim();
+    console.log('Nome processado:', updateData.nome);
+  }
   
+  if (profissionalData.whatsapp !== undefined) {
+    updateData.whatsapp = profissionalData.whatsapp.trim();
+    console.log('WhatsApp processado:', updateData.whatsapp);
+  }
+  
+  if (profissionalData.email !== undefined) {
+    updateData.email = profissionalData.email.trim();
+    console.log('Email processado:', updateData.email);
+  }
+  
+  if (profissionalData.estado !== undefined) {
+    updateData.estado = profissionalData.estado.trim();
+    console.log('Estado processado:', updateData.estado);
+  }
+  
+  // TRATAMENTO ESPECIAL PARA CIDADE COM LOGS EXTREMAMENTE DETALHADOS
+  if (profissionalData.cidade !== undefined) {
+    console.log('=== PROCESSAMENTO ESPECIAL DA CIDADE ===');
+    console.log('Valor original da cidade:', profissionalData.cidade);
+    console.log('Tipo original:', typeof profissionalData.cidade);
+    
+    if (profissionalData.cidade === null) {
+      updateData.cidade = null;
+      console.log('Cidade definida como NULL explicitamente');
+    } else if (profissionalData.cidade === '') {
+      updateData.cidade = null;
+      console.log('Cidade era string vazia, convertida para NULL');
+    } else if (typeof profissionalData.cidade === 'string') {
+      const cidadeTrimmed = profissionalData.cidade.trim();
+      updateData.cidade = cidadeTrimmed || null;
+      console.log('Cidade após trim:', cidadeTrimmed);
+      console.log('Cidade final (com fallback para null):', updateData.cidade);
+    } else {
+      updateData.cidade = null;
+      console.log('Cidade não era string válida, definida como NULL');
+    }
+    console.log('RESULTADO FINAL - cidade no updateData:', updateData.cidade);
+    console.log('==========================================');
+  }
+  
+  // Continuar com outros campos
+  if (profissionalData.bairro !== undefined) {
+    updateData.bairro = profissionalData.bairro?.trim() || null;
+  }
+  if (profissionalData.rua !== undefined) {
+    updateData.rua = profissionalData.rua?.trim() || null;
+  }
+  if (profissionalData.numero !== undefined) {
+    updateData.numero = profissionalData.numero?.trim() || null;
+  }
+  if (profissionalData.cep !== undefined) {
+    updateData.cep = profissionalData.cep?.trim() || null;
+  }
+  if (profissionalData.aceita_diaria !== undefined) {
+    updateData.aceita_diaria = profissionalData.aceita_diaria;
+  }
+  if (profissionalData.valor_diaria !== undefined) {
+    updateData.valor_diaria = profissionalData.valor_diaria;
+  }
+  if (profissionalData.crea !== undefined) {
+    updateData.crea = profissionalData.crea?.trim() || null;
+  }
+  if (profissionalData.creci !== undefined) {
+    updateData.creci = profissionalData.creci?.trim() || null;
+  }
+  if (profissionalData.nacionalidade !== undefined) {
+    updateData.nacionalidade = profissionalData.nacionalidade?.trim() || 'Brasileira';
+  }
+  if (profissionalData.receber_msm !== undefined) {
+    updateData.receber_msm = profissionalData.receber_msm;
+  }
+
+  console.log('=== DADOS FINAIS PARA UPDATE ===');
+  console.log('updateData completo:', JSON.stringify(updateData, null, 2));
+  console.log('Cidade nos dados finais:', updateData.cidade);
+  console.log('Número de campos a atualizar:', Object.keys(updateData).length);
+  console.log('===============================');
+  
+  // EXECUTAR UPDATE COM LOGS DETALHADOS
+  console.log('Executando update no Supabase...');
   const { data, error } = await supabase
     .from('profissionais')
-    .update(cleanData)
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();
 
   if (error) {
-    console.error('=== ERRO NO BANCO ===');
-    console.error('Erro completo:', error);
+    console.error('=== ERRO NO UPDATE ===');
+    console.error('Erro completo:', JSON.stringify(error, null, 2));
     console.error('Código:', error.code);
     console.error('Mensagem:', error.message);
     console.error('Detalhes:', error.details);
-    console.error('==================');
+    console.error('Hint:', error.hint);
+    console.error('===================');
     throw error;
   }
 
-  console.log('=== RESULTADO DO BANCO ===');
-  console.log('Profissional atualizado:', data);
+  console.log('=== SUCESSO NO UPDATE ===');
+  console.log('Dados retornados pelo banco:', JSON.stringify(data, null, 2));
   console.log('Cidade salva no banco:', data.cidade);
   console.log('=========================');
   

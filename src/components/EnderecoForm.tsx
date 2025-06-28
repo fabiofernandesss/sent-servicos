@@ -13,37 +13,35 @@ interface EnderecoFormProps {
 }
 
 const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFormProps) => {
-  const [selectedCidade, setSelectedCidade] = useState<string>('');
-
-  // Inicializar cidade selecionada quando formData.cidade mudar
-  useEffect(() => {
-    if (formData.cidade && formData.cidade !== selectedCidade) {
-      console.log('=== INICIALIZANDO CIDADE SELECIONADA ===');
-      console.log('Cidade do formData:', formData.cidade);
-      setSelectedCidade(formData.cidade);
-    }
-  }, [formData.cidade]); // Removido selectedCidade da dependência para evitar loop
-
-  // Limpar cidade selecionada quando estado mudar
-  useEffect(() => {
-    if (formData.estado) {
-      console.log('=== ESTADO MUDOU ===');
-      console.log('Novo estado:', formData.estado);
-      // Só limpar se realmente mudou o estado e não é a inicialização
-      if (selectedCidade && cidades.length === 0) {
-        console.log('Limpando cidade selecionada devido à mudança de estado');
-        setSelectedCidade('');
-        onInputChange('cidade', '');
-      }
-    }
-  }, [formData.estado, cidades.length]);
+  console.log('=== ENDERECO FORM RENDER ===');
+  console.log('formData.cidade atual:', formData.cidade);
+  console.log('Cidades disponíveis:', cidades.length);
+  console.log('Estado atual:', formData.estado);
 
   const handleCidadeChange = (cidade: string) => {
-    console.log('=== CIDADE SELECIONADA PELO USUÁRIO ===');
+    console.log('=== MUDANÇA DE CIDADE NO ENDERECO FORM ===');
     console.log('Cidade selecionada:', cidade);
-    setSelectedCidade(cidade);
+    console.log('Tipo da cidade:', typeof cidade);
+    console.log('Cidade antes da mudança:', formData.cidade);
+    
+    // Chamar diretamente o onInputChange
     onInputChange('cidade', cidade);
-    console.log('========================================');
+    
+    console.log('onInputChange chamado com cidade:', cidade);
+    console.log('=========================================');
+  };
+
+  const handleEstadoChange = (estado: string) => {
+    console.log('=== MUDANÇA DE ESTADO ===');
+    console.log('Novo estado:', estado);
+    
+    onInputChange('estado', estado);
+    
+    // Limpar cidade quando mudar o estado
+    if (formData.cidade) {
+      console.log('Limpando cidade devido à mudança de estado');
+      onInputChange('cidade', '');
+    }
   };
 
   return (
@@ -52,7 +50,7 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="estado">Estado *</Label>
-          <Select value={formData.estado || ''} onValueChange={(value) => onInputChange('estado', value)}>
+          <Select value={formData.estado || ''} onValueChange={handleEstadoChange}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o estado" />
             </SelectTrigger>
@@ -64,9 +62,9 @@ const EnderecoForm = ({ formData, onInputChange, cidades, estados }: EnderecoFor
           </Select>
         </div>
         <div>
-          <Label htmlFor="cidade">Cidade * (Selecionada: {selectedCidade || 'Nenhuma'})</Label>
+          <Label htmlFor="cidade">Cidade * (Atual: {formData.cidade || 'Nenhuma'})</Label>
           <Select 
-            value={selectedCidade} 
+            value={formData.cidade || ''} 
             onValueChange={handleCidadeChange}
             disabled={!formData.estado}
           >
