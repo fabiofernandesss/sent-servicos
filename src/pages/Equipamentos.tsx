@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { MessageCircle, ArrowLeft, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
@@ -101,6 +101,7 @@ const Equipamentos = () => {
             <nav className="hidden md:flex space-x-2">
               <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/')}>Início</Button>
               <Button variant="ghost" size="sm" className="text-[#1c4970]">Equipamentos</Button>
+              <Button variant="ghost" size="sm" className="text-gray-600" onClick={() => navigate('/perfil')}>Perfil</Button>
             </nav>
             <MobileMenu />
           </div>
@@ -133,27 +134,32 @@ const Equipamentos = () => {
             />
           </div>
 
-          {/* Filtro por Categoria */}
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button
-              variant={selectedCategory === '' ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory('')}
-              className={selectedCategory === '' ? "bg-[#1E486F] hover:bg-[#1E486F]/90" : ""}
-            >
-              Todas ({equipamentos.length})
-            </Button>
-            {categories.map(category => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className={selectedCategory === category ? "bg-[#1E486F] hover:bg-[#1E486F]/90" : ""}
-              >
-                {category} ({equipamentos.filter(eq => eq.categoria === category).length})
-              </Button>
-            ))}
+          {/* Filtro por Categoria - Scroll horizontal */}
+          <div className="w-full">
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-2 pb-4">
+                <Button
+                  variant={selectedCategory === '' ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory('')}
+                  className={`shrink-0 ${selectedCategory === '' ? "bg-[#1E486F] hover:bg-[#1E486F]/90" : ""}`}
+                >
+                  Todas ({equipamentos.length})
+                </Button>
+                {categories.map(category => (
+                  <Button
+                    key={category}
+                    variant={selectedCategory === category ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className={`shrink-0 ${selectedCategory === category ? "bg-[#1E486F] hover:bg-[#1E486F]/90" : ""}`}
+                  >
+                    {category} ({equipamentos.filter(eq => eq.categoria === category).length})
+                  </Button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
         </div>
 

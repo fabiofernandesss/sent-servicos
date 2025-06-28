@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Home, Package } from 'lucide-react';
+import { Menu, Home, Package, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const MobileMenu = () => {
@@ -42,6 +42,14 @@ const MobileMenu = () => {
           >
             <Package className="h-5 w-5 mr-3" />
             Equipamentos
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start h-12 text-lg"
+            onClick={() => handleNavigation('/perfil')}
+          >
+            <User className="h-5 w-5 mr-3" />
+            Perfil
           </Button>
         </div>
       </SheetContent>

@@ -24,7 +24,10 @@ const MobileNavbar = () => {
           <span className="text-xs text-gray-600 font-medium">Equipamentos</span>
         </button>
         
-        <button className="flex flex-col items-center space-y-1 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors">
+        <button 
+          className="flex flex-col items-center space-y-1 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+          onClick={() => navigate('/perfil')}
+        >
           <User className="h-5 w-5 text-gray-600" />
           <span className="text-xs text-gray-600 font-medium">Perfil</span>
         </button>
