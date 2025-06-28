@@ -93,7 +93,7 @@ const DemandasAdmin = () => {
 
   const uniqueCidades = useMemo(() => {
     let cidades = demandas.map(d => d.cidade).filter(cidade => cidade && cidade.trim() !== '');
-    if (filterEstado) {
+    if (filterEstado && filterEstado !== 'todos') {
       cidades = demandas
         .filter(d => d.estado === filterEstado)
         .map(d => d.cidade)
@@ -111,10 +111,10 @@ const DemandasAdmin = () => {
         demanda.whatsapp.includes(searchTerm) ||
         demanda.categorias?.nome.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesEstado = !filterEstado || demanda.estado === filterEstado;
-      const matchesCidade = !filterCidade || demanda.cidade === filterCidade;
-      const matchesStatus = !filterStatus || demanda.status === filterStatus;
-      const matchesUrgencia = !filterUrgencia || demanda.urgencia === filterUrgencia;
+      const matchesEstado = !filterEstado || filterEstado === 'todos' || demanda.estado === filterEstado;
+      const matchesCidade = !filterCidade || filterCidade === 'todas' || demanda.cidade === filterCidade;
+      const matchesStatus = !filterStatus || filterStatus === 'todos' || demanda.status === filterStatus;
+      const matchesUrgencia = !filterUrgencia || filterUrgencia === 'todas' || demanda.urgencia === filterUrgencia;
 
       return matchesSearch && matchesEstado && matchesCidade && matchesStatus && matchesUrgencia;
     });
@@ -215,7 +215,7 @@ const DemandasAdmin = () => {
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os Estados</SelectItem>
+                <SelectItem value="todos">Todos os Estados</SelectItem>
                 {uniqueEstados.map(estado => (
                   <SelectItem key={estado} value={estado}>{estado}</SelectItem>
                 ))}
@@ -227,7 +227,7 @@ const DemandasAdmin = () => {
                 <SelectValue placeholder="Cidade" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as Cidades</SelectItem>
+                <SelectItem value="todas">Todas as Cidades</SelectItem>
                 {uniqueCidades.map(cidade => (
                   <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>
                 ))}
@@ -239,7 +239,7 @@ const DemandasAdmin = () => {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="todos">Todos</SelectItem>
                 <SelectItem value="pendente">Pendente</SelectItem>
                 <SelectItem value="em_andamento">Em Andamento</SelectItem>
                 <SelectItem value="concluida">Concluída</SelectItem>
@@ -252,7 +252,7 @@ const DemandasAdmin = () => {
                 <SelectValue placeholder="Urgência" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="todas">Todas</SelectItem>
                 <SelectItem value="preciso_com_urgencia">Urgente</SelectItem>
                 <SelectItem value="quero_para_esses_dias">Breve</SelectItem>
                 <SelectItem value="nao_tenho_tanta_pressa">Flexível</SelectItem>
