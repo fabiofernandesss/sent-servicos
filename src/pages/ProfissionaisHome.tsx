@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { MapPin, Clock, User, Phone, Mail, Bell, Search } from 'lucide-react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { createClient } from '@supabase/supabase-js';
@@ -166,29 +166,44 @@ const ProfissionaisHome = () => {
       <BannerCarousel />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Filtro por Categorias - Melhorado com ScrollArea */}
+        {/* Filtro por Categorias - Corrigido com ScrollArea igual aos Equipamentos */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">Filtrar por Categoria</h3>
-          <ScrollArea className="w-full">
-            <div className="flex gap-3 pb-4 min-w-max pr-4">
-              <Button variant="outline" onClick={() => setCategoriaFiltro('')} className={`flex-shrink-0 ${categoriaFiltro === '' ? 'border-[#CB0533] text-[#CB0533] bg-[#CB0533]/10' : 'border-gray-300'}`} size="sm">
-                Todas ({demandas.length})
-              </Button>
-              {categorias.map(categoria => {
-              const {
-                icon: Icon,
-                color,
-                borderColor
-              } = getCategoryIcon(categoria.nome);
-              const count = demandas.filter(d => d.categoria_nome === categoria.nome).length;
-              const isSelected = categoriaFiltro === categoria.nome;
-              return <Button key={categoria.id} variant="outline" onClick={() => setCategoriaFiltro(categoria.nome)} className={`flex-shrink-0 flex items-center gap-2 ${borderColor} ${color} bg-white hover:bg-gray-50 ${isSelected ? 'ring-2 ring-offset-1 ring-current' : ''}`} size="sm">
-                    <Icon className={`h-4 w-4 ${color}`} />
-                    <span className="whitespace-nowrap">{categoria.nome} ({count})</span>
-                  </Button>;
-            })}
-            </div>
-          </ScrollArea>
+          <div className="w-full">
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-2 pb-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setCategoriaFiltro('')} 
+                  className={`shrink-0 ${categoriaFiltro === '' ? 'border-[#CB0533] text-[#CB0533] bg-[#CB0533]/10' : 'border-gray-300'}`} 
+                  size="sm"
+                >
+                  Todas ({demandas.length})
+                </Button>
+                {categorias.map(categoria => {
+                  const { icon: Icon, color, borderColor } = getCategoryIcon(categoria.nome);
+                  const count = demandas.filter(d => d.categoria_nome === categoria.nome).length;
+                  const isSelected = categoriaFiltro === categoria.nome;
+                  
+                  return (
+                    <Button
+                      key={categoria.id}
+                      variant="outline"
+                      onClick={() => setCategoriaFiltro(categoria.nome)}
+                      className={`shrink-0 flex items-center gap-2 ${borderColor} ${color} bg-white hover:bg-gray-50 ${
+                        isSelected ? 'ring-2 ring-offset-1 ring-current' : ''
+                      }`}
+                      size="sm"
+                    >
+                      <Icon className={`h-4 w-4 ${color}`} />
+                      <span className="whitespace-nowrap">{categoria.nome} ({count})</span>
+                    </Button>
+                  );
+                })}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </div>
         </div>
 
         {/* Lista de Demandas */}
@@ -202,7 +217,8 @@ const ProfissionaisHome = () => {
             </span>
           </div>
 
-          {demandasFiltradas.length === 0 ? <Card className="text-center py-12">
+          {demandasFiltradas.length === 0 ? (
+            <Card className="text-center py-12">
               <CardContent>
                 <div className="max-w-md mx-auto">
                   <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -214,14 +230,16 @@ const ProfissionaisHome = () => {
                   </p>
                 </div>
               </CardContent>
-            </Card> : <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+            </Card>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
               {demandasFiltradas.map(demanda => {
-            const {
-              icon: Icon,
-              color
-            } = getCategoryIcon(demanda.categoria_nome);
-            const urgenciaInfo = formatUrgencia(demanda.urgencia);
-            return <Card key={demanda.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden">
+                const {
+                  icon: Icon,
+                  color
+                } = getCategoryIcon(demanda.categoria_nome);
+                const urgenciaInfo = formatUrgencia(demanda.urgencia);
+                return <Card key={demanda.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 overflow-hidden">
                     <div className="relative">
                       {/* Header com borda azul - agora vazado */}
                       <div className="border-2 border-[#F3F3F3] bg-transparent p-4 relative overflow-hidden rounded-t-lg">
@@ -308,8 +326,9 @@ const ProfissionaisHome = () => {
                       </CardContent>
                     </div>
                   </Card>;
-          })}
-            </div>}
+              })}
+            </div>
+          )}
         </div>
       </div>
 
