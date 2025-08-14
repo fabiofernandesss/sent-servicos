@@ -10,7 +10,7 @@ function App() {
       <Router>
         <div className="min-h-screen bg-background">
           <Routes>
-            <Route path="/" element={<div>Sent Serviços - Em desenvolvimento</div>} />
+            <Route path="/" element={<div className="p-8">Sent Serviços - Em desenvolvimento</div>} />
           </Routes>
           <Toaster />
         </div>
