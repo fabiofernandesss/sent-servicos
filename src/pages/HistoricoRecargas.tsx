@@ -7,18 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, CreditCard, TrendingUp } from 'lucide-react';
 import MobileNavbar from '@/components/MobileNavbar';
 import MobileMenu from '@/components/MobileMenu';
+import { useProfissionalSession } from '@/hooks/useProfissionalSession';
+import { usePagamentos, Pagamento } from '@/hooks/usePagamentos';
 
-interface Recarga {
-  id: string;
-  valor: number;
-  data: string;
-  status: 'pendente' | 'aprovado' | 'rejeitado';
-  metodo: string;
-}
+// Histórico passa a usar pagamentos (tabela `pagamentos`) em vez de `recargas`.
 
 const HistoricoRecargas = () => {
   const navigate = useNavigate();
-  const [recargas, setRecargas] = useState<Recarga[]>([]);
+  const { profissionalLogado, isLoggedIn } = useProfissionalSession();
+  const { buscarPagamentos, processarPendentes } = usePagamentos();
+  const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Scroll to top when component mounts
@@ -27,34 +25,24 @@ const HistoricoRecargas = () => {
   }, []);
 
   useEffect(() => {
-    // Simular carregamento de dados
-    setTimeout(() => {
-      setRecargas([
-        {
-          id: '1',
-          valor: 50.00,
-          data: '2024-01-15T10:30:00Z',
-          status: 'aprovado',
-          metodo: 'PIX'
-        },
-        {
-          id: '2',
-          valor: 100.00,
-          data: '2024-01-10T14:20:00Z',
-          status: 'aprovado',
-          metodo: 'Cartão de Crédito'
-        },
-        {
-          id: '3',
-          valor: 25.00,
-          data: '2024-01-05T09:15:00Z',
-          status: 'pendente',
-          metodo: 'PIX'
-        }
-      ]);
+    if (isLoggedIn && profissionalLogado) {
+      loadPagamentos();
+    } else {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [isLoggedIn, profissionalLogado]);
+
+  const loadPagamentos = async () => {
+    try {
+      setLoading(true);
+      const data = await buscarPagamentos(profissionalLogado!.id);
+      setPagamentos(data);
+    } catch (error) {
+      console.error('Erro ao carregar pagamentos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -74,14 +62,16 @@ const HistoricoRecargas = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusMap = {
-      'aprovado': { text: 'Aprovado', color: 'bg-green-500' },
-      'pendente': { text: 'Pendente', color: 'bg-yellow-500' },
-      'rejeitado': { text: 'Rejeitado', color: 'bg-red-500' }
+    const statusMap: Record<string, { text: string; color: string }> = {
+      paid: { text: 'Pago', color: 'bg-green-500' },
+      pending: { text: 'Pendente', color: 'bg-yellow-500' },
+      processing: { text: 'Processando', color: 'bg-blue-500' },
+      created: { text: 'Criado', color: 'bg-gray-500' },
+      canceled: { text: 'Cancelado', color: 'bg-red-500' }
     };
-    
-    const statusInfo = statusMap[status as keyof typeof statusMap] || statusMap.pendente;
-    
+
+    const statusInfo = statusMap[status] || { text: status, color: 'bg-gray-500' };
+
     return (
       <Badge className={`${statusInfo.color} text-white`}>
         {statusInfo.text}
@@ -89,7 +79,16 @@ const HistoricoRecargas = () => {
     );
   };
 
-  const totalRecargas = recargas.reduce((sum, recarga) => sum + recarga.valor, 0);
+  const getMetodoPagamento = (metodo: string) => {
+    const metodoMap = {
+      'pix': 'PIX',
+      'credit_card': 'Cartão de Crédito'
+    };
+    return metodoMap[metodo as keyof typeof metodoMap] || metodo;
+  };
+
+  const totalPago = pagamentos.reduce((sum, p) => sum + (p.status === 'paid' ? (p.amount || 0) / 100 : 0), 0);
+  const totalPendentes = pagamentos.filter(p => ['pending', 'processing', 'created'].includes(p.status)).length;
 
   if (loading) {
     return (
@@ -137,8 +136,10 @@ const HistoricoRecargas = () => {
       {/* Conteúdo Principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Histórico de Recargas</h1>
-          <p className="text-gray-600">Acompanhe todas as suas recargas realizadas</p>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Histórico de Pagamentos</h1>
+            <p className="text-gray-600">Acompanhe seus pagamentos e status reais do PagarMe</p>
+          </div>
         </div>
 
         {/* Resumo */}
@@ -150,8 +151,8 @@ const HistoricoRecargas = () => {
                   <TrendingUp className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total Recarregado</p>
-                  <p className="text-xl font-bold text-gray-900">{formatCurrency(totalRecargas)}</p>
+                  <p className="text-sm text-gray-600">Total Pago</p>
+                  <p className="text-xl font-bold text-gray-900">{formatCurrency(totalPago)}</p>
                 </div>
               </div>
             </CardContent>
@@ -164,8 +165,8 @@ const HistoricoRecargas = () => {
                   <Calendar className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total de Recargas</p>
-                  <p className="text-xl font-bold text-gray-900">{recargas.length}</p>
+                  <p className="text-sm text-gray-600">Total de Pagamentos</p>
+                  <p className="text-xl font-bold text-gray-900">{pagamentos.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -179,9 +180,7 @@ const HistoricoRecargas = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Pendentes</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {recargas.filter(r => r.status === 'pendente').length}
-                  </p>
+                  <p className="text-xl font-bold text-gray-900">{totalPendentes}</p>
                 </div>
               </div>
             </CardContent>
@@ -191,38 +190,37 @@ const HistoricoRecargas = () => {
         {/* Lista de Recargas */}
         <Card>
           <CardHeader>
-            <CardTitle>Suas Recargas</CardTitle>
+            <CardTitle>Seus Pagamentos</CardTitle>
           </CardHeader>
           <CardContent>
-            {recargas.length === 0 ? (
+            {pagamentos.length === 0 ? (
               <div className="text-center py-8">
                 <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Nenhuma recarga encontrada
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  Você ainda não fez nenhuma recarga em sua conta.
-                </p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum pagamento encontrado</h3>
+                <p className="text-gray-500 mb-4">Você ainda não fez nenhum pagamento.</p>
                 <Button onClick={() => navigate('/recarga')} className="bg-[#1E486F] hover:bg-[#1E486F]/90">
                   Fazer Recarga
                 </Button>
               </div>
             ) : (
               <div className="space-y-4">
-                {recargas.map((recarga) => (
-                  <div key={recarga.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg bg-gray-50">
+                {pagamentos.map((p) => (
+                  <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg bg-gray-50">
                     <div className="flex items-center gap-4 mb-3 sm:mb-0">
                       <div className="p-2 bg-white rounded-lg shadow-sm">
                         <CreditCard className="h-5 w-5 text-[#1E486F]" />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">{formatCurrency(recarga.valor)}</p>
-                        <p className="text-sm text-gray-600">{recarga.metodo}</p>
-                        <p className="text-xs text-gray-500">{formatDate(recarga.data)}</p>
+                        <p className="font-semibold text-gray-900">{formatCurrency((p.amount || 0) / 100)}</p>
+                        <p className="text-xs text-gray-500">{getMetodoPagamento(p.payment_method)}</p>
+                        <p className="text-xs text-gray-500">{formatDate(p.created_at)}</p>
+                        {p.pagarme_order_id && (
+                          <p className="text-xs text-gray-500">Pedido: {p.pagarme_order_id}</p>
+                        )}
                       </div>
                     </div>
                     <div className="flex justify-end">
-                      {getStatusBadge(recarga.status)}
+                      {getStatusBadge(p.status)}
                     </div>
                   </div>
                 ))}

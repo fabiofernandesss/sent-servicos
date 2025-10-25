@@ -18,7 +18,7 @@ import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 const ProfissionalPerfil = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { profissionalLogado, loading: sessionLoading, login, logout } = useProfissionalSession();
+  const { profissionalLogado, loading: sessionLoading, login, logout, refreshSaldo } = useProfissionalSession();
   const [step, setStep] = useState<'login' | 'otp' | 'form'>('login');
   const [whatsapp, setWhatsapp] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -59,38 +59,45 @@ const ProfissionalPerfil = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
-                <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
+                <img 
+                  src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" 
+                  alt="Sent Serviços" 
+                  className="h-4 sm:h-5 w-auto" 
+                />
               </div>
               <div className="flex items-center gap-2">
                 <nav className="hidden md:flex space-x-2">
                   <Button 
                     variant="ghost" 
-                    className="text-gray-600 font-bold" 
+                    className="text-gray-600 font-bold text-sm lg:text-base" 
                     onClick={() => navigate('/')}
                     style={{
-                      height: '54px',
-                      borderRadius: '27px'
+                      height: '44px',
+                      borderRadius: '22px',
+                      padding: '0 16px'
                     }}
                   >
                     Início
                   </Button>
                   <Button 
                     variant="ghost" 
-                    className="text-gray-600 font-bold" 
+                    className="text-gray-600 font-bold text-sm lg:text-base" 
                     onClick={() => navigate('/equipamentos')}
                     style={{
-                      height: '54px',
-                      borderRadius: '27px'
+                      height: '44px',
+                      borderRadius: '22px',
+                      padding: '0 16px'
                     }}
                   >
                     Equipamentos
                   </Button>
                   <Button 
                     variant="ghost" 
-                    className="text-[#1c4970] font-bold"
+                    className="text-[#1c4970] font-bold text-sm lg:text-base"
                     style={{
-                      height: '54px',
-                      borderRadius: '27px'
+                      height: '44px',
+                      borderRadius: '22px',
+                      padding: '0 16px'
                     }}
                   >
                     Perfil
@@ -340,44 +347,54 @@ const ProfissionalPerfil = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" alt="Sent Serviços" className="h-5 w-auto" />
+              <img 
+                src="https://9088bc4d5081958e858f937822185f7b.cdn.bubble.io/cdn-cgi/image/w=256,h=53,f=auto,dpr=1.25,fit=contain/f1716158171404x251547051884103870/Ativo%201.png" 
+                alt="Sent Serviços" 
+                className="h-4 sm:h-5 w-auto" 
+              />
             </div>
-            <nav className="hidden md:flex space-x-2">
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 font-bold" 
-                onClick={() => navigate('/')}
-                style={{
-                  height: '54px',
-                  borderRadius: '27px'
-                }}
-              >
-                Início
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 font-bold" 
-                onClick={() => navigate('/equipamentos')}
-                style={{
-                  height: '54px',
-                  borderRadius: '27px'
-                }}
-              >
-                Equipamentos
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-[#1c4970] font-bold"
-                style={{
-                  height: '54px',
-                  borderRadius: '27px'
-                }}
-              >
-                Perfil
-              </Button>
-              {profissionalLogado && <ProfessionalLogoutMenu />}
-            </nav>
-            <MobileMenu />
+            <div className="flex items-center gap-2">
+              <nav className="hidden md:flex space-x-2">
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-600 font-bold text-sm lg:text-base" 
+                  onClick={() => navigate('/')}
+                  style={{
+                    height: '44px',
+                    borderRadius: '22px',
+                    padding: '0 16px'
+                  }}
+                >
+                  Início
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-600 font-bold text-sm lg:text-base" 
+                  onClick={() => navigate('/equipamentos')}
+                  style={{
+                    height: '44px',
+                    borderRadius: '22px',
+                    padding: '0 16px'
+                  }}
+                >
+                  Equipamentos
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="text-[#1c4970] font-bold text-sm lg:text-base"
+                  style={{
+                    height: '44px',
+                    borderRadius: '22px',
+                    padding: '0 16px'
+                  }}
+                >
+                  Perfil
+                </Button>
+                {profissionalLogado && <ProfessionalLogoutMenu />}
+              </nav>
+              
+              <MobileMenu />
+            </div>
           </div>
         </div>
       </header>

@@ -1,0 +1,18 @@
+RewriteEngine On
+
+# API do PagarMe - Customers
+RewriteRule ^pagarme/customers$ pagarme/customers.php [L]
+
+# API do PagarMe - Orders
+RewriteRule ^pagarme/orders$ pagarme/orders.php [L]
+RewriteRule ^pagarme/orders/([^/]+)$ pagarme/orders.php?orderId=$1 [L]
+
+# CORS Headers para todas as requisições
+Header always set Access-Control-Allow-Origin "https://www.sent.eng.br"
+Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+Header always set Access-Control-Allow-Credentials "true"
+
+# Handle preflight OPTIONS requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]

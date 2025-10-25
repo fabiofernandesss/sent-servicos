@@ -55,7 +55,7 @@ const FormularioProfissional = ({
 
   // Carregar dados do profissional existente
   useEffect(() => {
-    if (profissional) {
+    if (profissional && !formData.nome) { // Só carregar se não tiver dados já
       console.log('Carregando profissional existente:', profissional.nome);
       setFormData({
         cpf_cnpj: profissional.cpf_cnpj || '',
@@ -76,28 +76,26 @@ const FormularioProfissional = ({
         receber_msm: profissional.receber_msm ?? true
       });
     }
-  }, [profissional, whatsapp]);
+  }, [profissional?.id]); // Só depender do ID do profissional
 
   // Carregar categorias
   useEffect(() => {
-    if (!categoriesLoaded) {
-      if (profissional?.id) {
-        console.log('Carregando categorias para profissional:', profissional.id);
-        loadProfissionalCategorias(profissional.id).then(categorias => {
-          const categoryIds = categorias.map(cat => cat.categoria_id);
-          setSelectedCategories(categoryIds);
-          setCategoriesLoaded(true);
-        }).catch(error => {
-          console.error('Erro ao carregar categorias:', error);
-          setCategoriesLoaded(true);
-        });
-      } else {
-        const tempCategories = getTempCategories();
-        setSelectedCategories(tempCategories);
+    if (!categoriesLoaded && profissional?.id) {
+      console.log('Carregando categorias para profissional:', profissional.id);
+      loadProfissionalCategorias(profissional.id).then(categorias => {
+        const categoryIds = categorias.map(cat => cat.categoria_id);
+        setSelectedCategories(categoryIds);
         setCategoriesLoaded(true);
-      }
+      }).catch(error => {
+        console.error('Erro ao carregar categorias:', error);
+        setCategoriesLoaded(true);
+      });
+    } else if (!categoriesLoaded && !profissional?.id) {
+      const tempCategories = getTempCategories();
+      setSelectedCategories(tempCategories);
+      setCategoriesLoaded(true);
     }
-  }, [profissional, getTempCategories, categoriesLoaded]);
+  }, [profissional?.id, categoriesLoaded]); // Remover getTempCategories da dependência
 
   const handleInputChange = (field: keyof Profissional, value: any) => {
     console.log('Alterando campo:', field, 'para:', value);
@@ -185,66 +183,51 @@ const FormularioProfissional = ({
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl text-[#1E486F]">
-          {isEditing ? 'Editar Perfil Profissional' : 'Cadastro Profissional'}
+        <CardTitle className="text-xl sm:text-2xl text-[#1E486F]">
+          {profissional?.id ? 'Editar Perfil' : 'Cadastro Profissional'}
         </CardTitle>
-        <p className="text-gray-600">
-          {isEditing ? 'Atualize suas informações profissionais' : 'Complete seu cadastro para começar a receber demandas'}
-        </p>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <DadosPessoaisForm 
-            formData={formData} 
-            onInputChange={handleInputChange} 
-          />
-
-          <EnderecoForm 
-            formData={formData} 
-            onInputChange={handleInputChange} 
-            estados={estados}
-          />
-
-          {/* Categorias de Serviço */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[#1E486F]">Categorias de Serviço *</h3>
-            {categoriesLoaded && (
-              <CategoriasSelector 
-                selectedCategories={selectedCategories} 
-                onCategoriesChange={handleCategoriesChange}
-                estado={formData.estado}
-                cidade={formData.cidade}
-              />
-            )}
-          </div>
-
-          <DadosProfissionaisForm 
-            formData={formData} 
-            onInputChange={handleInputChange} 
-          />
-
-          <div className="flex gap-4">
-            <Button
-              type="submit"
-              disabled={loading}
-              className="bg-[#1E486F] hover:bg-[#1E486F]/90 py-0 rounded-3xl font-semibold"
-            >
-              {loading ? 'Salvando...' : isEditing ? 'Atualizar Perfil' : 'Criar Cadastro'}
-            </Button>
-            
-            {isLoggedIn && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleLogout}
-                className="py-0 rounded-3xl font-semibold flex items-center gap-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
-              >
-                <LogOut className="h-4 w-4" />
-                Sair
-              </Button>
-            )}
-          </div>
-        </form>
+      <CardContent className="space-y-6 p-4 sm:p-6">
+        <DadosPessoaisForm 
+          formData={formData} 
+          onInputChange={handleInputChange} 
+        />
+        
+        <EnderecoForm 
+          formData={formData} 
+          onInputChange={handleInputChange} 
+          estados={estados}
+        />
+        
+        <CategoriasSelector 
+          selectedCategories={selectedCategories}
+          onCategoriesChange={handleCategoriesChange}
+          estado={formData.estado}
+          cidade={formData.cidade}
+        />
+        
+        <DadosProfissionaisForm 
+          formData={formData} 
+          onInputChange={handleInputChange} 
+        />
+        
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 pt-6">
+          <Button 
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full sm:w-auto flex-1 bg-[#1E486F] hover:bg-[#2a5a8a] text-white h-12 text-base font-medium"
+          >
+            {loading ? 'Salvando...' : 'Salvar'}
+          </Button>
+          <Button 
+            onClick={logout}
+            variant="outline"
+            className="w-full sm:w-auto flex-1 border-[#1E486F] text-[#1E486F] hover:bg-[#1E486F] hover:text-white h-12 text-base font-medium"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sair
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

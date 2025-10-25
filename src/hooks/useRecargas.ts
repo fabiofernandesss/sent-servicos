@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useProfissionalSession } from '@/hooks/useProfissionalSession';
 
 export interface Recarga {
   id: string | number;
@@ -17,6 +18,7 @@ export interface Recarga {
 export const useRecargas = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { updateSaldo } = useProfissionalSession();
 
   const criarRecarga = async (recargaData: {
     profissional_id: string | number;
@@ -28,27 +30,23 @@ export const useRecargas = () => {
   }) => {
     setLoading(true);
     try {
-      // Por enquanto, apenas simular a criação da recarga
-      // Quando a tabela recargas estiver disponível, usar:
-      // const { data, error } = await supabase
-      //   .from('recargas')
-      //   .insert([{
-      //     ...recargaData,
-      //     status: 'pendente'
-      //   }])
-      //   .select()
-      //   .single();
-
-      console.log('📝 Recarga criada (simulado):', recargaData);
+      console.log('📝 Criando recarga no Supabase:', recargaData);
       
-      // Simular retorno
-      const data = {
-        id: Date.now(),
-        ...recargaData,
-        status: 'pendente',
-        created_at: new Date().toISOString()
-      };
+      const { data, error } = await supabase
+        .from('recargas')
+        .insert([{
+          ...recargaData,
+          status: 'pendente'
+        }])
+        .select()
+        .single();
 
+      if (error) {
+        console.error('❌ Erro ao criar recarga:', error);
+        throw error;
+      }
+
+      console.log('✅ Recarga criada com sucesso:', data);
       return data;
     } catch (error) {
       console.error('Erro ao criar recarga:', error);
@@ -67,26 +65,44 @@ export const useRecargas = () => {
     try {
       console.log(`🔄 Atualizando status da recarga ${orderId} para: ${status}`);
 
-      // Por enquanto, apenas simular a atualização
-      // Quando a tabela recargas estiver disponível, usar:
-      // const { error } = await supabase
-      //   .from('recargas')
-      //   .update({ status })
-      //   .eq('order_id', orderId);
-
-      // APENAS creditar saldo se o status for 'aprovado'
       if (status === 'aprovado') {
-        console.log('✅ Recarga aprovada - saldo será creditado quando a tabela estiver disponível');
-        // TODO: Implementar quando a tabela recargas estiver disponível
-        // const { data: recarga } = await supabase
-        //   .from('recargas')
-        //   .select('profissional_id, valor_total')
-        //   .eq('order_id', orderId)
-        //   .single();
+        // Usar função SQL para processar pagamento completo
+        const { data, error } = await supabase.rpc('processar_pagamento_completo', {
+          p_order_id: orderId
+        });
 
-        // if (recarga) {
-        //   await atualizarSaldoProfissional(recarga.profissional_id, recarga.valor_total);
-        // }
+        if (error) {
+          console.error('❌ Erro ao processar pagamento completo:', error);
+          throw error;
+        }
+
+        if (data?.success) {
+          console.log('✅ Pagamento processado com sucesso:', data);
+          
+          // Atualizar saldo na sessão local
+          if (data.novo_saldo !== undefined) {
+            updateSaldo(data.novo_saldo);
+          }
+          
+          toast({
+            title: "Pagamento Aprovado!",
+            description: `Saldo atualizado: R$ ${data.valor_creditado}`,
+          });
+        } else {
+          console.error('❌ Erro no processamento:', data);
+          throw new Error(data?.error || 'Erro ao processar pagamento');
+        }
+      } else {
+        // Atualizar status para cancelado
+        const { error } = await supabase
+          .from('recargas')
+          .update({ status })
+          .eq('order_id', orderId);
+
+        if (error) {
+          console.error('❌ Erro ao atualizar status:', error);
+          throw error;
+        }
       }
     } catch (error) {
       console.error('Erro ao atualizar status da recarga:', error);
@@ -128,18 +144,19 @@ export const useRecargas = () => {
     try {
       console.log('🔍 Buscando recargas do profissional:', profissionalId);
 
-      // Por enquanto, retornar array vazio
-      // Quando a tabela recargas estiver disponível, usar:
-      // const { data, error } = await supabase
-      //   .from('recargas')
-      //   .select('*')
-      //   .eq('profissional_id', profissionalId)
-      //   .order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('recargas')
+        .select('*')
+        .eq('profissional_id', profissionalId)
+        .order('created_at', { ascending: false });
 
-      // if (error) throw error;
-      // return data as Recarga[];
+      if (error) {
+        console.error('❌ Erro ao buscar recargas:', error);
+        throw error;
+      }
 
-      return [] as Recarga[];
+      console.log('✅ Recargas encontradas:', data?.length || 0);
+      return data as Recarga[] || [];
     } catch (error) {
       console.error('Erro ao buscar recargas:', error);
       toast({

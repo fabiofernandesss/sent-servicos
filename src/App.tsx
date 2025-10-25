@@ -11,6 +11,7 @@ import Equipamentos from "./pages/Equipamentos";
 import ProfissionalPerfil from "./pages/ProfissionalPerfil";
 import Recarga from "./pages/Recarga";
 import HistoricoRecargas from "./pages/HistoricoRecargas";
+import MinhasCompras from "./pages/MinhasCompras";
 import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/perfil" element={<ProfissionalPerfil />} />
           <Route path="/recarga" element={<Recarga />} />
           <Route path="/historico-recargas" element={<HistoricoRecargas />} />
+          <Route path="/minhas-compras" element={<MinhasCompras />} />
           <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="/terms" element={<TermsOfUse />} />

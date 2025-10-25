@@ -64,8 +64,8 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
         </div>
         
         {/* Dois inputs de cidade lado a lado */}
-        <div className="grid grid-cols-2 gap-2">
-          <div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex-1">
             <Label htmlFor="cidade-atual">Cidade Atual</Label>
             <Input
               id="cidade-atual"
@@ -75,7 +75,7 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
               placeholder="Cidade salva"
             />
           </div>
-          <div>
+          <div className="flex-1">
             <Label htmlFor="cidade-nova" className="flex items-center justify-between">
               Alterar Cidade
               {formData.estado && (
@@ -138,46 +138,51 @@ const EnderecoForm = ({ formData, onInputChange, estados }: EnderecoFormProps) =
           </div>
         </div>
         
-        <div>
-          <Label htmlFor="bairro">Bairro</Label>
-          <Input
-            id="bairro"
-            value={formData.bairro || ''}
-            onChange={(e) => onInputChange('bairro', e.target.value)}
-            placeholder="Seu bairro"
-            className="h-[54px]"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="bairro">Bairro</Label>
+            <Input
+              id="bairro"
+              value={formData.bairro || ''}
+              onChange={(e) => onInputChange('bairro', e.target.value)}
+              placeholder="Seu bairro"
+              className="h-[54px]"
+            />
+          </div>
+          <div>
+            <Label htmlFor="rua">Rua</Label>
+            <Input
+              id="rua"
+              value={formData.rua || ''}
+              onChange={(e) => onInputChange('rua', e.target.value)}
+              placeholder="Nome da rua"
+              className="h-[54px]"
+            />
+          </div>
         </div>
-        <div>
-          <Label htmlFor="rua">Rua</Label>
-          <Input
-            id="rua"
-            value={formData.rua || ''}
-            onChange={(e) => onInputChange('rua', e.target.value)}
-            placeholder="Nome da rua"
-            className="h-[54px]"
-          />
-        </div>
-        <div>
-          <Label htmlFor="numero">Número</Label>
-          <Input
-            id="numero"
-            value={formData.numero || ''}
-            onChange={(e) => onInputChange('numero', e.target.value)}
-            placeholder="Número"
-            className="h-[54px]"
-          />
-        </div>
-        <div>
-          <Label htmlFor="cep">CEP</Label>
-          <Input
-            id="cep"
-            value={formData.cep || ''}
-            onChange={handleCEPChange}
-            placeholder="00000-000"
-            maxLength={9}
-            className="h-[54px]"
-          />
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="numero">Número</Label>
+            <Input
+              id="numero"
+              value={formData.numero || ''}
+              onChange={(e) => onInputChange('numero', e.target.value)}
+              placeholder="Número"
+              className="h-[54px]"
+            />
+          </div>
+          <div>
+            <Label htmlFor="cep">CEP</Label>
+            <Input
+              id="cep"
+              value={formData.cep || ''}
+              onChange={handleCEPChange}
+              placeholder="00000-000"
+              maxLength={9}
+              className="h-[54px]"
+            />
+          </div>
         </div>
       </div>
       

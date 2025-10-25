@@ -70,7 +70,7 @@ export const useFormSubmission = () => {
 • *Urgência:* ${data.urgencia}
 
 ${data.observacao ? `📝 *Observações:* ${data.observacao}\n\n` : ''}🔗 *ACESSE A DEMANDA COMPLETA:*
-https://sent-servicos-14.lovable.app/demanda/${demandaId}
+https://www.sent.eng.br/demanda/${demandaId}
 
 💼 *Uma nova oportunidade de trabalho está disponível na sua região!*
 

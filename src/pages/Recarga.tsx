@@ -60,6 +60,7 @@ const Recarga = () => {
     }
 
     setSelectedOption(opcao);
+    setPaymentMethod('pix'); // Selecionar PIX automaticamente
     setShowPayment(true);
   };
 
@@ -252,10 +253,11 @@ const Recarga = () => {
                     <QrCode className="h-4 w-4" />
                     <span className="text-sm">PIX</span>
                   </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+                  {/* Cartão de crédito temporariamente oculto */}
+                  {/* <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
                     <CreditCard className="h-4 w-4" />
                     <span className="text-sm">Cartão de Crédito</span>
-                  </div>
+                  </div> */}
                 </div>
               </CardContent>
             </Card>
@@ -267,7 +269,7 @@ const Recarga = () => {
               <div className="max-w-md mx-auto">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold text-[#1E486F] mb-2">
-                    Escolha o método de pagamento
+                    Pagamento via PIX
                   </h2>
                   <p className="text-gray-600">
                     Valor: {formatCurrency(selectedOption.valor)}
@@ -291,16 +293,27 @@ const Recarga = () => {
                     </CardContent>
                   </Card>
 
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all"
-                    onClick={() => handlePaymentMethodSelect('credit_card')}
-                  >
-                    <CardContent className="p-6 text-center">
-                      <CreditCard className="h-8 w-8 mx-auto mb-3 text-[#1E486F]" />
-                      <h3 className="font-semibold text-[#1E486F] mb-2">Cartão de Crédito</h3>
-                      <p className="text-sm text-gray-600">Parcelamento disponível</p>
-                    </CardContent>
-                  </Card>
+                  {/* Cartão de crédito temporariamente oculto */}
+                  {/* {selectedOption.valor >= 5 && (
+                    <Card 
+                      className="cursor-pointer hover:shadow-lg transition-all"
+                      onClick={() => handlePaymentMethodSelect('credit_card')}
+                    >
+                      <CardContent className="p-6 text-center">
+                        <CreditCard className="h-8 w-8 mx-auto mb-3 text-[#1E486F]" />
+                        <h3 className="font-semibold text-[#1E486F] mb-2">Cartão de Crédito</h3>
+                        <p className="text-sm text-gray-600">Parcelamento disponível</p>
+                      </CardContent>
+                    </Card>
+                  )} */}
+
+                  {/* {selectedOption.valor < 5 && (
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-700 text-center">
+                        <strong>Cartão de crédito disponível apenas para valores a partir de R$ 5,00</strong>
+                      </p>
+                    </div>
+                  )} */}
                 </div>
 
                 <Button 

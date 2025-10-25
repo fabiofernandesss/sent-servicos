@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CreditCard, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { pagarMeService, CustomerData } from '@/services/pagarme';
+import { pagarMeService } from '@/services/pagarme';
 
 interface CreditCardPaymentProps {
   amount: number;
@@ -141,49 +141,27 @@ const CreditCardPayment = ({ amount, onSuccess, onCancel, customerData, profissi
     
     try {
       // Validar CPF antes de prosseguir
-      const formattedDocument = pagarMeService.formatDocument(customerData.document);
-      if (!pagarMeService.validateCPF(formattedDocument)) {
+      if (!pagarMeService.validateCPF(customerData.document)) {
         throw new Error('CPF inválido. Verifique os dados e tente novamente.');
       }
 
-      // Preparar dados do cliente para o Pagar.me
-      const phone = customerData.phone || '11999999999'; // Fallback para telefone
-      const phoneData = pagarMeService.parsePhoneNumber(phone);
-      
-      const pagarMeCustomer: CustomerData = {
-        name: customerData.name,
-        email: customerData.email,
-        type: 'individual',
-        document: formattedDocument,
-        document_type: 'CPF',
-        phones: {
-          mobile_phone: {
-            country_code: '55',
-            area_code: phoneData.area_code,
-            number: phoneData.number
-          }
-        }
-      };
-
-      console.log('👤 Dados do cliente para cartão:', pagarMeCustomer);
-
-      // Preparar dados do cartão
-      const cardPaymentData = {
-        number: cardData.number.replace(/\s/g, ''),
-        holder_name: cardData.holderName,
-        exp_month: parseInt(cardData.expMonth),
-        exp_year: parseInt(cardData.expYear),
-        cvv: cardData.cvv
-      };
+      console.log('👤 Dados do cliente para cartão:', customerData);
 
       // Criar pagamento com cartão real
-      const response = await pagarMeService.createCreditCardPayment(
-        pagarMeCustomer,
-        amount,
-        cardPaymentData,
-        'Recarga de créditos - Sent Serviços',
-        profissionalId
-      );
+      const response = await pagarMeService.createCreditCardPayment({
+        amount: amount,
+        customerName: customerData.name,
+        customerEmail: customerData.email,
+        customerDocument: customerData.document,
+        customerPhone: customerData.phone,
+        cardNumber: cardData.number.replace(/\s/g, ''),
+        cardHolderName: cardData.holderName,
+        cardExpMonth: parseInt(cardData.expMonth),
+        cardExpYear: parseInt(cardData.expYear),
+        cardCvv: cardData.cvv,
+        installments: 1,
+        description: 'Recarga de créditos - Sent Serviços'
+      });
 
       if (response && response.id) {
         // Verificar se o pagamento foi aprovado
@@ -194,7 +172,7 @@ const CreditCardPayment = ({ amount, onSuccess, onCancel, customerData, profissi
           });
           
           onSuccess(response.id);
-        } else if (response.status === 'pending' || (response.charges && response.charges[0]?.status === 'pending')) {
+        } else if (response.status === 'pending' || response.status === 'processing' || (response.charges && response.charges[0]?.status === 'pending')) {
           toast({
             title: "Pagamento Pendente",
             description: "Aguardando confirmação do pagamento"
@@ -204,7 +182,7 @@ const CreditCardPayment = ({ amount, onSuccess, onCancel, customerData, profissi
           setIsChecking(true);
           checkIntervalRef.current = setInterval(async () => {
             try {
-              const status = await pagarMeService.getPaymentStatus(response.id);
+              const status = await pagarMeService.getOrderStatus(response.id!);
               if (status.status === 'paid') {
                 if (checkIntervalRef.current) {
                   clearInterval(checkIntervalRef.current);
@@ -291,7 +269,7 @@ const CreditCardPayment = ({ amount, onSuccess, onCancel, customerData, profissi
       <CardContent className="space-y-4">
         <div className="text-center mb-4">
           <p className="text-2xl font-bold text-[#1E486F]">
-            {formatCurrency(amount)}
+            {formatCurrency(amount / 100)}
           </p>
         </div>
 

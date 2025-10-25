@@ -149,8 +149,8 @@ export const sendWhatsAppToProfessionals = async (
       'so_orcamento': 'Só orçamento'
     }[urgencia] || urgencia;
 
-    // URL da demanda - usando o domínio atual
-    const demandaUrl = `${window.location.origin}/demanda/${demandaId}`;
+    // URL da demanda - usando o site oficial da Sent
+    const demandaUrl = `https://www.sent.eng.br/demanda/${demandaId}`;
 
     const message = `🔔 *NOVA DEMANDA DISPONÍVEL!*
 

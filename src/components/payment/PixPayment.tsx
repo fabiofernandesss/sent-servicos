@@ -64,48 +64,31 @@ const PixPayment = ({ amount, onSuccess, onCancel, customerData, profissionalId 
       console.log('👤 Dados do cliente para PIX:', customerData);
       
       // Validar CPF antes de prosseguir
-      const formattedDocument = pagarMeService.formatDocument(customerData.document);
-      if (!pagarMeService.validateCPF(formattedDocument)) {
+      if (!pagarMeService.validateCPF(customerData.document)) {
         throw new Error('CPF inválido. Verifique os dados e tente novamente.');
       }
 
-      // Preparar dados do cliente para o Pagar.me
-      const phone = customerData.phone || '11999999999'; // Fallback para telefone
-      const phoneData = pagarMeService.parsePhoneNumber(phone);
-      
-      const customerDataForPagarme = {
-        name: customerData.name,
-        email: customerData.email,
-        type: 'individual' as const,
-        document: formattedDocument,
-        document_type: 'CPF' as const,
-        phones: {
-          mobile_phone: {
-            country_code: '55',
-            area_code: phoneData.area_code,
-            number: phoneData.number
-          }
-        }
-      };
-
-      const response = await pagarMeService.createPixPayment(
-        customerDataForPagarme,
-        amount,
-        'Recarga de créditos - Sent Serviços',
-        profissionalId
-      );
+      const response = await pagarMeService.createPixPayment({
+        amount: amount,
+        customerName: customerData.name,
+        customerEmail: customerData.email,
+        customerDocument: customerData.document,
+        customerPhone: customerData.phone,
+        description: 'Recarga de créditos - Sent Serviços',
+        profissionalId: profissionalId ? Number(profissionalId) : undefined
+      });
 
       if (response && response.charges && response.charges[0]) {
         const charge = response.charges[0];
-        const pixInfo = charge.last_transaction;
+        const pixInfo = charge.lastTransaction;
 
         // Verificar se o PIX foi criado com sucesso
-        if (pixInfo && pixInfo.qr_code && pixInfo.qr_code_url) {
+        if (pixInfo && pixInfo.qrCode && pixInfo.qrCodeUrl) {
           const pixData = {
-            id: response.id,
-            qr_code: pixInfo.qr_code,
-            qr_code_url: pixInfo.qr_code_url,
-            expires_at: pixInfo.expires_at
+            id: response.id!,
+            qr_code: pixInfo.qrCode,
+            qr_code_url: pixInfo.qrCodeUrl,
+            expires_at: pixInfo.expiresAt || ''
           };
 
           setPixData(pixData);
@@ -128,7 +111,10 @@ const PixPayment = ({ amount, onSuccess, onCancel, customerData, profissionalId 
           checkIntervalRef.current = setInterval(async () => {
             try {
               console.log('🔍 Verificando status REAL do PIX:', response.id);
-              const status = await pagarMeService.getPaymentStatus(response.id);
+              const status = await pagarMeService.getOrderStatus(
+                response.id!,
+                profissionalId ? Number(profissionalId) : undefined
+              );
               console.log('📊 Status retornado:', status);
               
               // APENAS aprovar se o status for realmente 'paid' na API

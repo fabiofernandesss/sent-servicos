@@ -15,11 +15,27 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/lovable-uploads/(.*)",
+      "dest": "/lovable-uploads/$1"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/browserconfig.xml",
+      "dest": "/browserconfig.xml"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
   ],
   "env": {
-    "PAGARME_SECRET_KEY": "@pagarme_secret_key"
+    "PAGARME_SECRET_KEY": "sk_83744d2260054f53bc9eb5f2934d7e42"
   }
 }

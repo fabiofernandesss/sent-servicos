@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { Profissional } from '@/services/supabaseService';
+import { Profissional, loadProfissionalByWhatsapp } from '@/services/supabaseService';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'profissional_session';
 const TEMP_CATEGORIES_KEY = 'temp_profissional_categories';
@@ -22,7 +23,28 @@ export const useProfissionalSession = () => {
       }
     }
     setLoading(false);
-  }, []);
+  }, []); // Executar apenas uma vez na inicialização
+
+  // Escutar evento de atualização de saldo em um useEffect separado
+  useEffect(() => {
+    const handleSaldoUpdate = (event: CustomEvent) => {
+      setProfissionalLogado(prev => {
+        if (prev) {
+          return {
+            ...prev,
+            saldo: event.detail.novoSaldo
+          };
+        }
+        return prev;
+      });
+    };
+
+    window.addEventListener('saldoUpdated', handleSaldoUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('saldoUpdated', handleSaldoUpdate as EventListener);
+    };
+  }, []); // Executar apenas uma vez
 
   const login = (profissional: Profissional) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profissional));
@@ -38,6 +60,43 @@ export const useProfissionalSession = () => {
   const updateSession = (profissional: Profissional) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profissional));
     setProfissionalLogado(profissional);
+  };
+
+  const updateSaldo = (novoSaldo: number) => {
+    if (profissionalLogado) {
+      const profissionalAtualizado = {
+        ...profissionalLogado,
+        saldo: novoSaldo
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profissionalAtualizado));
+      setProfissionalLogado(profissionalAtualizado);
+    }
+  };
+
+  const refreshSaldo = async () => {
+    if (profissionalLogado?.id) {
+      try {
+        const { data, error } = await supabase.rpc('get_profissional_saldo', {
+          p_profissional_id: profissionalLogado.id
+        });
+
+        if (error) {
+          console.error('Erro ao buscar saldo:', error);
+          return;
+        }
+
+        if (data?.success) {
+          const profissionalAtualizado = {
+            ...profissionalLogado,
+            saldo: data.saldo
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(profissionalAtualizado));
+          setProfissionalLogado(profissionalAtualizado);
+        }
+      } catch (error) {
+        console.error('Erro ao atualizar saldo:', error);
+      }
+    }
   };
 
   const saveTempCategories = (categories: string[]) => {
@@ -59,6 +118,8 @@ export const useProfissionalSession = () => {
     login,
     logout,
     updateSession,
+    updateSaldo,
+    refreshSaldo,
     saveTempCategories,
     getTempCategories,
     clearTempCategories,
